@@ -1,16 +1,27 @@
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+# 构建输出目录
+/target/
+build/
+out/
+bin/
+
+# Maven 特定文件
+!**/.mvn/wrapper/maven-wrapper.jar
+
+# 允许特定位置的 target 目录 (如果有特殊需求)
+# !**/src/main/**/target/
+# !**/src/test/**/target/
+
+# ==============================================
+# IDE 配置文件
+# ==============================================
 
 ### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
+.idea/
 *.iws
 *.iml
 *.ipr
+*.swp
+*.swo
 
 ### Eclipse ###
 .apt_generated
@@ -20,6 +31,7 @@ target/
 .settings
 .springBeans
 .sts4-cache
+*.launch
 
 ### NetBeans ###
 /nbproject/private/
@@ -27,12 +39,115 @@ target/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 ### VS Code ###
 .vscode/
+*.code-workspace
 
-### Mac OS ###
+# ==============================================
+# 操作系统文件
+# ==============================================
+
+### Windows ###
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+### macOS ###
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+### Linux ###
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ==============================================
+# Java 项目特定文件
+# ==============================================
+
+# 日志文件
+*.log
+logs/
+*.log.
+
+# 缓存文件
+*.cache
+.classpath
+.project
+.settings/
+*.sublime-workspace
+
+# 环境变量和配置文件
+.env
+.env.local
+.env.production.local
+.env.development.local
+.env.test.local
+application-dev.properties
+application-test.properties
+application-prod.properties
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+
+db/data/
+db/logs/
+
+# 打包文件
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# 测试覆盖率报告
+jacoco.exec
+jacoco-ut.exec
+jacoco-it.exec
+coverage/
+*.gcno
+*.gcda
+
+# 性能分析文件
+*.hprof
+*.hgrm
+
+# 其他
+*.class
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# 编辑器备份文件
+*~
+*#
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace

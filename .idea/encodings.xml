@@ -3,5 +3,45 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-ai/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-ai/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-ai/zone-ai-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-ai/zone-ai-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-ai/zone-ai-business/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-ai/zone-ai-business/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-ai/zone-ai-model/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-ai/zone-ai-model/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-finance/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-finance/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-finance/zone-finance-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-finance/zone-finance-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-finance/zone-finance-business/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-finance/zone-finance-business/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-finance/zone-finance-model/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-finance/zone-finance-model/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-gateway/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-gateway/zone-gateway-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-gateway/zone-gateway-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-gateway/zone-gateway-business/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-gateway/zone-gateway-business/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-gateway/zone-gateway-model/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-gateway/zone-gateway-model/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-tools/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-tools/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-tools/zone-tools-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-tools/zone-tools-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-tools/zone-tools-business/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-tools/zone-tools-business/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-tools/zone-tools-model/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-tools/zone-tools-model/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-user/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-user/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-user/zone-user-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-user/zone-user-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-user/zone-user-business/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-user/zone-user-business/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-user/zone-user-model/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-user/zone-user-model/src/main/resources" charset="UTF-8" />
   </component>
 </project>
