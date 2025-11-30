@@ -7,19 +7,19 @@ import java.time.LocalDateTime;
  * @author walkvoid
  * @version 1.0
  * @date 2025/11/30
- * @desc
+ * @desc todo
  */
-public class BaseEntity implements Serializable {
-
-    /**
-     * 1=启用，0=已被软删除
-     */
-    private BooleanEnum enable;
+public class BaseDTO implements Serializable {
 
     /**
      * 创建者id
      */
     private Long createId;
+
+    /**
+     * 创建者id
+     */
+    private String createName;
 
     /**
      * 创建时间
@@ -29,7 +29,7 @@ public class BaseEntity implements Serializable {
     /**
      * 更新id
      */
-    private Long updateId;
+    private String updateName;
 
     /**
      * 更新时间

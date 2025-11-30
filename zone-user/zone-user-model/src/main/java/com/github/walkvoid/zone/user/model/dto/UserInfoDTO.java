@@ -1,33 +1,25 @@
-package com.github.walkvoid.zone.user.model.entity;
+package com.github.walkvoid.zone.user.model.dto;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.github.walkvoid.zone.common.model.BaseEntity;
+import com.github.walkvoid.zone.common.model.BaseDTO;
 import com.github.walkvoid.zone.common.model.BooleanEnum;
 import com.github.walkvoid.zone.user.model.enums.UserGenderEnum;
 import com.github.walkvoid.zone.user.model.enums.UserInfoStatusEnum;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.time.LocalDateTime;
 
 /**
- * 用户信息实体类
  * @author walkvoid
  * @version 1.0
  * @date 2025/11/30
+ * @desc
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@TableName("user_info")
-public class UserInfo extends BaseEntity {
-    private static final long serialVersionUID = -2711760906199432073L;
+public class UserInfoDTO extends BaseDTO {
 
     /**
      * 用户ID，主键
      */
-    @TableId
     private Long id;
 
     /**
@@ -90,7 +82,4 @@ public class UserInfo extends BaseEntity {
      * 是否是管理员
      */
     private BooleanEnum isAdmin;
-
-
-
 }

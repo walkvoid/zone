@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.walkvoid.zone.user.model.mapper.UserInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.github.walkvoid.zone.user.model.entity.UserInfo">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="nickname" property="nickname"/>
+        <result column="email" property="email"/>
+        <result column="phone" property="phone"/>
+        <result column="avatar" property="avatar"/>
+        <result column="gender" property="gender"/>
+        <result column="birthday" property="birthday"/>
+        <result column="status" property="status"/>
+        <result column="last_login_time" property="lastLoginTime"/>
+        <result column="last_login_ip" property="lastLoginIp"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 根据用户名查询用户信息 -->
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        SELECT * FROM user_info WHERE username = #{username}
+    </select>
+
+    <!-- 根据邮箱查询用户信息 -->
+    <select id="selectByEmail" resultMap="BaseResultMap">
+        SELECT * FROM user_info WHERE email = #{email}
+    </select>
+
+    <!-- 根据手机号查询用户信息 -->
+    <select id="selectByPhone" resultMap="BaseResultMap">
+        SELECT * FROM user_info WHERE phone = #{phone}
+    </select>
+
+    <!-- 根据状态查询用户列表 -->
+    <select id="selectByStatus" resultMap="BaseResultMap">
+        SELECT * FROM user_info WHERE status = #{status}
+    </select>
+
+    <!-- 批量查询用户信息 -->
+    <select id="selectBatchByIds" resultMap="BaseResultMap">
+        SELECT * FROM user_info WHERE id IN
+        <foreach collection="userIds" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+</mapper>
