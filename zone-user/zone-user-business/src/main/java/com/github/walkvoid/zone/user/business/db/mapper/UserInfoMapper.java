@@ -1,7 +1,16 @@
-package com.github.walkvoid.zone.user.business.db.mapper;/**
- * @author  walkvoid
- * @date  2025/11/30 
+package com.github.walkvoid.zone.user.business.db.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.github.walkvoid.zone.user.model.entity.UserInfo;
+import org.apache.ibatis.annotations.Mapper;
+
+/**
+ * 用户信息Mapper接口
+ * @author walkvoid
  * @version 1.0
- * @desc todo
- */public interface UserInfoMapper {
+ * @date 2025/11/30
+ */
+@Mapper
+public interface UserInfoMapper extends BaseMapper<UserInfo> {
+
 }
