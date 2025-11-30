@@ -10,6 +10,11 @@ Zone是一个基于Maven多模块架构的Java项目，包含多个功能模块�
   - zone-ai-business: 业务逻辑实现
   - zone-ai-model: 数据模型定义
 
+- **zone-common**: 通用功能模块
+  - zone-common-api: API接口定义
+  - zone-common-business: 业务逻辑实现
+  - zone-common-model: 数据模型定义
+
 - **zone-finance**: 金融相关功能模块
   - zone-finance-api: API接口定义
   - zone-finance-business: 业务逻辑实现

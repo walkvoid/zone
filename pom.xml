@@ -16,6 +16,7 @@
 
     <modules>
         <module>zone-ai</module>
+        <module>zone-common</module>
         <module>zone-finance</module>
         <module>zone-gateway</module>
         <module>zone-tools</module>
