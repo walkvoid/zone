@@ -3,8 +3,8 @@ package com.github.walkvoid.zone.user.business.db.dao;
 import com.github.walkvoid.zone.user.business.db.mapper.UserRoleRelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
-import java.util.Map;
 
 /**
  * 用户角色关联DAO类
@@ -18,8 +18,6 @@ public class UserRoleRelDAO {
 
     @Autowired
     private UserRoleRelMapper userRoleRelMapper;
-
-
 
 
     /**
@@ -37,7 +35,7 @@ public class UserRoleRelDAO {
      * @return 删除成功的记录数
      */
     public int deleteBatchIds(List<Long> ids) {
-        return userRoleRelMapper.deleteBatchIds(ids);
+        return userRoleRelMapper.deleteByIds(ids);
     }
 
 

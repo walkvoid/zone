@@ -72,6 +72,7 @@ public class Menu extends BaseEntity {
     /**
      * 是否显示：0-不显示，1-显示
      */
+    @TableField
     private BooleanEnum visible;
 
 

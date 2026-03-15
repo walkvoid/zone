@@ -23,24 +23,102 @@
         <module>zone-user</module>
     </modules>
     
-    <properties>
+    <!-- <properties>
         <revision>1.0.0-SNAPSHOT</revision>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    </properties>
+    </properties> -->
     
     <!-- 依赖版本管理，子模块可以直接使用而无需指定版本 -->
     <dependencyManagement>
         <dependencies>
+            <!-- zone-ai 模块 -->
+            <dependency>
+                <groupId>com.github.walkvoid</groupId>
+                <artifactId>zone-ai-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.walkvoid</groupId>
+                <artifactId>zone-ai-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.walkvoid</groupId>
+                <artifactId>zone-ai-business</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <!-- zone-common 模块 -->
+            <dependency>
+                <groupId>com.github.walkvoid</groupId>
+                <artifactId>zone-common-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.walkvoid</groupId>
+                <artifactId>zone-common-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.walkvoid</groupId>
+                <artifactId>zone-common-business</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <!-- zone-finance 模块 -->
+            <dependency>
+                <groupId>com.github.walkvoid</groupId>
+                <artifactId>zone-finance-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.walkvoid</groupId>
+                <artifactId>zone-finance-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.walkvoid</groupId>
+                <artifactId>zone-finance-business</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <!-- zone-tools 模块 -->
+            <dependency>
+                <groupId>com.github.walkvoid</groupId>
+                <artifactId>zone-tools-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.walkvoid</groupId>
+                <artifactId>zone-tools-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.walkvoid</groupId>
+                <artifactId>zone-tools-business</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <!-- zone-user 模块 -->
             <dependency>
                 <groupId>com.github.walkvoid</groupId>
                 <artifactId>zone-user-model</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.github.walkvoid</groupId>
+                <artifactId>zone-user-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.walkvoid</groupId>
+                <artifactId>zone-user-business</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
-
     </dependencyManagement>
     
     <build>
@@ -49,9 +127,20 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-help-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>UTF-8</encoding>
+<!--                    <outputDirectory>${project.build.outputDirectory}</outputDirectory>-->
+                </configuration>
             </plugin>
         </plugins>
     </build>

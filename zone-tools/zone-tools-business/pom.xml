@@ -14,13 +14,21 @@
     <version>${revision}</version>
     <packaging>jar</packaging>
 
-    <properties>
+    <!-- <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+    </properties> -->
 
     <dependencies>
+        <dependency>
+            <groupId>com.github.walkvoid</groupId>
+            <artifactId>zone-tools-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.walkvoid</groupId>
+            <artifactId>zone-tools-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

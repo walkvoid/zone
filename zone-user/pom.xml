@@ -13,11 +13,11 @@
     <version>${revision}</version>
     <packaging>pom</packaging>
     
-    <properties>
+    <!-- <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+    </properties> -->
     
     <modules>
         <module>zone-user-api</module>
