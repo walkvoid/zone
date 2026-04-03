@@ -3,6 +3,11 @@
 build/
 out/
 bin/
+.gradle/
+gradle-local.properties
+
+# Gradle Wrapper（需提交 jar）
+!gradle/wrapper/gradle-wrapper.jar
 
 # Maven 特定文件
 !**/.mvn/wrapper/maven-wrapper.jar
@@ -115,6 +120,7 @@ db/logs/
 
 # 打包文件
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 *.war
 *.nar
 *.ear
