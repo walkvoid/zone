@@ -43,11 +43,11 @@ subprojects {
     afterEvaluate {
         if (!isGateway) {
             dependencies {
-                add("implementation", platform(libs.spring.boot.bom))
-                add("implementation", platform(libs.spring.cloud.bom))
-                // Lombok 等由 BOM 管版本；annotationProcessor 需单独挂 platform，否则会出现 lombok:.
-                add("compileOnly", platform(libs.spring.boot.bom))
-                add("annotationProcessor", platform(libs.spring.boot.bom))
+                // 使用 wvframework-bom 管理所有依赖版本
+                add("implementation", platform("com.github.walkvoid:wvframework-bom"))
+                // Lombok 等由 BOM 管版本；annotationProcessor 需单独挂 platform，否则会出现 lombok:. 
+                add("compileOnly", platform("com.github.walkvoid:wvframework-bom"))
+                add("annotationProcessor", platform("com.github.walkvoid:wvframework-bom"))
             }
         }
     }

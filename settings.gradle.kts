@@ -1,25 +1,28 @@
 rootProject.name = "zone"
 
+// 包含 wv-framework 项目
+includeBuild("../wv-framework")
+
 // mavenCentral 在前：本地 file 仓库若存在不完整构件（仅有 POM 无 JAR）时仍可解析；仍可使用本地目录中的私服/缓存
 pluginManagement {
     repositories {
+        mavenLocal()
+        maven {
+            url = uri(providers.environmentVariable("MAVEN_REPO_PATH"))
+        }
         mavenCentral()
         gradlePluginPortal()
-        maven {
-            url = uri("file:///D:/apache-maven-3.5.3/repo")
-        }
-        mavenLocal()
     }
 }
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
-        mavenCentral()
-        maven {
-            url = uri("file:///D:/apache-maven-3.5.3/repo")
-        }
         mavenLocal()
+        maven {
+            url = uri(providers.environmentVariable("MAVEN_REPO_PATH"))
+        }
+        mavenCentral()
     }
 }
 
