@@ -43,6 +43,9 @@ include(
     ":zone-user-api",
     ":zone-user-model",
     ":zone-user-business",
+    ":zone-system-api",
+    ":zone-system-model",
+    ":zone-system-business",
 )
 
 mapOf(
@@ -62,6 +65,9 @@ mapOf(
     ":zone-user-api" to "zone-user/zone-user-api",
     ":zone-user-model" to "zone-user/zone-user-model",
     ":zone-user-business" to "zone-user/zone-user-business",
+    ":zone-system-api" to "zone-system/zone-system-api",
+    ":zone-system-model" to "zone-system/zone-system-model",
+    ":zone-system-business" to "zone-system/zone-system-business",
 ).forEach { (name, path) ->
     project(name).projectDir = file(path)
 }
