@@ -7,8 +7,11 @@ plugins {
     base
 }
 
+
 group = providers.gradleProperty("group").get()
 version = providers.gradleProperty("version").get()
+
+val wvframeworkBom = "com.github.walkvoid.wvframework:wvframework-bom:4.0.0-SNAPSHOT"
 
 subprojects {
     val isGateway = name == "zone-gateway"
@@ -41,13 +44,12 @@ subprojects {
     }
 
     afterEvaluate {
-        if (!isGateway) {
-            dependencies {
-                // 使用 wvframework-bom 管理所有依赖版本
-                add("implementation", platform("com.github.walkvoid:wvframework-bom"))
-                // Lombok 等由 BOM 管版本；annotationProcessor 需单独挂 platform，否则会出现 lombok:. 
-                add("compileOnly", platform("com.github.walkvoid:wvframework-bom"))
-                add("annotationProcessor", platform("com.github.walkvoid:wvframework-bom"))
+        dependencies {
+            // 使用 wvframework BOM 管理依赖版本
+            add("implementation", platform(wvframeworkBom))
+            if (!isGateway) {
+                add("compileOnly", platform(wvframeworkBom))
+                add("annotationProcessor", platform(wvframeworkBom))
             }
         }
     }
