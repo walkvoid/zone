@@ -35,7 +35,7 @@ public class UserRoleRelDAO {
      * @return 删除成功的记录数
      */
     public int deleteBatchIds(List<Long> ids) {
-        return userRoleRelMapper.deleteByIds(ids);
+        return userRoleRelMapper.deleteBatchIds(ids);
     }
 
 

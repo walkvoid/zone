@@ -1,8 +1,8 @@
 package com.github.walkvoid.zone.user.model.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.github.walkvoid.wvframework.models.BaseVO;
 import com.github.walkvoid.zone.common.model.BaseEntity;
 import com.github.walkvoid.zone.common.model.BooleanEnum;
 import com.github.walkvoid.zone.user.model.enums.UserGenderEnum;
@@ -21,8 +21,9 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName("user_info")
-public class UserInfo extends BaseEntity {
+public class UserInfo extends BaseVO {
     private static final long serialVersionUID = -2711760906199432073L;
+
 
     /**
      * 用户ID，主键

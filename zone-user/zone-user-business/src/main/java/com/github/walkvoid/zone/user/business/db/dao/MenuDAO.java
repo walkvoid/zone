@@ -62,7 +62,7 @@ public class MenuDAO {
      * @return 影响行数
      */
     public int deleteByIds(List<Long> ids) {
-        return menuMapper.deleteByIds(ids);
+        return menuMapper.deleteBatchIds(ids);
     }
 
     /**
