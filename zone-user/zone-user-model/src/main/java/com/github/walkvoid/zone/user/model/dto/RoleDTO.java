@@ -3,15 +3,14 @@ package com.github.walkvoid.zone.user.model.dto;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.github.walkvoid.zone.common.model.BaseDTO;
 import com.github.walkvoid.zone.common.model.BooleanEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
  * @author walkvoid
- * @version 1.0
- * @date 2025/11/30
- * @desc
  */
 @Data
+@Schema(description = "角色信息")
 public class RoleDTO extends BaseDTO {
 
     /**

@@ -1,0 +1,10 @@
+com/github/walkvoid/zone/user/business/controller/RoleController.class
+com/github/walkvoid/zone/user/business/db/mapper/RoleMapper.class
+com/github/walkvoid/zone/user/business/db/mapper/UserRoleRelMapper.class
+com/github/walkvoid/zone/user/business/db/mapper/UserInfoMapper.class
+com/github/walkvoid/zone/user/business/db/dao/RoleMenuRelDAO.class
+com/github/walkvoid/zone/user/business/db/dao/UserInfoDAO.class
+com/github/walkvoid/zone/user/business/db/dao/RoleDAO.class
+com/github/walkvoid/zone/user/business/db/mapper/RoleMenuRelMapper.class
+com/github/walkvoid/zone/user/business/db/dao/UserRoleRelDAO.class
+com/github/walkvoid/zone/user/business/controller/UserInfoController.class

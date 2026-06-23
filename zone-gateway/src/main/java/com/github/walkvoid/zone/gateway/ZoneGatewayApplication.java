@@ -1,22 +1,21 @@
 package com.github.walkvoid.zone.gateway;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
 /**
  * @author walkvoid
  * @version 1.0
  * @date 2025/12/5
- * @desc
+ * @desc Zone Gateway 启动类
  */
-
 @SpringBootApplication
+@ComponentScan(basePackages = "com.github.walkvoid.zone")
+@MapperScan("com.github.walkvoid.zone.**.db.mapper")
 public class ZoneGatewayApplication {
     public static void main(String[] args) {
         SpringApplication.run(ZoneGatewayApplication.class, args);
-
-//        UPDATE `jinkoscf_transaction`.`pay_trade` SET pay_status='wait_commit',id=1996716154263302147 WHERE id = 1996716154263302146;
-//
-//        UPDATE `jinkoscf_transaction`.`pay_trade` SET pay_status='wait_commit',id=1996716153399275522 WHERE id = 1996716153399275521;
     }
 }

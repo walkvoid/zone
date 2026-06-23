@@ -1,5 +1,7 @@
 package com.github.walkvoid.zone.common.model;
 
+import com.github.walkvoid.wvframework.dao.BaseEnum;
+
 /**
  * 布尔值枚举类
  * @author walkvoid
@@ -7,7 +9,8 @@ package com.github.walkvoid.zone.common.model;
  * @date 2025/11/30
  * @desc 包含key和desc属性，1=是，0=否
  */
-public enum BooleanEnum {
+public enum BooleanEnum implements BaseEnum<Integer> {
+
     /**
      * 是
      */
@@ -64,5 +67,10 @@ public enum BooleanEnum {
             }
         }
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return toString0();
     }
 }

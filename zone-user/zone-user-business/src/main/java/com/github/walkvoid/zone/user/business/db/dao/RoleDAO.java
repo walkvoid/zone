@@ -92,7 +92,7 @@ public class RoleDAO {
      */
     public List<Role> selectAvailableRoles() {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Role> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
-        queryWrapper.eq("status", 1); // 假设1表示可用状态
+        queryWrapper.eq("enable", 1);
         return roleMapper.selectList(queryWrapper);
     }
 
@@ -102,7 +102,7 @@ public class RoleDAO {
      */
     public List<Role> selectNonSystemRoles() {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Role> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
-        queryWrapper.eq("is_system", 0); // 假设0表示非系统角色
+        queryWrapper.eq("is_system", 0);
         return roleMapper.selectList(queryWrapper);
     }
 

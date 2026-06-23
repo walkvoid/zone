@@ -1,17 +1,17 @@
 package com.github.walkvoid.zone.user.business.db.dao;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.walkvoid.zone.user.business.db.mapper.UserRoleRelMapper;
+import com.github.walkvoid.zone.user.model.entity.UserRoleRel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 /**
- * 用户角色关联DAO类
+ * 用户角色关联 DAO
+ *
  * @author walkvoid
- * @version 1.0
- * @date 2025/11/30
- * @desc 用户角色关联数据访问层类，提供用户角色关联相关的数据库操作
  */
 @Repository
 public class UserRoleRelDAO {
@@ -19,24 +19,35 @@ public class UserRoleRelDAO {
     @Autowired
     private UserRoleRelMapper userRoleRelMapper;
 
+    public int insert(UserRoleRel rel) {
+        return userRoleRelMapper.insert(rel);
+    }
 
-    /**
-     * 根据ID删除用户角色关联
-     * @param id 关联ID
-     * @return 删除成功的记录数
-     */
+    public int deleteByUserIdAndRoleId(Long userId, Long roleId) {
+        return userRoleRelMapper.delete(new QueryWrapper<UserRoleRel>()
+                .eq("user_id", userId).eq("role_id", roleId));
+    }
+
+    public int deleteByUserId(Long userId) {
+        return userRoleRelMapper.delete(new QueryWrapper<UserRoleRel>()
+                .eq("user_id", userId));
+    }
+
+    public List<UserRoleRel> selectByUserId(Long userId) {
+        return userRoleRelMapper.selectList(new QueryWrapper<UserRoleRel>()
+                .eq("user_id", userId));
+    }
+
+    public List<UserRoleRel> selectByRoleId(Long roleId) {
+        return userRoleRelMapper.selectList(new QueryWrapper<UserRoleRel>()
+                .eq("role_id", roleId));
+    }
+
     public int deleteById(Long id) {
         return userRoleRelMapper.deleteById(id);
     }
 
-    /**
-     * 批量删除用户角色关联
-     * @param ids 关联ID列表
-     * @return 删除成功的记录数
-     */
     public int deleteBatchIds(List<Long> ids) {
         return userRoleRelMapper.deleteBatchIds(ids);
     }
-
-
 }

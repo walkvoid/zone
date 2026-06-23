@@ -1,193 +1,175 @@
 package com.github.walkvoid.zone.user.business.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
+import com.github.walkvoid.zone.common.model.IdsParam;
+import com.github.walkvoid.zone.common.model.RoleMenuAssignParam;
+import com.github.walkvoid.zone.common.model.UserRoleAssignParam;
 import com.github.walkvoid.zone.user.business.db.dao.RoleDAO;
-import com.github.walkvoid.zone.user.model.entity.Role;
+import com.github.walkvoid.zone.user.business.db.dao.RoleMenuRelDAO;
+import com.github.walkvoid.zone.user.business.db.dao.UserRoleRelDAO;
 import com.github.walkvoid.zone.user.model.dto.RoleDTO;
-import org.springframework.beans.BeanUtils;
+import com.github.walkvoid.zone.user.model.entity.Role;
+import com.github.walkvoid.zone.user.model.entity.RoleMenuRel;
+import com.github.walkvoid.zone.user.model.entity.UserRoleRel;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
- * 角色Controller
+ * 角色管理 — CRUD + 用户角色关联 + 角色菜单关联
+ *
  * @author walkvoid
- * @version 1.0
- * @date 2025/11/30
- * @desc 角色相关接口
  */
+@Tag(name = "角色管理")
 @RestController
 @RequestMapping("/role")
 public class RoleController {
 
     @Autowired
     private RoleDAO roleDAO;
+    @Autowired
+    private UserRoleRelDAO userRoleRelDAO;
+    @Autowired
+    private RoleMenuRelDAO roleMenuRelDAO;
 
-    /**
-     * 新增角色
-     * @param roleDTO 角色信息DTO
-     * @return 新增结果
-     */
+    // ==================== 角色 CRUD ====================
+
+    @Operation(summary = "新增角色")
     @PostMapping
-    public boolean addRole(@RequestBody RoleDTO roleDTO) {
-        if (Objects.isNull(roleDTO)) {
-            return false;
-        }
-        Role role = new Role();
-        BeanUtils.copyProperties(roleDTO, role);
-        return roleDAO.insert(role) > 0;
+    public RoleDTO add(@RequestBody RoleDTO dto) {
+        if (Objects.isNull(dto)) return null;
+        Role entity = BeanCopyUtils.copyBean(dto, Role.class);
+        roleDAO.insert(entity);
+        return BeanCopyUtils.copyBean(entity, RoleDTO.class);
     }
 
-    /**
-     * 根据ID查询角色
-     * @param id 角色ID
-     * @return 角色信息DTO
-     */
-    @GetMapping("/{id}")
-    public RoleDTO getRoleById(@PathVariable("id") Long id) {
-        if (Objects.isNull(id)) {
-            return null;
-        }
-        Role role = roleDAO.selectById(id);
-        if (Objects.isNull(role)) {
-            return null;
-        }
-        RoleDTO roleDTO = new RoleDTO();
-        BeanUtils.copyProperties(role, roleDTO);
-        return roleDTO;
-    }
-
-    /**
-     * 根据角色代码查询角色
-     * @param roleCode 角色代码
-     * @return 角色信息DTO
-     */
-    @GetMapping("/code/{roleCode}")
-    public RoleDTO getRoleByCode(@PathVariable("roleCode") String roleCode) {
-        if (Objects.isNull(roleCode)) {
-            return null;
-        }
-        Role role = roleDAO.selectByRoleCode(roleCode);
-        if (Objects.isNull(role)) {
-            return null;
-        }
-        RoleDTO roleDTO = new RoleDTO();
-        BeanUtils.copyProperties(role, roleDTO);
-        return roleDTO;
-    }
-
-    /**
-     * 查询角色列表
-     * @param roleDTO 查询条件
-     * @return 角色列表DTO
-     */
-    @GetMapping("/list")
-    public List<RoleDTO> getRoleList(RoleDTO roleDTO) {
-        Role role = new Role();
-        BeanUtils.copyProperties(roleDTO, role);
-        List<Role> roleList = roleDAO.selectList(role);
-        List<RoleDTO> roleDTOList = new ArrayList<>();
-        for (Role r : roleList) {
-            RoleDTO dto = new RoleDTO();
-            BeanUtils.copyProperties(r, dto);
-            roleDTOList.add(dto);
-        }
-        return roleDTOList;
-    }
-
-    /**
-     * 更新角色信息
-     * @param roleDTO 角色信息DTO
-     * @return 更新结果
-     */
-    @PutMapping
-    public boolean updateRole(@RequestBody RoleDTO roleDTO) {
-        if (Objects.isNull(roleDTO) || Objects.isNull(roleDTO.getId())) {
-            return false;
-        }
-        Role role = new Role();
-        BeanUtils.copyProperties(roleDTO, role);
-        return roleDAO.updateById(role) > 0;
-    }
-
-    /**
-     * 删除角色
-     * @param id 角色ID
-     * @return 删除结果
-     */
+    @Operation(summary = "删除角色")
     @DeleteMapping("/{id}")
-    public boolean deleteRole(@PathVariable("id") Long id) {
-        if (Objects.isNull(id)) {
-            return false;
-        }
-        return roleDAO.deleteById(id) > 0;
+    public boolean delete(@Parameter(description = "角色ID") @PathVariable Long id) {
+        return !Objects.isNull(id) && roleDAO.deleteById(id) > 0;
     }
 
-    /**
-     * 批量删除角色
-     * @param ids 角色ID列表
-     * @return 删除结果
-     */
+    @Operation(summary = "批量删除角色")
     @DeleteMapping("/batch")
-    public boolean deleteBatch(@RequestBody List<Long> ids) {
-        if (Objects.isNull(ids) || ids.isEmpty()) {
+    public boolean deleteBatch(@RequestBody IdsParam param) {
+        if (Objects.isNull(param) || Objects.isNull(param.getIds()) || param.getIds().isEmpty()) return false;
+        return roleDAO.deleteBatchIds(param.getIds()) > 0;
+    }
+
+    @Operation(summary = "更新角色")
+    @PutMapping
+    public RoleDTO update(@RequestBody RoleDTO dto) {
+        if (Objects.isNull(dto) || Objects.isNull(dto.getId())) return null;
+        Role entity = BeanCopyUtils.copyBean(dto, Role.class);
+        roleDAO.updateById(entity);
+        return BeanCopyUtils.copyBean(roleDAO.selectById(dto.getId()), RoleDTO.class);
+    }
+
+    @Operation(summary = "查询角色")
+    @GetMapping("/{id}")
+    public RoleDTO getById(@Parameter(description = "角色ID") @PathVariable Long id) {
+        return BeanCopyUtils.copyBean(roleDAO.selectById(id), RoleDTO.class);
+    }
+
+    @Operation(summary = "条件查询角色列表")
+    @GetMapping("/list")
+    public List<RoleDTO> list(RoleDTO dto) {
+        Role condition = BeanCopyUtils.copyBean(dto, Role.class);
+        return roleDAO.selectList(condition).stream()
+                .map(r -> BeanCopyUtils.copyBean(r, RoleDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    @Operation(summary = "查询所有角色")
+    @GetMapping("/all")
+    public List<RoleDTO> all() {
+        return roleDAO.selectAll().stream()
+                .map(r -> BeanCopyUtils.copyBean(r, RoleDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    // ==================== 用户-角色关联 ====================
+
+    @Operation(summary = "为用户分配角色")
+    @PostMapping("/user/{userId}/assign")
+    public boolean assignUserRoles(@Parameter(description = "用户ID") @PathVariable Long userId,
+                                    @RequestBody UserRoleAssignParam param) {
+        if (Objects.isNull(userId) || Objects.isNull(param) || Objects.isNull(param.getRoleIds()) || param.getRoleIds().isEmpty())
             return false;
+        for (Long roleId : param.getRoleIds()) {
+            UserRoleRel rel = new UserRoleRel();
+            rel.setUserId(userId);
+            rel.setRoleId(roleId);
+            userRoleRelDAO.insert(rel);
         }
-        return roleDAO.deleteBatchIds(ids) > 0;
+        return true;
     }
 
-    /**
-     * 根据用户ID查询角色列表
-     * @param userId 用户ID
-     * @return 角色列表DTO
-     */
-    @GetMapping("/by-user/{userId}")
-    public List<RoleDTO> getRolesByUserId(@PathVariable("userId") Long userId) {
-        if (Objects.isNull(userId)) {
-            return null;
-        }
-        List<Role> roleList = roleDAO.selectRolesByUserId(userId);
-        List<RoleDTO> roleDTOList = new ArrayList<>();
-        for (Role role : roleList) {
-            RoleDTO dto = new RoleDTO();
-            BeanUtils.copyProperties(role, dto);
-            roleDTOList.add(dto);
-        }
-        return roleDTOList;
+    @Operation(summary = "移除用户的指定角色")
+    @DeleteMapping("/user/{userId}/role/{roleId}")
+    public boolean removeUserRole(@Parameter(description = "用户ID") @PathVariable Long userId,
+                                   @Parameter(description = "角色ID") @PathVariable Long roleId) {
+        return userRoleRelDAO.deleteByUserIdAndRoleId(userId, roleId) > 0;
     }
 
-    /**
-     * 查询所有可用的角色
-     * @return 角色列表DTO
-     */
-    @GetMapping("/available")
-    public List<RoleDTO> getAvailableRoles() {
-        List<Role> roleList = roleDAO.selectAvailableRoles();
-        List<RoleDTO> roleDTOList = new ArrayList<>();
-        for (Role role : roleList) {
-            RoleDTO dto = new RoleDTO();
-            BeanUtils.copyProperties(role, dto);
-            roleDTOList.add(dto);
-        }
-        return roleDTOList;
+    @Operation(summary = "移除用户的所有角色")
+    @DeleteMapping("/user/{userId}/roles")
+    public boolean removeUserAllRoles(@Parameter(description = "用户ID") @PathVariable Long userId) {
+        return userRoleRelDAO.deleteByUserId(userId) > 0;
     }
 
-    /**
-     * 查询非系统角色
-     * @return 角色列表DTO
-     */
-    @GetMapping("/non-system")
-    public List<RoleDTO> getNonSystemRoles() {
-        List<Role> roleList = roleDAO.selectNonSystemRoles();
-        List<RoleDTO> roleDTOList = new ArrayList<>();
-        for (Role role : roleList) {
-            RoleDTO dto = new RoleDTO();
-            BeanUtils.copyProperties(role, dto);
-            roleDTOList.add(dto);
+    @Operation(summary = "查询用户拥有的角色")
+    @GetMapping("/user/{userId}/roles")
+    public List<RoleDTO> getUserRoles(@Parameter(description = "用户ID") @PathVariable Long userId) {
+        return userRoleRelDAO.selectByUserId(userId).stream()
+                .map(rel -> roleDAO.selectById(rel.getRoleId()))
+                .filter(Objects::nonNull)
+                .map(r -> BeanCopyUtils.copyBean(r, RoleDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    @Operation(summary = "查询拥有该角色的用户ID列表")
+    @GetMapping("/{roleId}/users")
+    public List<Long> getRoleUserIds(@Parameter(description = "角色ID") @PathVariable Long roleId) {
+        return userRoleRelDAO.selectByRoleId(roleId).stream()
+                .map(UserRoleRel::getUserId)
+                .collect(Collectors.toList());
+    }
+
+    // ==================== 角色-菜单关联 ====================
+
+    @Operation(summary = "为角色分配菜单")
+    @PostMapping("/{roleId}/menus/assign")
+    public boolean assignRoleMenus(@Parameter(description = "角色ID") @PathVariable Long roleId,
+                                    @RequestBody RoleMenuAssignParam param) {
+        if (Objects.isNull(roleId) || Objects.isNull(param) || Objects.isNull(param.getMenuIds()) || param.getMenuIds().isEmpty())
+            return false;
+        roleMenuRelDAO.deleteByRoleId(roleId);
+        for (Long menuId : param.getMenuIds()) {
+            RoleMenuRel rel = new RoleMenuRel();
+            rel.setRoleId(roleId);
+            rel.setMenuId(menuId);
+            roleMenuRelDAO.insert(rel);
         }
-        return roleDTOList;
+        return true;
+    }
+
+    @Operation(summary = "移除角色的指定菜单")
+    @DeleteMapping("/{roleId}/menu/{menuId}")
+    public boolean removeRoleMenu(@Parameter(description = "角色ID") @PathVariable Long roleId,
+                                   @Parameter(description = "菜单ID") @PathVariable Long menuId) {
+        return roleMenuRelDAO.deleteByRoleIdAndMenuId(roleId, menuId) > 0;
+    }
+
+    @Operation(summary = "查询角色拥有的菜单ID列表")
+    @GetMapping("/{roleId}/menus")
+    public List<Long> getRoleMenuIds(@Parameter(description = "角色ID") @PathVariable Long roleId) {
+        return roleMenuRelDAO.selectMenuIdsByRoleId(roleId);
     }
 }

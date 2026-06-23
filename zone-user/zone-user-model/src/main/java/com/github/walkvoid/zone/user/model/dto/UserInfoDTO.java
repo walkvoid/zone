@@ -4,17 +4,16 @@ import com.github.walkvoid.zone.common.model.BaseDTO;
 import com.github.walkvoid.zone.common.model.BooleanEnum;
 import com.github.walkvoid.zone.user.model.enums.UserGenderEnum;
 import com.github.walkvoid.zone.user.model.enums.UserInfoStatusEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 /**
  * @author walkvoid
- * @version 1.0
- * @date 2025/11/30
- * @desc
  */
 @Data
+@Schema(description = "用户信息")
 public class UserInfoDTO extends BaseDTO {
 
     /**

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.github.walkvoid</groupId>
+    <artifactId>zone</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>zone</name>
+    <description>Zone Backend Monorepo</description>
+
+    <properties>
+        <java.version>21</java.version>
+        <mybatis-plus.version>3.5.5</mybatis-plus.version>
+        <spring-boot.version>3.2.11</spring-boot.version>
+        <spring-cloud.version>2023.0.1</spring-cloud.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Import wv-framework BOM for version management -->
+            <dependency>
+                <groupId>com.github.walkvoid.wvframework</groupId>
+                <artifactId>wvframework-dependencies</artifactId>
+                <version>4.0.0-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- BOM doesn't resolve in reactor → explicit versions -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-annotation</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.30</version>
+            </dependency>
+            <!-- Zone internal modules -->
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-common-api</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-common-model</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-common-business</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-system-api</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-system-model</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-system-business</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-user-api</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-user-model</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-user-business</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-ai-api</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-ai-model</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-ai-business</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-finance-api</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-finance-model</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-finance-business</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-tools-api</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-tools-model</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-tools-business</artifactId><version>${project.version}</version></dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                    <configuration>
+                        <source>21</source>
+                        <target>21</target>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>3.2.11</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <modules>
+        <module>zone-common/zone-common-api</module>
+        <module>zone-common/zone-common-model</module>
+        <module>zone-common/zone-common-business</module>
+        <module>zone-system/zone-system-api</module>
+        <module>zone-system/zone-system-model</module>
+        <module>zone-system/zone-system-business</module>
+        <module>zone-user/zone-user-api</module>
+        <module>zone-user/zone-user-model</module>
+        <module>zone-user/zone-user-business</module>
+        <module>zone-ai/zone-ai-api</module>
+        <module>zone-ai/zone-ai-model</module>
+        <module>zone-ai/zone-ai-business</module>
+        <module>zone-finance/zone-finance-api</module>
+        <module>zone-finance/zone-finance-model</module>
+        <module>zone-finance/zone-finance-business</module>
+        <module>zone-tools/zone-tools-api</module>
+        <module>zone-tools/zone-tools-model</module>
+        <module>zone-tools/zone-tools-business</module>
+        <module>zone-gateway</module>
+    </modules>
+</project>
