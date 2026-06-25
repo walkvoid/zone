@@ -1,0 +1,5 @@
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-ai/zone-ai-model/src/main/java/com/github/walkvoid/zone/ai/model/entity/PromptTemplate.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-ai/zone-ai-model/src/main/java/com/github/walkvoid/zone/ai/model/enums/PromptStatusEnum.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-ai/zone-ai-model/src/main/java/com/github/walkvoid/zone/ai/model/dto/PromptTemplateDTO.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-ai/zone-ai-model/src/main/java/com/github/walkvoid/zone/ai/model/dto/AiModelDTO.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-ai/zone-ai-model/src/main/java/com/github/walkvoid/zone/ai/model/entity/AiModel.java

@@ -1,5 +1,6 @@
 package com.github.walkvoid.zone.user.business.controller;
 
+import com.github.walkvoid.wvframework.models.WebResponse;
 import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
 import com.github.walkvoid.zone.common.model.IdsParam;
 import com.github.walkvoid.zone.common.model.PasswordParam;
@@ -31,84 +32,84 @@ public class UserInfoController {
 
     @Operation(summary = "新增用户")
     @PostMapping
-    public UserInfoDTO add(@RequestBody UserInfoDTO dto) {
-        if (Objects.isNull(dto)) return null;
+    public WebResponse<UserInfoDTO> add(@RequestBody UserInfoDTO dto) {
+        if (Objects.isNull(dto)) return WebResponse.ok(null);
         UserInfo entity = BeanCopyUtils.copyBean(dto, UserInfo.class);
         userInfoDAO.insert(entity);
-        return BeanCopyUtils.copyBean(entity, UserInfoDTO.class);
+        return WebResponse.ok(BeanCopyUtils.copyBean(entity, UserInfoDTO.class));
     }
 
     @Operation(summary = "删除用户")
     @DeleteMapping("/{id}")
-    public boolean delete(@Parameter(description = "用户ID") @PathVariable Long id) {
-        return !Objects.isNull(id) && userInfoDAO.deleteById(id) > 0;
+    public WebResponse<Boolean> delete(@Parameter(description = "用户ID") @PathVariable Long id) {
+        return WebResponse.ok(!Objects.isNull(id) && userInfoDAO.deleteById(id) > 0);
     }
 
     @Operation(summary = "批量删除用户")
     @DeleteMapping("/batch")
-    public boolean deleteBatch(@RequestBody IdsParam param) {
-        if (Objects.isNull(param) || Objects.isNull(param.getIds()) || param.getIds().isEmpty()) return false;
-        return userInfoDAO.deleteBatchIds(param.getIds()) > 0;
+    public WebResponse<Boolean> deleteBatch(@RequestBody IdsParam param) {
+        if (Objects.isNull(param) || Objects.isNull(param.getIds()) || param.getIds().isEmpty()) return WebResponse.ok(false);
+        return WebResponse.ok(userInfoDAO.deleteBatchIds(param.getIds()) > 0);
     }
 
     @Operation(summary = "更新用户")
     @PutMapping
-    public UserInfoDTO update(@RequestBody UserInfoDTO dto) {
-        if (Objects.isNull(dto) || Objects.isNull(dto.getId())) return null;
+    public WebResponse<UserInfoDTO> update(@RequestBody UserInfoDTO dto) {
+        if (Objects.isNull(dto) || Objects.isNull(dto.getId())) return WebResponse.ok(null);
         UserInfo entity = BeanCopyUtils.copyBean(dto, UserInfo.class);
         userInfoDAO.updateById(entity);
-        return BeanCopyUtils.copyBean(userInfoDAO.selectById(dto.getId()), UserInfoDTO.class);
+        return WebResponse.ok(BeanCopyUtils.copyBean(userInfoDAO.selectById(dto.getId()), UserInfoDTO.class));
     }
 
     @Operation(summary = "查询用户")
     @GetMapping("/{id}")
-    public UserInfoDTO getById(@Parameter(description = "用户ID") @PathVariable Long id) {
-        if (Objects.isNull(id)) return null;
-        return BeanCopyUtils.copyBean(userInfoDAO.selectById(id), UserInfoDTO.class);
+    public WebResponse<UserInfoDTO> getById(@Parameter(description = "用户ID") @PathVariable Long id) {
+        if (Objects.isNull(id)) return WebResponse.ok(null);
+        return WebResponse.ok(BeanCopyUtils.copyBean(userInfoDAO.selectById(id), UserInfoDTO.class));
     }
 
     @Operation(summary = "条件查询用户列表")
     @GetMapping("/list")
-    public List<UserInfoDTO> list(UserInfoDTO dto) {
+    public WebResponse<List<UserInfoDTO>> list(UserInfoDTO dto) {
         UserInfo condition = BeanCopyUtils.copyBean(dto, UserInfo.class);
-        return userInfoDAO.selectList(condition).stream()
+        return WebResponse.ok(userInfoDAO.selectList(condition).stream()
                 .map(e -> BeanCopyUtils.copyBean(e, UserInfoDTO.class))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
     }
 
     @Operation(summary = "分页查询用户")
     @GetMapping("/page")
-    public List<UserInfoDTO> page(@Parameter(description = "起始位置") @RequestParam(defaultValue = "0") int start,
+    public WebResponse<List<UserInfoDTO>> page(@Parameter(description = "起始位置") @RequestParam(defaultValue = "0") int start,
                                   @Parameter(description = "每页数量") @RequestParam(defaultValue = "10") int limit,
                                   UserInfoDTO dto) {
         UserInfo condition = BeanCopyUtils.copyBean(dto, UserInfo.class);
-        return userInfoDAO.selectPage(start, limit, condition).stream()
+        return WebResponse.ok(userInfoDAO.selectPage(start, limit, condition).stream()
                 .map(e -> BeanCopyUtils.copyBean(e, UserInfoDTO.class))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
     }
 
     @Operation(summary = "启用/禁用用户")
     @PutMapping("/{id}/status")
-    public boolean toggleStatus(@Parameter(description = "用户ID") @PathVariable Long id,
+    public WebResponse<Boolean> toggleStatus(@Parameter(description = "用户ID") @PathVariable Long id,
                                 @Parameter(description = "状态值") @RequestParam Integer status) {
-        if (Objects.isNull(id) || Objects.isNull(status)) return false;
-        return userInfoDAO.updateBatchStatus(List.of(id), status) > 0;
+        if (Objects.isNull(id) || Objects.isNull(status)) return WebResponse.ok(false);
+        return WebResponse.ok(userInfoDAO.updateBatchStatus(List.of(id), status) > 0);
     }
 
     @Operation(summary = "重置密码")
     @PutMapping("/{id}/reset-password")
-    public boolean resetPassword(@Parameter(description = "用户ID") @PathVariable Long id,
+    public WebResponse<Boolean> resetPassword(@Parameter(description = "用户ID") @PathVariable Long id,
                                   @RequestBody PasswordParam param) {
-        if (Objects.isNull(id) || Objects.isNull(param)) return false;
+        if (Objects.isNull(id) || Objects.isNull(param)) return WebResponse.ok(false);
         UserInfo entity = new UserInfo();
         entity.setId(id);
         entity.setPassword(param.getPassword());
-        return userInfoDAO.updateById(entity) > 0;
+        return WebResponse.ok(userInfoDAO.updateById(entity) > 0);
     }
 
     @Operation(summary = "根据用户名查询")
     @GetMapping("/by-username/{username}")
-    public UserInfoDTO getByUsername(@Parameter(description = "用户名") @PathVariable String username) {
-        return BeanCopyUtils.copyBean(userInfoDAO.selectByUsername(username), UserInfoDTO.class);
+    public WebResponse<UserInfoDTO> getByUsername(@Parameter(description = "用户名") @PathVariable String username) {
+        return WebResponse.ok(BeanCopyUtils.copyBean(userInfoDAO.selectByUsername(username), UserInfoDTO.class));
     }
 }

@@ -65,4 +65,10 @@ public class MenuDAO {
     public Page<Menu> selectPage(Page<Menu> page) {
         return menuMapper.selectPage(page, new QueryWrapper<Menu>().orderByAsc("parent_id", "sort"));
     }
+
+    /** 根据ID列表查询 */
+    public List<Menu> selectBatchIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) return List.of();
+        return menuMapper.selectBatchIds(ids);
+    }
 }

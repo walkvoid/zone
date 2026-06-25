@@ -1,30 +1,33 @@
 package com.github.walkvoid.zone.user.model.enums;
 
+import com.github.walkvoid.wvframework.dao.BaseEnum;
+
 /**
  * 用户性别枚举类
  * @author walkvoid
  * @version 1.0
  * @date 2025/11/30
- * @desc 包含key和desc属性，定义用户的三种性别：男、女和未知
+ * @desc 0=未知，1=男，2=女
  */
-public enum UserGenderEnum {
-    /**
-     * 男
-     */
-    MALE("male", "男"),
-    /**
-     * 女
-     */
-    FEMALE("female", "女"),
+public enum UserGenderEnum implements BaseEnum<Integer> {
+
     /**
      * 未知
      */
-    UNKNOWN("unknown", "未知");
+    UNKNOWN(0, "未知"),
+    /**
+     * 男
+     */
+    MALE(1, "男"),
+    /**
+     * 女
+     */
+    FEMALE(2, "女");
 
     /**
      * 枚举值
      */
-    private final String key;
+    private final Integer key;
     /**
      * 枚举描述
      */
@@ -35,7 +38,7 @@ public enum UserGenderEnum {
      * @param key 枚举值
      * @param desc 枚举描述
      */
-    UserGenderEnum(String key, String desc) {
+    UserGenderEnum(Integer key, String desc) {
         this.key = key;
         this.desc = desc;
     }
@@ -44,7 +47,8 @@ public enum UserGenderEnum {
      * 获取枚举值
      * @return 枚举值
      */
-    public String getKey() {
+    @Override
+    public Integer getKey() {
         return key;
     }
 
@@ -61,12 +65,17 @@ public enum UserGenderEnum {
      * @param key 枚举值
      * @return 对应的枚举
      */
-    public static UserGenderEnum getByKey(String key) {
+    public static UserGenderEnum getByKey(Integer key) {
         for (UserGenderEnum genderEnum : values()) {
             if (genderEnum.getKey().equals(key)) {
                 return genderEnum;
             }
         }
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return this.desc;
     }
 }

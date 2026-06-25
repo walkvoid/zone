@@ -1,0 +1,6 @@
+com/github/walkvoid/zone/ai/business/controller/AiModelController.class
+com/github/walkvoid/zone/ai/business/db/dao/AiModelDAO.class
+com/github/walkvoid/zone/ai/business/db/mapper/AiModelMapper.class
+com/github/walkvoid/zone/ai/business/controller/PromptTemplateController.class
+com/github/walkvoid/zone/ai/business/db/dao/PromptTemplateDAO.class
+com/github/walkvoid/zone/ai/business/db/mapper/PromptTemplateMapper.class

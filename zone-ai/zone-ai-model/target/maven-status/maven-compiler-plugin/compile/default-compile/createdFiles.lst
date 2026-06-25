@@ -1,0 +1,5 @@
+com/github/walkvoid/zone/ai/model/dto/AiModelDTO.class
+com/github/walkvoid/zone/ai/model/dto/PromptTemplateDTO.class
+com/github/walkvoid/zone/ai/model/entity/AiModel.class
+com/github/walkvoid/zone/ai/model/entity/PromptTemplate.class
+com/github/walkvoid/zone/ai/model/enums/PromptStatusEnum.class

@@ -1,7 +1,6 @@
+com/github/walkvoid/zone/common/model/BooleanEnum.class
+com/github/walkvoid/zone/common/model/IdsParam.class
 com/github/walkvoid/zone/common/model/BaseDTO.class
 com/github/walkvoid/zone/common/model/UserRoleAssignParam.class
 com/github/walkvoid/zone/common/model/PasswordParam.class
-com/github/walkvoid/zone/common/model/BaseEntity.class
-com/github/walkvoid/zone/common/model/BooleanEnum.class
-com/github/walkvoid/zone/common/model/IdsParam.class
 com/github/walkvoid/zone/common/model/RoleMenuAssignParam.class

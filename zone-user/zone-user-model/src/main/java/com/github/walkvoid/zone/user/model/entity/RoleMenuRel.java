@@ -2,19 +2,18 @@ package com.github.walkvoid.zone.user.model.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.github.walkvoid.zone.common.model.BaseEntity;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+
+import java.io.Serializable;
 
 /**
  * 角色-菜单关联实体
- *
  * @author walkvoid
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
 @TableName("role_menu_rel")
-public class RoleMenuRel extends BaseEntity {
+public class RoleMenuRel implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     @TableId
     private Long id;

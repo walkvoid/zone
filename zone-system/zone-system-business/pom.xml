@@ -37,6 +37,28 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <!-- Spring Security (for auth) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <!-- WV Framework Models (WebResponse) -->
+        <dependency>
+            <groupId>com.github.walkvoid.wvframework</groupId>
+            <artifactId>wvframework-models</artifactId>
+            <version>4.0.0-SNAPSHOT</version>
+        </dependency>
+        <!-- User business module -->
+        <dependency>
+            <groupId>com.github.walkvoid</groupId>
+            <artifactId>zone-user-business</artifactId>
+        </dependency>
+        <!-- JWT API -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.12.6</version>
+        </dependency>
     </dependencies>
 
 </project>

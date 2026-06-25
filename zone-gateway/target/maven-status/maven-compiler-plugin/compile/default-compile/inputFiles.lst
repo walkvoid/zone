@@ -1,2 +1,6 @@
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-gateway/src/main/java/com/github/walkvoid/zone/gateway/config/DataInitializer.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-gateway/src/main/java/com/github/walkvoid/zone/gateway/config/MybatisPlusConfig.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-gateway/src/main/java/com/github/walkvoid/zone/gateway/config/JwtAuthFilter.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-gateway/src/main/java/com/github/walkvoid/zone/gateway/ZoneGatewayApplication.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-gateway/src/main/java/com/github/walkvoid/zone/gateway/config/JwtProperties.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-gateway/src/main/java/com/github/walkvoid/zone/gateway/config/SecurityConfig.java
