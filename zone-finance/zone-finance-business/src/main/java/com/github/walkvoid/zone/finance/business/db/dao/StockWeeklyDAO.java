@@ -29,4 +29,8 @@ public class StockWeeklyDAO {
                 .between("trade_date", start, end)
                 .orderByAsc("trade_date"));
     }
+
+    public StockWeekly selectById(Long id) { return mapper.selectById(id); }
+    public List<StockWeekly> selectAll() { return mapper.selectList(new QueryWrapper<>()); }
+    public int updateById(StockWeekly entity) { return mapper.updateById(entity); }
 }

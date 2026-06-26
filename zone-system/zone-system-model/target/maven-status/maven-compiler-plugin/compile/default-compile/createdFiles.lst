@@ -1,8 +1,7 @@
 com/github/walkvoid/zone/system/model/dto/MenuDTO$MenuMeta.class
 com/github/walkvoid/zone/system/model/dto/MenuDTO.class
 com/github/walkvoid/zone/system/model/entity/Menu.class
-com/github/walkvoid/zone/system/model/vo/MenuVO.class
+com/github/walkvoid/zone/system/model/entity/StockEvent.class
+com/github/walkvoid/zone/system/model/dto/MenuTreeQueryDTO.class
 com/github/walkvoid/zone/system/model/vo/MenuTreeNode$MenuMeta.class
-com/github/walkvoid/zone/system/model/query/MenuTreeQuery.class
-com/github/walkvoid/zone/system/model/vo/MenuVO$MenuMeta.class
 com/github/walkvoid/zone/system/model/vo/MenuTreeNode.class

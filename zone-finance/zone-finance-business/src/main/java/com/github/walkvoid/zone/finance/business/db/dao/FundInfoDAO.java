@@ -31,4 +31,6 @@ public class FundInfoDAO {
     public List<FundInfo> selectList(FundInfo condition) {
         return mapper.selectList(new QueryWrapper<>(condition).orderByAsc("fund_code"));
     }
+
+    public List<FundInfo> selectAll() { return mapper.selectList(new QueryWrapper<>()); }
 }

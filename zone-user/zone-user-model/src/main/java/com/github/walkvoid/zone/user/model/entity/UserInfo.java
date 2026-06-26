@@ -2,7 +2,7 @@ package com.github.walkvoid.zone.user.model.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.github.walkvoid.zone.common.model.BooleanEnum;
+import com.github.walkvoid.wvframework.models.BooleanEnum;
 import com.github.walkvoid.zone.user.model.enums.UserGenderEnum;
 import com.github.walkvoid.zone.user.model.enums.UserInfoStatusEnum;
 import lombok.Data;

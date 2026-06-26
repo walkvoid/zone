@@ -3,7 +3,8 @@ package com.github.walkvoid.zone.ai.business.controller;
 import com.github.walkvoid.zone.ai.business.db.dao.AiModelDAO;
 import com.github.walkvoid.zone.ai.model.dto.AiModelDTO;
 import com.github.walkvoid.zone.ai.model.entity.AiModel;
-import com.github.walkvoid.zone.common.model.BooleanEnum;
+import com.github.walkvoid.wvframework.models.BooleanEnum;
+import com.github.walkvoid.wvframework.models.WebResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.BeanUtils;
@@ -29,9 +30,11 @@ public class AiModelController {
 
     @Operation(summary = "分页查询模型列表")
     @GetMapping("/page")
-    public List<AiModelDTO> page(AiModelDTO query) {
-        return dao.selectList(toEntity(query)).stream()
+    public WebResponse<List<AiModelDTO>> page(AiModelDTO query) {
+        List<AiModel> list = dao.selectList(toEntity(query));
+        List<AiModelDTO> items = list.stream()
                 .map(this::toDTO).collect(Collectors.toList());
+        return WebResponse.ok(items);
     }
 
     @Operation(summary = "查询启用的模型（供AI调用使用）")

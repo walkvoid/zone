@@ -1,6 +1,6 @@
 package com.github.walkvoid.zone.system.api.service;
 
-import com.github.walkvoid.zone.system.model.query.MenuTreeQuery;
+import com.github.walkvoid.zone.system.model.dto.MenuTreeQueryDTO;
 import com.github.walkvoid.zone.system.model.vo.MenuTreeNode;
 
 import java.util.List;
@@ -20,7 +20,7 @@ public interface MenuTreeService {
      * @param query 查询条件
      * @return 菜单树根节点列表
      */
-    List<MenuTreeNode> getMenuTree(MenuTreeQuery query);
+    List<MenuTreeNode> getMenuTree(MenuTreeQueryDTO query);
 
     /**
      * 获取所有菜单树（不过滤）

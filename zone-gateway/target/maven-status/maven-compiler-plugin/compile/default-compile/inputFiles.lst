@@ -3,4 +3,5 @@
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-gateway/src/main/java/com/github/walkvoid/zone/gateway/config/JwtAuthFilter.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-gateway/src/main/java/com/github/walkvoid/zone/gateway/ZoneGatewayApplication.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-gateway/src/main/java/com/github/walkvoid/zone/gateway/config/JwtProperties.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-gateway/src/main/java/com/github/walkvoid/zone/gateway/config/XxlJobConfig.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-gateway/src/main/java/com/github/walkvoid/zone/gateway/config/SecurityConfig.java

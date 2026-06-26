@@ -32,4 +32,6 @@ public class StockShareholderDAO {
                 .eq("report_date", reportDate)
                 .orderByDesc("hold_pct"));
     }
+
+    public List<StockShareholder> selectAll() { return mapper.selectList(new QueryWrapper<>()); }
 }

@@ -2,9 +2,9 @@ package com.github.walkvoid.zone.user.business.controller;
 
 import com.github.walkvoid.wvframework.models.WebResponse;
 import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
-import com.github.walkvoid.zone.common.model.IdsParam;
-import com.github.walkvoid.zone.common.model.RoleMenuAssignParam;
-import com.github.walkvoid.zone.common.model.UserRoleAssignParam;
+import com.github.walkvoid.zone.user.model.dto.IdsParam;
+import com.github.walkvoid.zone.user.model.dto.RoleMenuAssignParam;
+import com.github.walkvoid.zone.user.model.dto.UserRoleAssignParam;
 import com.github.walkvoid.zone.user.business.db.dao.RoleDAO;
 import com.github.walkvoid.zone.user.business.db.dao.RoleMenuRelDAO;
 import com.github.walkvoid.zone.user.business.db.dao.UserRoleRelDAO;

@@ -48,9 +48,6 @@
                 <version>1.18.30</version>
             </dependency>
             <!-- Zone internal modules -->
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-common-api</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-common-model</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-common-business</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-system-api</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-system-model</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-system-business</artifactId><version>${project.version}</version></dependency>
@@ -93,9 +90,6 @@
     </build>
 
     <modules>
-        <module>zone-common/zone-common-api</module>
-        <module>zone-common/zone-common-model</module>
-        <module>zone-common/zone-common-business</module>
         <module>zone-system/zone-system-api</module>
         <module>zone-system/zone-system-model</module>
         <module>zone-system/zone-system-business</module>

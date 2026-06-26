@@ -7,9 +7,8 @@ import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
 import com.github.walkvoid.zone.finance.api.service.StockInfoCrudService;
 import com.github.walkvoid.zone.finance.business.db.dao.StockInfoDAO;
 import com.github.walkvoid.zone.finance.model.dto.StockInfoDTO;
+import com.github.walkvoid.zone.finance.model.dto.StockInfoQueryDTO;
 import com.github.walkvoid.zone.finance.model.entity.StockInfo;
-import com.github.walkvoid.zone.finance.model.query.StockInfoQuery;
-import com.github.walkvoid.zone.finance.model.vo.StockInfoVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -26,7 +25,7 @@ public class StockInfoCrudServiceImpl implements StockInfoCrudService {
     private StockInfoDAO stockInfoDAO;
 
     @Override
-    public Map<String, Object> listPage(StockInfoQuery query) {
+    public Map<String, Object> listPage(StockInfoQueryDTO query) {
         QueryWrapper<StockInfo> wrapper = new QueryWrapper<>();
         if (StringUtils.hasText(query.getStockCode())) {
             wrapper.like("stock_code", query.getStockCode());
@@ -46,12 +45,12 @@ public class StockInfoCrudServiceImpl implements StockInfoCrudService {
         int size = query.getSize() != null ? query.getSize() : 10;
         IPage<StockInfo> iPage = stockInfoDAO.selectPage(new Page<>(page, size), wrapper);
 
-        List<StockInfoVO> voList = iPage.getRecords().stream()
-                .map(this::toVO)
+        List<StockInfoDTO> dtoList = iPage.getRecords().stream()
+                .map(this::toDTO)
                 .toList();
 
         Map<String, Object> result = new HashMap<>();
-        result.put("records", voList);
+        result.put("records", dtoList);
         result.put("total", iPage.getTotal());
         result.put("page", iPage.getCurrent());
         result.put("size", iPage.getSize());
@@ -59,15 +58,15 @@ public class StockInfoCrudServiceImpl implements StockInfoCrudService {
     }
 
     @Override
-    public StockInfoVO getById(Long id) {
+    public StockInfoDTO getById(Long id) {
         StockInfo entity = stockInfoDAO.selectById(id);
-        return entity != null ? toVO(entity) : null;
+        return entity != null ? toDTO(entity) : null;
     }
 
     @Override
-    public StockInfoVO getByCode(String stockCode) {
+    public StockInfoDTO getByCode(String stockCode) {
         StockInfo entity = stockInfoDAO.selectByCode(stockCode);
-        return entity != null ? toVO(entity) : null;
+        return entity != null ? toDTO(entity) : null;
     }
 
     @Override
@@ -111,7 +110,7 @@ public class StockInfoCrudServiceImpl implements StockInfoCrudService {
         stockInfoDAO.deleteById(id);
     }
 
-    private StockInfoVO toVO(StockInfo entity) {
-        return BeanCopyUtils.copyBean(entity, StockInfoVO.class);
+    private StockInfoDTO toDTO(StockInfo entity) {
+        return BeanCopyUtils.copyBean(entity, StockInfoDTO.class);
     }
 }

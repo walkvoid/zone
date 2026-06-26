@@ -36,4 +36,8 @@ public class StockIndicatorWeeklyDAO {
                 .orderByDesc("trade_date")
                 .last("LIMIT " + limit));
     }
+
+    public StockIndicatorWeekly selectById(Long id) { return mapper.selectById(id); }
+    public List<StockIndicatorWeekly> selectAll() { return mapper.selectList(new QueryWrapper<>()); }
+    public int updateById(StockIndicatorWeekly entity) { return mapper.updateById(entity); }
 }

@@ -10,12 +10,11 @@
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/entity/StockInfo.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/entity/StockProduct.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/entity/FundInfo.java
-/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/query/StockInfoQuery.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/entity/StockIndicatorDaily.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/entity/StockIntraday.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/entity/StockMonthly.java
-/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/vo/StockInfoVO.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/entity/StockIndicatorMonthly.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/entity/StockAnnualReport.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/dto/StockInfoQueryDTO.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/entity/StockWeekly.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/entity/StockStrategyRel.java

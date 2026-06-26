@@ -38,4 +38,6 @@ public class StockAnnualReportDAO {
                 .orderByDesc("report_year")
                 .last("LIMIT " + limit));
     }
+
+    public List<StockAnnualReport> selectAll() { return mapper.selectList(new QueryWrapper<>()); }
 }

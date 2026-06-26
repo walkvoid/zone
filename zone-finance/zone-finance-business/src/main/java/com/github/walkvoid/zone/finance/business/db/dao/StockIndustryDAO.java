@@ -36,4 +36,6 @@ public class StockIndustryDAO {
                 .eq("parent_code", parentCode)
                 .orderByAsc("industry_code"));
     }
+
+    public List<StockIndustry> selectAll() { return mapper.selectList(new QueryWrapper<>()); }
 }

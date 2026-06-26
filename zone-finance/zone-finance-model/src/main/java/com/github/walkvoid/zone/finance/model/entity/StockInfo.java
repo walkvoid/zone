@@ -18,6 +18,7 @@ public class StockInfo implements Serializable {
     private String stockCode;
     private String stockName;
     private String market;
+    private Integer plate;
     private LocalDate listingDate;
     private Long totalShares;
     private Long circulatingShares;

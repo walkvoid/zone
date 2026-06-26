@@ -4,3 +4,4 @@ com/github/walkvoid/zone/gateway/config/JwtAuthFilter.class
 com/github/walkvoid/zone/gateway/config/SecurityConfig.class
 com/github/walkvoid/zone/gateway/config/DataInitializer.class
 com/github/walkvoid/zone/gateway/ZoneGatewayApplication.class
+com/github/walkvoid/zone/gateway/config/XxlJobConfig.class

@@ -19,12 +19,12 @@ public class PromptTemplateDAO {
     @Autowired
     private PromptTemplateMapper mapper;
 
-    public int insert(PromptTemplate template) {
-        return mapper.insert(template);
+    public int insert(PromptTemplate entity) {
+        return mapper.insert(entity);
     }
 
-    public int updateById(PromptTemplate template) {
-        return mapper.updateById(template);
+    public int updateById(PromptTemplate entity) {
+        return mapper.updateById(entity);
     }
 
     public int deleteById(Long id) {

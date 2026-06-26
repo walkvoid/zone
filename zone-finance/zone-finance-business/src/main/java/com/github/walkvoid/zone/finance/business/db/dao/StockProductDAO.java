@@ -45,4 +45,7 @@ public class StockProductDAO {
                 .eq("status", 1)
                 .orderByDesc("revenue_ratio"));
     }
+
+    public StockProduct selectById(Long id) { return mapper.selectById(id); }
+    public List<StockProduct> selectAll() { return mapper.selectList(new QueryWrapper<>()); }
 }

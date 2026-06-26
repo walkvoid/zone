@@ -2,12 +2,11 @@ package com.github.walkvoid.zone.system.business.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.github.walkvoid.zone.common.model.BooleanEnum;
+import com.github.walkvoid.wvframework.models.BooleanEnum;
 import com.github.walkvoid.zone.system.api.service.MenuCrudService;
 import com.github.walkvoid.zone.system.business.db.dao.MenuDAO;
 import com.github.walkvoid.zone.system.model.dto.MenuDTO;
 import com.github.walkvoid.zone.system.model.entity.Menu;
-import com.github.walkvoid.zone.system.model.vo.MenuVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -29,35 +28,31 @@ public class MenuCrudServiceImpl implements MenuCrudService {
     private MenuDAO menuDAO;
 
     @Override
-    public List<MenuVO> getMenuList() {
+    public List<MenuDTO> getMenuList() {
         List<Menu> menus = menuDAO.selectAll();
-        // 转换为 VO 并按 pid 构建树
-        List<MenuVO> vos = menus.stream()
-                .map(this::toVO)
+        List<MenuDTO> dtos = menus.stream()
+                .map(this::toDTO)
                 .collect(Collectors.toList());
 
-        // 构建树形结构
-        Map<Long, List<MenuVO>> pidMap = vos.stream()
+        Map<Long, List<MenuDTO>> pidMap = dtos.stream()
                 .collect(Collectors.groupingBy(
-                        vo -> vo.getPid() != null ? vo.getPid() : 0L,
+                        dto -> dto.getPid() != null ? dto.getPid() : 0L,
                         LinkedHashMap::new, Collectors.toList()));
 
-        List<MenuVO> roots = pidMap.getOrDefault(0L, Collections.emptyList());
-        // 按 order 排序
-        roots.sort(Comparator.comparing(vo -> vo.getMeta() != null ? vo.getMeta().getOrder() : 0));
-        for (MenuVO root : roots) {
+        List<MenuDTO> roots = pidMap.getOrDefault(0L, Collections.emptyList());
+        roots.sort(Comparator.comparing(dto -> dto.getMeta() != null ? dto.getMeta().getOrder() : 0));
+        for (MenuDTO root : roots) {
             buildChildren(root, pidMap);
         }
         return roots;
     }
 
-    private void buildChildren(MenuVO parent, Map<Long, List<MenuVO>> pidMap) {
-        List<MenuVO> children = pidMap.getOrDefault(parent.getId(), Collections.emptyList());
+    private void buildChildren(MenuDTO parent, Map<Long, List<MenuDTO>> pidMap) {
+        List<MenuDTO> children = pidMap.getOrDefault(parent.getId(), Collections.emptyList());
         if (!children.isEmpty()) {
-            // 按 order 排序
-            children.sort(Comparator.comparing(vo -> vo.getMeta() != null ? vo.getMeta().getOrder() : 0));
+            children.sort(Comparator.comparing(dto -> dto.getMeta() != null ? dto.getMeta().getOrder() : 0));
             parent.setChildren(children);
-            for (MenuVO child : children) {
+            for (MenuDTO child : children) {
                 buildChildren(child, pidMap);
             }
         }
@@ -111,8 +106,8 @@ public class MenuCrudServiceImpl implements MenuCrudService {
     public Map<String, Object> getMenuPage(int page, int size) {
         Page<Menu> pageParam = new Page<>(page, size);
         Page<Menu> result = menuDAO.selectPage(pageParam);
-        List<MenuVO> records = result.getRecords().stream()
-                .map(this::toVO)
+        List<MenuDTO> records = result.getRecords().stream()
+                .map(this::toDTO)
                 .collect(Collectors.toList());
         Map<String, Object> map = new HashMap<>();
         map.put("records", records);
@@ -122,26 +117,26 @@ public class MenuCrudServiceImpl implements MenuCrudService {
 
     // ==================== 转换方法 ====================
 
-    private MenuVO toVO(Menu entity) {
-        MenuVO vo = new MenuVO();
-        vo.setId(entity.getId());
-        vo.setName(entity.getMenuCode());
-        vo.setType(mapTypeReverse(entity.getMenuType()));
-        vo.setPid(entity.getParentId());
-        vo.setPath(entity.getUrl());
-        vo.setAuthCode(entity.getPermission());
-        vo.setStatus(entity.getStatus());
+    private MenuDTO toDTO(Menu entity) {
+        MenuDTO dto = new MenuDTO();
+        dto.setId(entity.getId());
+        dto.setName(entity.getMenuCode());
+        dto.setType(mapTypeReverse(entity.getMenuType()));
+        dto.setPid(entity.getParentId());
+        dto.setPath(entity.getUrl());
+        dto.setAuthCode(entity.getPermission());
+        dto.setStatus(entity.getStatus());
 
-        MenuVO.MenuMeta meta = new MenuVO.MenuMeta();
+        MenuDTO.MenuMeta meta = new MenuDTO.MenuMeta();
         meta.setTitle(entity.getMenuName());
         meta.setIcon(entity.getIcon());
         meta.setOrder(entity.getSort());
         if (entity.getVisible() != null && entity.getVisible().getKey() == 0) {
             meta.setHideInMenu(true);
         }
-        vo.setMeta(meta);
+        dto.setMeta(meta);
 
-        return vo;
+        return dto;
     }
 
     private Menu dtoToEntity(MenuDTO dto) {
@@ -153,7 +148,6 @@ public class MenuCrudServiceImpl implements MenuCrudService {
         menu.setPermission(dto.getAuthCode());
         menu.setStatus(dto.getStatus() != null ? dto.getStatus() : 1);
 
-        // meta 映射
         if (dto.getMeta() != null) {
             menu.setMenuName(dto.getMeta().getTitle());
             menu.setIcon(dto.getMeta().getIcon());
@@ -168,9 +162,6 @@ public class MenuCrudServiceImpl implements MenuCrudService {
         return menu;
     }
 
-    /**
-     * 前端 type → 数据库 menu_type
-     */
     private String mapType(String type) {
         if (type == null) return "1";
         return switch (type) {
@@ -183,9 +174,6 @@ public class MenuCrudServiceImpl implements MenuCrudService {
         };
     }
 
-    /**
-     * 数据库 menu_type → 前端 type
-     */
     private String mapTypeReverse(String menuType) {
         if (menuType == null) return "menu";
         return switch (menuType) {

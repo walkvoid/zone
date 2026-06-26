@@ -1,6 +1,6 @@
 package com.github.walkvoid.zone.user.model.enums;
 
-import com.github.walkvoid.wvframework.dao.BaseEnum;
+import com.github.walkvoid.wvframework.models.BaseEnum;
 
 /**
  * 用户状态枚举类

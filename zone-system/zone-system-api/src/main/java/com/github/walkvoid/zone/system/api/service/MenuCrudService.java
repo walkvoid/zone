@@ -1,7 +1,6 @@
 package com.github.walkvoid.zone.system.api.service;
 
 import com.github.walkvoid.zone.system.model.dto.MenuDTO;
-import com.github.walkvoid.zone.system.model.vo.MenuVO;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,7 @@ public interface MenuCrudService {
     /**
      * 获取菜单列表（含树形结构）
      */
-    List<MenuVO> getMenuList();
+    List<MenuDTO> getMenuList();
 
     /**
      * 创建菜单

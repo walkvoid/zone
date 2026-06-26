@@ -44,4 +44,7 @@ public class StockIndustryChainDAO {
                 .eq("relation_type", relationType)
                 .eq("status", 1));
     }
+
+    public StockIndustryChain selectById(Long id) { return mapper.selectById(id); }
+    public List<StockIndustryChain> selectAll() { return mapper.selectList(new QueryWrapper<>()); }
 }

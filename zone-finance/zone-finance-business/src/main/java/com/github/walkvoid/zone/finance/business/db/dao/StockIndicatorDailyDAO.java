@@ -36,4 +36,8 @@ public class StockIndicatorDailyDAO {
                 .orderByDesc("trade_date")
                 .last("LIMIT " + limit));
     }
+
+    public StockIndicatorDaily selectById(Long id) { return mapper.selectById(id); }
+    public List<StockIndicatorDaily> selectAll() { return mapper.selectList(new QueryWrapper<>()); }
+    public int updateById(StockIndicatorDaily entity) { return mapper.updateById(entity); }
 }

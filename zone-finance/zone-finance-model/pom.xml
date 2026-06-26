@@ -23,10 +23,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.github.walkvoid</groupId>
-            <artifactId>zone-common-model</artifactId>
-        </dependency>
     </dependencies>
 
 </project>

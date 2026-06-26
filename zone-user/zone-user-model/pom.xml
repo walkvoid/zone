@@ -28,10 +28,6 @@
             <groupId>com.github.walkvoid.wvframework</groupId>
             <artifactId>wvframework-models</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.github.walkvoid</groupId>
-            <artifactId>zone-common-model</artifactId>
-        </dependency>
     </dependencies>
 
 </project>

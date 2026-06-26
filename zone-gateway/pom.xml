@@ -89,6 +89,12 @@
             <artifactId>zone-finance-business</artifactId>
         </dependency>
 
+        <!-- xxl-job -->
+        <dependency>
+            <groupId>com.xuxueli</groupId>
+            <artifactId>xxl-job-core</artifactId>
+            <version>2.4.1</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -99,6 +105,13 @@
                 <configuration>
                     <skip>false</skip>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

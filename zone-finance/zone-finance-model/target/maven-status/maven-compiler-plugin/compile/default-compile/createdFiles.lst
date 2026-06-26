@@ -3,14 +3,13 @@ com/github/walkvoid/zone/finance/model/entity/StockAnnualReport.class
 com/github/walkvoid/zone/finance/model/entity/StockIndicatorWeekly.class
 com/github/walkvoid/zone/finance/model/entity/StockValuation.class
 com/github/walkvoid/zone/finance/model/entity/StockProduct.class
-com/github/walkvoid/zone/finance/model/query/StockInfoQuery.class
 com/github/walkvoid/zone/finance/model/entity/StockIndustry.class
 com/github/walkvoid/zone/finance/model/entity/FundInfo.class
 com/github/walkvoid/zone/finance/model/entity/StockWeekly.class
 com/github/walkvoid/zone/finance/model/entity/StockMonthly.class
 com/github/walkvoid/zone/finance/model/entity/StockIndustryChain.class
+com/github/walkvoid/zone/finance/model/dto/StockInfoQueryDTO.class
 com/github/walkvoid/zone/finance/model/dto/StockInfoDTO.class
-com/github/walkvoid/zone/finance/model/vo/StockInfoVO.class
 com/github/walkvoid/zone/finance/model/entity/StockStrategy.class
 com/github/walkvoid/zone/finance/model/entity/StockIndicatorDaily.class
 com/github/walkvoid/zone/finance/model/entity/StockShareholder.class

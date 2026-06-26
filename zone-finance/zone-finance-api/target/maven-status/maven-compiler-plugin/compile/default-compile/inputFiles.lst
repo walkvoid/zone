@@ -1,1 +1,17 @@
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/service/StockShareholderService.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/service/StockStrategyService.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/service/StockIndicatorMonthlyService.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/service/StockValuationService.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/service/StockWeeklyService.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/service/StockIndicatorWeeklyService.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/service/StockIntradayService.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/service/StockAnnualReportService.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/service/StockDailyService.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/service/StockMonthlyService.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/service/StockIndustryChainService.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/enums/StockPlateEnum.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/service/StockIndustryService.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/service/StockInfoCrudService.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/service/StockProductService.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/service/StockIndicatorDailyService.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-api/src/main/java/com/github/walkvoid/zone/finance/api/service/FundInfoService.java

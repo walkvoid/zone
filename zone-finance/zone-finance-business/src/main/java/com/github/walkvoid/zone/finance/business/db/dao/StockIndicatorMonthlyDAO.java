@@ -36,4 +36,8 @@ public class StockIndicatorMonthlyDAO {
                 .orderByDesc("trade_date")
                 .last("LIMIT " + limit));
     }
+
+    public StockIndicatorMonthly selectById(Long id) { return mapper.selectById(id); }
+    public List<StockIndicatorMonthly> selectAll() { return mapper.selectList(new QueryWrapper<>()); }
+    public int updateById(StockIndicatorMonthly entity) { return mapper.updateById(entity); }
 }

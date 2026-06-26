@@ -1,40 +1,16 @@
 package com.github.walkvoid.zone.user.model.dto;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.github.walkvoid.zone.common.model.BaseDTO;
-import com.github.walkvoid.zone.common.model.BooleanEnum;
-import io.swagger.v3.oas.annotations.media.Schema;
+import com.github.walkvoid.wvframework.models.BooleanEnum;
 import lombok.Data;
 
-/**
- * @author walkvoid
- */
+import java.io.Serializable;
+
 @Data
-@Schema(description = "角色信息")
-public class RoleDTO extends BaseDTO {
+public class RoleDTO implements Serializable {
 
-    /**
-     * 角色ID，主键
-     */
     private Long id;
-
-    /**
-     * 角色编码
-     */
     private String roleCode;
-
-    /**
-     * 角色名称
-     */
     private String roleName;
-
-    /**
-     * 角色描述
-     */
     private String description;
-
-    /**
-     * 是否系统角色：0-否，1-是
-     */
     private BooleanEnum isSystem;
 }

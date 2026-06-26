@@ -45,4 +45,9 @@ public class StockValuationDAO {
                 .eq("stock_code", stockCode)
                 .eq("trade_date", tradeDate));
     }
+
+    public StockValuation selectById(Long id) { return mapper.selectById(id); }
+    public List<StockValuation> selectAll() { return mapper.selectList(new QueryWrapper<>()); }
+    public int updateById(StockValuation entity) { return mapper.updateById(entity); }
+    public int deleteById(Long id) { return mapper.deleteById(id); }
 }

@@ -23,4 +23,9 @@ public class StockIntradayDAO {
                 .eq("trade_date", tradeDate)
                 .orderByAsc("trade_time"));
     }
+
+    public StockIntraday selectById(Long id) { return mapper.selectById(id); }
+    public List<StockIntraday> selectAll() { return mapper.selectList(new QueryWrapper<>()); }
+    public int updateById(StockIntraday entity) { return mapper.updateById(entity); }
+    public int deleteById(Long id) { return mapper.deleteById(id); }
 }

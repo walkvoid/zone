@@ -29,4 +29,8 @@ public class StockMonthlyDAO {
                 .between("trade_date", start, end)
                 .orderByAsc("trade_date"));
     }
+
+    public StockMonthly selectById(Long id) { return mapper.selectById(id); }
+    public List<StockMonthly> selectAll() { return mapper.selectList(new QueryWrapper<>()); }
+    public int updateById(StockMonthly entity) { return mapper.updateById(entity); }
 }

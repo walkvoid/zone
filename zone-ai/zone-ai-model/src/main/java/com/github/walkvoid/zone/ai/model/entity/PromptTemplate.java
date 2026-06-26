@@ -26,10 +26,10 @@ public class PromptTemplate implements Serializable {
     /** 模板名称 */
     private String templateName;
 
-    /** 模板内容，含 {{变量}} 占位符 */
+    /** 模板内容 */
     private String templateContent;
 
-    /** 变量列表 JSON */
+    /** 变量列表 */
     private String variables;
 
     /** 分类 */
@@ -38,18 +38,11 @@ public class PromptTemplate implements Serializable {
     /** 描述 */
     private String description;
 
-    /** 状态：1-启用 0-禁用 */
+    /** 状态：1=启用 0=禁用 */
     private Integer status;
 
-    /** 创建者 */
     private Long createId;
-
-    /** 创建时间 */
     private LocalDateTime createTime;
-
-    /** 更新者 */
     private Long updateId;
-
-    /** 更新时间 */
     private LocalDateTime updateTime;
 }

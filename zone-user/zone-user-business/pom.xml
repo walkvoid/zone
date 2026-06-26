@@ -35,6 +35,10 @@
             <groupId>com.github.walkvoid.wvframework</groupId>
             <artifactId>wvframework-utils</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

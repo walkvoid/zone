@@ -19,10 +19,6 @@
             <groupId>com.github.walkvoid</groupId>
             <artifactId>zone-system-model</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.github.walkvoid</groupId>
-            <artifactId>zone-common-api</artifactId>
-        </dependency>
     </dependencies>
 
 </project>

@@ -3,7 +3,7 @@ package com.github.walkvoid.zone.system.model.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.github.walkvoid.zone.common.model.BooleanEnum;
+import com.github.walkvoid.wvframework.models.BooleanEnum;
 import lombok.Data;
 
 import java.io.Serializable;

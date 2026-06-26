@@ -4,9 +4,8 @@ import com.github.walkvoid.wvframework.models.WebResponse;
 import com.github.walkvoid.zone.system.api.service.MenuCrudService;
 import com.github.walkvoid.zone.system.api.service.MenuTreeService;
 import com.github.walkvoid.zone.system.model.dto.MenuDTO;
-import com.github.walkvoid.zone.system.model.query.MenuTreeQuery;
+import com.github.walkvoid.zone.system.model.dto.MenuTreeQueryDTO;
 import com.github.walkvoid.zone.system.model.vo.MenuTreeNode;
-import com.github.walkvoid.zone.system.model.vo.MenuVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,9 +28,9 @@ public class MenuController {
 
     @Operation(summary = "获取菜单树（前端动态路由）")
     @GetMapping("/tree")
-    public WebResponse<List<MenuTreeNode>> getMenuTree(MenuTreeQuery query) {
+    public WebResponse<List<MenuTreeNode>> getMenuTree(MenuTreeQueryDTO query) {
         if (query == null) {
-            query = new MenuTreeQuery();
+            query = new MenuTreeQueryDTO();
         }
         return WebResponse.ok(menuTreeService.getMenuTree(query));
     }
@@ -44,7 +43,7 @@ public class MenuController {
 
     @Operation(summary = "获取菜单列表（树形）")
     @GetMapping("/list")
-    public WebResponse<List<MenuVO>> getMenuList() {
+    public WebResponse<List<MenuDTO>> getMenuList() {
         return WebResponse.ok(menuCrudService.getMenuList());
     }
 

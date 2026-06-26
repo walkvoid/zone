@@ -2,8 +2,8 @@ package com.github.walkvoid.zone.user.business.controller;
 
 import com.github.walkvoid.wvframework.models.WebResponse;
 import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
-import com.github.walkvoid.zone.common.model.IdsParam;
-import com.github.walkvoid.zone.common.model.PasswordParam;
+import com.github.walkvoid.zone.user.model.dto.IdsParam;
+import com.github.walkvoid.zone.user.model.dto.PasswordParam;
 import com.github.walkvoid.zone.user.business.db.dao.UserInfoDAO;
 import com.github.walkvoid.zone.user.model.dto.UserInfoDTO;
 import com.github.walkvoid.zone.user.model.entity.UserInfo;

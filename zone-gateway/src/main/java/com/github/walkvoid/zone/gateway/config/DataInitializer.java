@@ -1,6 +1,6 @@
 package com.github.walkvoid.zone.gateway.config;
 
-import com.github.walkvoid.zone.common.model.BooleanEnum;
+import com.github.walkvoid.wvframework.models.BooleanEnum;
 import com.github.walkvoid.zone.user.business.db.dao.UserInfoDAO;
 import com.github.walkvoid.zone.user.model.entity.UserInfo;
 import com.github.walkvoid.zone.user.model.enums.UserInfoStatusEnum;

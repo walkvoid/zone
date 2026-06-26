@@ -1,1 +1,17 @@
+com/github/walkvoid/zone/finance/api/service/StockWeeklyService.class
+com/github/walkvoid/zone/finance/api/service/StockShareholderService.class
+com/github/walkvoid/zone/finance/api/service/StockAnnualReportService.class
+com/github/walkvoid/zone/finance/api/service/StockIntradayService.class
+com/github/walkvoid/zone/finance/api/service/StockStrategyService.class
+com/github/walkvoid/zone/finance/api/service/StockIndicatorWeeklyService.class
+com/github/walkvoid/zone/finance/api/service/StockProductService.class
 com/github/walkvoid/zone/finance/api/service/StockInfoCrudService.class
+com/github/walkvoid/zone/finance/api/enums/StockPlateEnum.class
+com/github/walkvoid/zone/finance/api/service/StockValuationService.class
+com/github/walkvoid/zone/finance/api/service/StockIndustryService.class
+com/github/walkvoid/zone/finance/api/service/StockMonthlyService.class
+com/github/walkvoid/zone/finance/api/service/StockIndustryChainService.class
+com/github/walkvoid/zone/finance/api/service/StockDailyService.class
+com/github/walkvoid/zone/finance/api/service/FundInfoService.class
+com/github/walkvoid/zone/finance/api/service/StockIndicatorMonthlyService.class
+com/github/walkvoid/zone/finance/api/service/StockIndicatorDailyService.class

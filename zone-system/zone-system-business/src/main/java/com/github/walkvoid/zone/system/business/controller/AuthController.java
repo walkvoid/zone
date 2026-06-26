@@ -3,7 +3,7 @@ package com.github.walkvoid.zone.system.business.controller;
 import com.github.walkvoid.wvframework.models.WebResponse;
 import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
 import com.github.walkvoid.wvframework.utils.JwtUtils;
-import com.github.walkvoid.zone.common.model.BooleanEnum;
+import com.github.walkvoid.wvframework.models.BooleanEnum;
 import com.github.walkvoid.zone.user.model.enums.UserInfoStatusEnum;
 import com.github.walkvoid.zone.system.business.db.dao.MenuDAO;
 import com.github.walkvoid.zone.system.model.entity.Menu;

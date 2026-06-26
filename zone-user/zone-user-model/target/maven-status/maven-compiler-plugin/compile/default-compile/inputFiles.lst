@@ -1,10 +1,14 @@
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/dto/PasswordParam.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/dto/RoleDTO.java
-/Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/entity/UserInfo.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/enums/UserInfoStatusEnum.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/entity/UserRoleRel.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/dto/IdsParam.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/dto/RoleMenuAssignParam.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/entity/RoleMenuRel.java
-/Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/enums/UserGenderEnum.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/dto/UserInfoDTO.java
-/Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/dto/RoleMenuRelDTO.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/dto/UserRoleRelDTO.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/entity/UserInfo.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/dto/UserRoleAssignParam.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/enums/UserGenderEnum.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/dto/RoleMenuRelDTO.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-user/zone-user-model/src/main/java/com/github/walkvoid/zone/user/model/entity/Role.java

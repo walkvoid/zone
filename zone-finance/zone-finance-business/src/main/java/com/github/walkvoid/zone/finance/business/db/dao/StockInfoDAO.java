@@ -38,4 +38,17 @@ public class StockInfoDAO {
         return mapper.selectList(new QueryWrapper<StockInfo>()
                 .eq("market", market).eq("status", 1));
     }
+
+    /** 总记录数 */
+    public long countAll() {
+        return mapper.selectCount(new QueryWrapper<>());
+    }
+
+    /** 按偏移量取一条（ORDER BY stock_code） */
+    public StockInfo selectByOffset(int offset) {
+        return mapper.selectList(new QueryWrapper<StockInfo>()
+                .orderByAsc("stock_code")
+                .last("LIMIT 1 OFFSET " + offset))
+                .stream().findFirst().orElse(null);
+    }
 }

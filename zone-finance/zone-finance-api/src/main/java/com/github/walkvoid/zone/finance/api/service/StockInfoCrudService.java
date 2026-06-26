@@ -1,8 +1,7 @@
 package com.github.walkvoid.zone.finance.api.service;
 
 import com.github.walkvoid.zone.finance.model.dto.StockInfoDTO;
-import com.github.walkvoid.zone.finance.model.query.StockInfoQuery;
-import com.github.walkvoid.zone.finance.model.vo.StockInfoVO;
+import com.github.walkvoid.zone.finance.model.dto.StockInfoQueryDTO;
 
 import java.util.Map;
 
@@ -16,17 +15,17 @@ public interface StockInfoCrudService {
     /**
      * 分页查询股票列表
      */
-    Map<String, Object> listPage(StockInfoQuery query);
+    Map<String, Object> listPage(StockInfoQueryDTO query);
 
     /**
      * 按ID查询详情
      */
-    StockInfoVO getById(Long id);
+    StockInfoDTO getById(Long id);
 
     /**
      * 按股票代码查询
      */
-    StockInfoVO getByCode(String stockCode);
+    StockInfoDTO getByCode(String stockCode);
 
     /**
      * 新增股票
