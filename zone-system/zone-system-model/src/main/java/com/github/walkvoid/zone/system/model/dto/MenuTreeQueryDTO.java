@@ -16,9 +16,6 @@ public class MenuTreeQueryDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 是否只查询启用的菜单 */
-    private Boolean onlyEnabled = true;
-
-    /** 是否只查询可见菜单 */
+    /** 是否只查询可见菜单（visible=1） */
     private Boolean onlyVisible = true;
 }

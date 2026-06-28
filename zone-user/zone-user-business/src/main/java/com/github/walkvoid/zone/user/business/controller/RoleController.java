@@ -1,5 +1,8 @@
 package com.github.walkvoid.zone.user.business.controller;
 
+import com.github.walkvoid.wvframework.models.PageRequest;
+import com.github.walkvoid.wvframework.models.PageResponse;
+import com.github.walkvoid.wvframework.models.WebPageResponse;
 import com.github.walkvoid.wvframework.models.WebResponse;
 import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
 import com.github.walkvoid.zone.user.model.dto.IdsParam;
@@ -52,7 +55,7 @@ public class RoleController {
 
     @Operation(summary = "删除角色")
     @DeleteMapping("/{id}")
-    public WebResponse<Boolean> delete(@Parameter(description = "角色ID") @PathVariable Long id) {
+    public WebResponse<Boolean> delete(@Parameter(description = "角色ID") @PathVariable("id") Long id) {
         return WebResponse.ok(!Objects.isNull(id) && roleDAO.deleteById(id) > 0);
     }
 
@@ -75,7 +78,7 @@ public class RoleController {
 
     @Operation(summary = "查询角色")
     @GetMapping("/{id}")
-    public WebResponse<RoleDTO> getById(@Parameter(description = "角色ID") @PathVariable Long id) {
+    public WebResponse<RoleDTO> getById(@Parameter(description = "角色ID") @PathVariable("id") Long id) {
         return WebResponse.ok(BeanCopyUtils.copyBean(roleDAO.selectById(id), RoleDTO.class));
     }
 
@@ -86,6 +89,17 @@ public class RoleController {
         return WebResponse.ok(roleDAO.selectList(condition).stream()
                 .map(r -> BeanCopyUtils.copyBean(r, RoleDTO.class))
                 .collect(Collectors.toList()));
+    }
+
+    @Operation(summary = "分页查询角色")
+    @GetMapping("/page")
+    public WebPageResponse<RoleDTO> page(
+            @RequestParam(value = "current", defaultValue = "0") long current,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @ModelAttribute RoleDTO parameter) {
+        PageRequest<RoleDTO> pageRequest = PageRequest.of(current, size, parameter);
+        PageResponse<RoleDTO> pageResponse = roleDAO.page(pageRequest);
+        return WebPageResponse.ok(pageResponse);
     }
 
     @Operation(summary = "查询所有角色")
@@ -100,7 +114,7 @@ public class RoleController {
 
     @Operation(summary = "为用户分配角色")
     @PostMapping("/user/{userId}/assign")
-    public WebResponse<Boolean> assignUserRoles(@Parameter(description = "用户ID") @PathVariable Long userId,
+    public WebResponse<Boolean> assignUserRoles(@Parameter(description = "用户ID") @PathVariable("userId") Long userId,
                                     @RequestBody UserRoleAssignParam param) {
         if (Objects.isNull(userId) || Objects.isNull(param) || Objects.isNull(param.getRoleIds()) || param.getRoleIds().isEmpty())
             return WebResponse.ok(false);
@@ -115,20 +129,20 @@ public class RoleController {
 
     @Operation(summary = "移除用户的指定角色")
     @DeleteMapping("/user/{userId}/role/{roleId}")
-    public WebResponse<Boolean> removeUserRole(@Parameter(description = "用户ID") @PathVariable Long userId,
-                                   @Parameter(description = "角色ID") @PathVariable Long roleId) {
+    public WebResponse<Boolean> removeUserRole(@Parameter(description = "用户ID") @PathVariable("userId") Long userId,
+                                   @Parameter(description = "角色ID") @PathVariable("roleId") Long roleId) {
         return WebResponse.ok(userRoleRelDAO.deleteByUserIdAndRoleId(userId, roleId) > 0);
     }
 
     @Operation(summary = "移除用户的所有角色")
     @DeleteMapping("/user/{userId}/roles")
-    public WebResponse<Boolean> removeUserAllRoles(@Parameter(description = "用户ID") @PathVariable Long userId) {
+    public WebResponse<Boolean> removeUserAllRoles(@Parameter(description = "用户ID") @PathVariable("userId") Long userId) {
         return WebResponse.ok(userRoleRelDAO.deleteByUserId(userId) > 0);
     }
 
     @Operation(summary = "查询用户拥有的角色")
     @GetMapping("/user/{userId}/roles")
-    public WebResponse<List<RoleDTO>> getUserRoles(@Parameter(description = "用户ID") @PathVariable Long userId) {
+    public WebResponse<List<RoleDTO>> getUserRoles(@Parameter(description = "用户ID") @PathVariable("userId") Long userId) {
         return WebResponse.ok(userRoleRelDAO.selectByUserId(userId).stream()
                 .map(rel -> roleDAO.selectById(rel.getRoleId()))
                 .filter(Objects::nonNull)
@@ -138,7 +152,7 @@ public class RoleController {
 
     @Operation(summary = "查询拥有该角色的用户ID列表")
     @GetMapping("/{roleId}/users")
-    public WebResponse<List<Long>> getRoleUserIds(@Parameter(description = "角色ID") @PathVariable Long roleId) {
+    public WebResponse<List<Long>> getRoleUserIds(@Parameter(description = "角色ID") @PathVariable("roleId") Long roleId) {
         return WebResponse.ok(userRoleRelDAO.selectByRoleId(roleId).stream()
                 .map(UserRoleRel::getUserId)
                 .collect(Collectors.toList()));
@@ -148,7 +162,7 @@ public class RoleController {
 
     @Operation(summary = "为角色分配菜单")
     @PostMapping("/{roleId}/menus/assign")
-    public WebResponse<Boolean> assignRoleMenus(@Parameter(description = "角色ID") @PathVariable Long roleId,
+    public WebResponse<Boolean> assignRoleMenus(@Parameter(description = "角色ID") @PathVariable("roleId") Long roleId,
                                     @RequestBody RoleMenuAssignParam param) {
         if (Objects.isNull(roleId) || Objects.isNull(param) || Objects.isNull(param.getMenuIds()) || param.getMenuIds().isEmpty())
             return WebResponse.ok(false);
@@ -164,14 +178,14 @@ public class RoleController {
 
     @Operation(summary = "移除角色的指定菜单")
     @DeleteMapping("/{roleId}/menu/{menuId}")
-    public WebResponse<Boolean> removeRoleMenu(@Parameter(description = "角色ID") @PathVariable Long roleId,
-                                   @Parameter(description = "菜单ID") @PathVariable Long menuId) {
+    public WebResponse<Boolean> removeRoleMenu(@Parameter(description = "角色ID") @PathVariable("roleId") Long roleId,
+                                   @Parameter(description = "菜单ID") @PathVariable("menuId") Long menuId) {
         return WebResponse.ok(roleMenuRelDAO.deleteByRoleIdAndMenuId(roleId, menuId) > 0);
     }
 
     @Operation(summary = "查询角色拥有的菜单ID列表")
     @GetMapping("/{roleId}/menus")
-    public WebResponse<List<Long>> getRoleMenuIds(@Parameter(description = "角色ID") @PathVariable Long roleId) {
+    public WebResponse<List<Long>> getRoleMenuIds(@Parameter(description = "角色ID") @PathVariable("roleId") Long roleId) {
         return WebResponse.ok(roleMenuRelDAO.selectMenuIdsByRoleId(roleId));
     }
 }

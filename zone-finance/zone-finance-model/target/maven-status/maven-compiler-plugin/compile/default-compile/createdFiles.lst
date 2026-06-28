@@ -1,6 +1,7 @@
 com/github/walkvoid/zone/finance/model/entity/StockIntraday.class
 com/github/walkvoid/zone/finance/model/entity/StockAnnualReport.class
 com/github/walkvoid/zone/finance/model/entity/StockIndicatorWeekly.class
+com/github/walkvoid/zone/finance/model/dto/StockDailyQueryDTO.class
 com/github/walkvoid/zone/finance/model/entity/StockValuation.class
 com/github/walkvoid/zone/finance/model/entity/StockProduct.class
 com/github/walkvoid/zone/finance/model/entity/StockIndustry.class

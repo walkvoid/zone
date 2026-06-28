@@ -1,9 +1,10 @@
 package com.github.walkvoid.zone.system.api.service;
 
+import com.github.walkvoid.wvframework.models.PageRequest;
+import com.github.walkvoid.wvframework.models.PageResponse;
 import com.github.walkvoid.zone.system.model.dto.MenuDTO;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 系统菜单 CRUD 服务接口
@@ -43,8 +44,9 @@ public interface MenuCrudService {
      * 检查菜单路径是否存在
      */
     boolean isMenuPathExists(String path, Long excludeId);
+
     /**
-     * 获取菜单分页列表
+     * 分页查询菜单列表
      */
-    Map<String, Object> getMenuPage(int page, int size);
+    PageResponse<MenuDTO> page(PageRequest<Void> pageRequest);
 }

@@ -1,4 +1,5 @@
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/entity/StockValuation.java
+/Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/dto/StockDailyQueryDTO.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/entity/StockIndicatorWeekly.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/entity/StockFundRel.java
 /Users/jiangjunqing/javaproject/aiproject/zone/zone-finance/zone-finance-model/src/main/java/com/github/walkvoid/zone/finance/model/entity/StockIndustryChain.java

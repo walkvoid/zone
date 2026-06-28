@@ -1,5 +1,8 @@
 package com.github.walkvoid.zone.system.business.controller;
 
+import com.github.walkvoid.wvframework.models.PageRequest;
+import com.github.walkvoid.wvframework.models.PageResponse;
+import com.github.walkvoid.wvframework.models.WebPageResponse;
 import com.github.walkvoid.wvframework.models.WebResponse;
 import com.github.walkvoid.zone.system.api.service.MenuCrudService;
 import com.github.walkvoid.zone.system.api.service.MenuTreeService;
@@ -13,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Tag(name = "系统菜单")
 @RestController
@@ -70,7 +72,7 @@ public class MenuController {
 
     @Operation(summary = "更新菜单")
     @PutMapping("/{id}")
-    public WebResponse<Void> updateMenu(@Parameter(description = "菜单ID") @PathVariable Long id,
+    public WebResponse<Void> updateMenu(@Parameter(description = "菜单ID") @PathVariable("id") Long id,
                                          @RequestBody MenuDTO dto) {
         menuCrudService.updateMenu(id, dto);
         return WebResponse.ok(null);
@@ -78,16 +80,18 @@ public class MenuController {
 
     @Operation(summary = "删除菜单")
     @DeleteMapping("/{id}")
-    public WebResponse<Void> deleteMenu(@Parameter(description = "菜单ID") @PathVariable Long id) {
+    public WebResponse<Void> deleteMenu(@Parameter(description = "菜单ID") @PathVariable("id") Long id) {
         menuCrudService.deleteMenu(id);
         return WebResponse.ok(null);
     }
 
     @Operation(summary = "获取菜单分页列表")
     @GetMapping("/page")
-    public WebResponse<Map<String, Object>> getMenuPage(
-        @Parameter(description = "页码") @RequestParam(name = "page", defaultValue = "1") int page,
-        @Parameter(description = "每页大小") @RequestParam(name = "size", defaultValue = "10") int size) {
-        return WebResponse.ok(menuCrudService.getMenuPage(page, size));
+    public WebPageResponse<MenuDTO> page(
+            @RequestParam(value = "current", defaultValue = "0") long current,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+        PageRequest<Void> pageRequest = PageRequest.of(current, size, null);
+        PageResponse<MenuDTO> pageResponse = menuCrudService.page(pageRequest);
+        return WebPageResponse.ok(pageResponse);
     }
 }

@@ -1,6 +1,13 @@
 package com.github.walkvoid.zone.user.business.db.dao;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
+import com.github.walkvoid.wvframework.models.PageRequest;
+import com.github.walkvoid.wvframework.models.PageResponse;
+import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
 import com.github.walkvoid.zone.user.business.db.mapper.UserInfoMapper;
+import com.github.walkvoid.zone.user.model.dto.UserInfoDTO;
 import com.github.walkvoid.zone.user.model.entity.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -134,14 +141,23 @@ public class UserInfoDAO {
 
     /**
      * 分页查询用户列表
-     * @param start 起始位置
-     * @param limit 每页数量
+     * @param page 页码（从1开始）
+     * @param size 每页数量
      * @param userInfo 查询条件
-     * @return 用户列表
+     * @return 分页结果
      */
-    public List<UserInfo> selectPage(int start, int limit, UserInfo userInfo) {
-        com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UserInfo> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>(userInfo);
-        return userInfoMapper.selectList(queryWrapper);
+    public PageDTO<UserInfo> selectPage(PageDTO<UserInfo> pageDTO, UserInfo userInfo) {
+        QueryWrapper<UserInfo> queryWrapper = new QueryWrapper<>(userInfo);
+        return userInfoMapper.selectPage(pageDTO, queryWrapper);
+    }
+
+    public PageResponse<UserInfoDTO> page(PageRequest<UserInfoDTO> pageRequest) {
+        UserInfo condition = BeanCopyUtils.copyBean(pageRequest.getParameter(), UserInfo.class);
+        Page<UserInfo> page = userInfoMapper.selectPage(
+                new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
+                new QueryWrapper<>(condition));
+        List<UserInfoDTO> records = BeanCopyUtils.copyList(page.getRecords(), UserInfoDTO.class);
+        return new PageResponse<>(page.getTotal(), (int) page.getSize(), page.getCurrent(), records);
     }
 
     /**

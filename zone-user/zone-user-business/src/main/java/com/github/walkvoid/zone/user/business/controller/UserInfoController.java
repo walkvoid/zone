@@ -1,5 +1,8 @@
 package com.github.walkvoid.zone.user.business.controller;
 
+import com.github.walkvoid.wvframework.models.PageRequest;
+import com.github.walkvoid.wvframework.models.PageResponse;
+import com.github.walkvoid.wvframework.models.WebPageResponse;
 import com.github.walkvoid.wvframework.models.WebResponse;
 import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
 import com.github.walkvoid.zone.user.model.dto.IdsParam;
@@ -41,7 +44,7 @@ public class UserInfoController {
 
     @Operation(summary = "删除用户")
     @DeleteMapping("/{id}")
-    public WebResponse<Boolean> delete(@Parameter(description = "用户ID") @PathVariable Long id) {
+    public WebResponse<Boolean> delete(@Parameter(description = "用户ID") @PathVariable("id") Long id) {
         return WebResponse.ok(!Objects.isNull(id) && userInfoDAO.deleteById(id) > 0);
     }
 
@@ -63,7 +66,7 @@ public class UserInfoController {
 
     @Operation(summary = "查询用户")
     @GetMapping("/{id}")
-    public WebResponse<UserInfoDTO> getById(@Parameter(description = "用户ID") @PathVariable Long id) {
+    public WebResponse<UserInfoDTO> getById(@Parameter(description = "用户ID") @PathVariable("id") Long id) {
         if (Objects.isNull(id)) return WebResponse.ok(null);
         return WebResponse.ok(BeanCopyUtils.copyBean(userInfoDAO.selectById(id), UserInfoDTO.class));
     }
@@ -79,18 +82,18 @@ public class UserInfoController {
 
     @Operation(summary = "分页查询用户")
     @GetMapping("/page")
-    public WebResponse<List<UserInfoDTO>> page(@Parameter(description = "起始位置") @RequestParam(defaultValue = "0") int start,
-                                  @Parameter(description = "每页数量") @RequestParam(defaultValue = "10") int limit,
-                                  UserInfoDTO dto) {
-        UserInfo condition = BeanCopyUtils.copyBean(dto, UserInfo.class);
-        return WebResponse.ok(userInfoDAO.selectPage(start, limit, condition).stream()
-                .map(e -> BeanCopyUtils.copyBean(e, UserInfoDTO.class))
-                .collect(Collectors.toList()));
+    public WebPageResponse<UserInfoDTO> page(
+            @RequestParam(value = "current", defaultValue = "0") long current,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @ModelAttribute UserInfoDTO parameter) {
+        PageRequest<UserInfoDTO> pageRequest = PageRequest.of(current, size, parameter);
+        PageResponse<UserInfoDTO> pageResponse = userInfoDAO.page(pageRequest);
+        return WebPageResponse.ok(pageResponse);
     }
 
     @Operation(summary = "启用/禁用用户")
     @PutMapping("/{id}/status")
-    public WebResponse<Boolean> toggleStatus(@Parameter(description = "用户ID") @PathVariable Long id,
+    public WebResponse<Boolean> toggleStatus(@Parameter(description = "用户ID") @PathVariable("id") Long id,
                                 @Parameter(description = "状态值") @RequestParam Integer status) {
         if (Objects.isNull(id) || Objects.isNull(status)) return WebResponse.ok(false);
         return WebResponse.ok(userInfoDAO.updateBatchStatus(List.of(id), status) > 0);
@@ -98,7 +101,7 @@ public class UserInfoController {
 
     @Operation(summary = "重置密码")
     @PutMapping("/{id}/reset-password")
-    public WebResponse<Boolean> resetPassword(@Parameter(description = "用户ID") @PathVariable Long id,
+    public WebResponse<Boolean> resetPassword(@Parameter(description = "用户ID") @PathVariable("id") Long id,
                                   @RequestBody PasswordParam param) {
         if (Objects.isNull(id) || Objects.isNull(param)) return WebResponse.ok(false);
         UserInfo entity = new UserInfo();
@@ -109,7 +112,7 @@ public class UserInfoController {
 
     @Operation(summary = "根据用户名查询")
     @GetMapping("/by-username/{username}")
-    public WebResponse<UserInfoDTO> getByUsername(@Parameter(description = "用户名") @PathVariable String username) {
+    public WebResponse<UserInfoDTO> getByUsername(@Parameter(description = "用户名") @PathVariable("username") String username) {
         return WebResponse.ok(BeanCopyUtils.copyBean(userInfoDAO.selectByUsername(username), UserInfoDTO.class));
     }
 }

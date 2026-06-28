@@ -2,6 +2,7 @@ package com.github.walkvoid.zone.system.business.db.dao;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.walkvoid.zone.system.business.db.mapper.MenuMapper;
 import com.github.walkvoid.zone.system.model.entity.Menu;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,15 +43,20 @@ public class MenuDAO {
         return menuMapper.deleteById(id);
     }
 
+    /** 统计子菜单数量 */
+    public long countByParentId(Long parentId) {
+        return menuMapper.selectCount(new QueryWrapper<Menu>().eq("parent_id", parentId));
+    }
+
     /** 统计 */
     public long count(QueryWrapper<Menu> wrapper) {
         return menuMapper.selectCount(wrapper);
     }
 
-    /** 查询所有有效菜单（status=1），按排序号升序 */
-    public List<Menu> selectAllEnabledMenus() {
+    /** 查询所有可见菜单（visible=1），按排序号升序 */
+    public List<Menu> selectAllVisibleMenus() {
         QueryWrapper<Menu> wrapper = new QueryWrapper<>();
-        wrapper.eq("status", 1).orderByAsc("sort");
+        wrapper.eq("visible", 1).orderByAsc("parent_id", "sort", "id");
         return menuMapper.selectList(wrapper);
     }
 
@@ -58,11 +64,12 @@ public class MenuDAO {
      * 查询所有菜单，按排序号升序
      */
     public List<Menu> selectAll() {
-        return menuMapper.selectList(new QueryWrapper<Menu>().orderByAsc("sort"));
+        return menuMapper.selectList(new QueryWrapper<Menu>()
+                .orderByAsc("parent_id", "sort", "id"));
     }
 
     /** 分页查询所有菜单，按 parent_id 和 sort 升序 */
-    public Page<Menu> selectPage(Page<Menu> page) {
+    public Page<Menu> selectPage(PageDTO<Menu> page) {
         return menuMapper.selectPage(page, new QueryWrapper<Menu>().orderByAsc("parent_id", "sort"));
     }
 

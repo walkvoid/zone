@@ -1,5 +1,6 @@
 package com.github.walkvoid.zone.ai.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @Data
 public class PromptTemplateDTO {
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
     private String templateCode;
     private String templateName;

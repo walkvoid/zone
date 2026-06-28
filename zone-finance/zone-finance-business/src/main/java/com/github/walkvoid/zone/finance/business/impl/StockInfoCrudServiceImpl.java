@@ -3,6 +3,8 @@ package com.github.walkvoid.zone.finance.business.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.walkvoid.wvframework.models.PageRequest;
+import com.github.walkvoid.wvframework.models.PageResponse;
 import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
 import com.github.walkvoid.zone.finance.api.service.StockInfoCrudService;
 import com.github.walkvoid.zone.finance.business.db.dao.StockInfoDAO;
@@ -26,6 +28,26 @@ public class StockInfoCrudServiceImpl implements StockInfoCrudService {
 
     @Override
     public Map<String, Object> listPage(StockInfoQueryDTO query) {
+        if (query == null) {
+            query = new StockInfoQueryDTO();
+        }
+        int page = query.getPage() != null ? query.getPage() : 1;
+        int size = query.getSize() != null ? query.getSize() : 10;
+        return doPage(buildWrapper(query), page, size);
+    }
+
+    @Override
+    public PageResponse<StockInfoDTO> page(PageRequest<StockInfoQueryDTO> pageRequest) {
+        StockInfoQueryDTO query = pageRequest.getParameter() != null
+                ? pageRequest.getParameter() : new StockInfoQueryDTO();
+        IPage<StockInfo> iPage = stockInfoDAO.selectPage(
+                new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
+                buildWrapper(query));
+        List<StockInfoDTO> records = iPage.getRecords().stream().map(this::toDTO).toList();
+        return new PageResponse<>(iPage.getTotal(), (int) iPage.getSize(), iPage.getCurrent(), records);
+    }
+
+    private QueryWrapper<StockInfo> buildWrapper(StockInfoQueryDTO query) {
         QueryWrapper<StockInfo> wrapper = new QueryWrapper<>();
         if (StringUtils.hasText(query.getStockCode())) {
             wrapper.like("stock_code", query.getStockCode());
@@ -40,20 +62,20 @@ public class StockInfoCrudServiceImpl implements StockInfoCrudService {
             wrapper.eq("status", query.getStatus());
         }
         wrapper.orderByAsc("stock_code");
+        return wrapper;
+    }
 
-        int page = query.getPage() != null ? query.getPage() : 1;
-        int size = query.getSize() != null ? query.getSize() : 10;
+    private Map<String, Object> doPage(QueryWrapper<StockInfo> wrapper, int page, int size) {
         IPage<StockInfo> iPage = stockInfoDAO.selectPage(new Page<>(page, size), wrapper);
-
         List<StockInfoDTO> dtoList = iPage.getRecords().stream()
                 .map(this::toDTO)
                 .toList();
-
         Map<String, Object> result = new HashMap<>();
         result.put("records", dtoList);
         result.put("total", iPage.getTotal());
         result.put("page", iPage.getCurrent());
         result.put("size", iPage.getSize());
+        result.put("mpCurrent", iPage.getCurrent());
         return result;
     }
 

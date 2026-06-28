@@ -1,6 +1,13 @@
 package com.github.walkvoid.zone.user.business.db.dao;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
+import com.github.walkvoid.wvframework.models.PageRequest;
+import com.github.walkvoid.wvframework.models.PageResponse;
+import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
 import com.github.walkvoid.zone.user.model.entity.Role;
+import com.github.walkvoid.zone.user.model.dto.RoleDTO;
 import com.github.walkvoid.zone.user.business.db.mapper.RoleMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -122,6 +129,23 @@ public class RoleDAO {
     public List<Role> selectList(Role role) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Role> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>(role);
         return roleMapper.selectList(queryWrapper);
+    }
+
+    /**
+     * 分页查询角色列表
+     */
+    public PageDTO<Role> selectPage(PageDTO<Role> pageDTO, Role role) {
+        QueryWrapper<Role> queryWrapper = new QueryWrapper<>(role);
+        return roleMapper.selectPage(pageDTO, queryWrapper);
+    }
+
+    public PageResponse<RoleDTO> page(PageRequest<RoleDTO> pageRequest) {
+        Role condition = BeanCopyUtils.copyBean(pageRequest.getParameter(), Role.class);
+        Page<Role> page = roleMapper.selectPage(
+                new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
+                new QueryWrapper<>(condition));
+        List<RoleDTO> records = BeanCopyUtils.copyList(page.getRecords(), RoleDTO.class);
+        return new PageResponse<>(page.getTotal(), (int) page.getSize(), page.getCurrent(), records);
     }
 
     /**

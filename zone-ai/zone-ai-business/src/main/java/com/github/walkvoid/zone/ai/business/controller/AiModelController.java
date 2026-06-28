@@ -1,10 +1,12 @@
 package com.github.walkvoid.zone.ai.business.controller;
 
+import com.github.walkvoid.wvframework.models.PageRequest;
+import com.github.walkvoid.wvframework.models.PageResponse;
 import com.github.walkvoid.zone.ai.business.db.dao.AiModelDAO;
 import com.github.walkvoid.zone.ai.model.dto.AiModelDTO;
 import com.github.walkvoid.zone.ai.model.entity.AiModel;
 import com.github.walkvoid.wvframework.models.BooleanEnum;
-import com.github.walkvoid.wvframework.models.WebResponse;
+import com.github.walkvoid.wvframework.models.WebPageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.BeanUtils;
@@ -26,35 +28,37 @@ import java.util.stream.Collectors;
 public class AiModelController {
 
     @Autowired
-    private AiModelDAO dao;
+    private AiModelDAO aiModelDAO;
 
     @Operation(summary = "分页查询模型列表")
     @GetMapping("/page")
-    public WebResponse<List<AiModelDTO>> page(AiModelDTO query) {
-        List<AiModel> list = dao.selectList(toEntity(query));
-        List<AiModelDTO> items = list.stream()
-                .map(this::toDTO).collect(Collectors.toList());
-        return WebResponse.ok(items);
+    public WebPageResponse<AiModelDTO> page(
+            @RequestParam(value = "current", defaultValue = "0") long current,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @ModelAttribute AiModelDTO parameter) {
+        PageRequest<AiModelDTO> pageRequest = PageRequest.of(current, size, parameter);
+        PageResponse<AiModelDTO> pageResponse = aiModelDAO.page(pageRequest);
+        return WebPageResponse.ok(pageResponse);
     }
 
     @Operation(summary = "查询启用的模型（供AI调用使用）")
     @GetMapping("/enabled")
     public List<AiModelDTO> enabled() {
-        return dao.selectEnabled().stream()
+        return aiModelDAO.selectEnabled().stream()
                 .map(this::toDTO).collect(Collectors.toList());
     }
 
     @Operation(summary = "按ID查询")
     @GetMapping("/{id}")
-    public AiModelDTO getById(@PathVariable Long id) {
-        AiModel m = dao.selectById(id);
+    public AiModelDTO getById(@PathVariable("id") Long id) {
+        AiModel m = aiModelDAO.selectById(id);
         return m != null ? toDTO(m) : null;
     }
 
     @Operation(summary = "按编码查询")
     @GetMapping("/code/{modelCode}")
-    public AiModelDTO getByCode(@PathVariable String modelCode) {
-        AiModel m = dao.selectByCode(modelCode);
+    public AiModelDTO getByCode(@PathVariable("modelCode") String modelCode) {
+        AiModel m = aiModelDAO.selectByCode(modelCode);
         return m != null ? toDTO(m) : null;
     }
 
@@ -64,14 +68,14 @@ public class AiModelController {
         if (dto.getModelCode() == null || dto.getModelCode().isBlank()) {
             return "模型编码不能为空";
         }
-        if (dao.checkCodeExists(dto.getModelCode()) > 0) {
+        if (aiModelDAO.checkCodeExists(dto.getModelCode()) > 0) {
             return "模型编码已存在";
         }
         AiModel entity = toEntity(dto);
         entity.setCallCount(0L);
         entity.setCreateTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
-        dao.insert(entity);
+        aiModelDAO.insert(entity);
         return "OK";
     }
 
@@ -81,18 +85,21 @@ public class AiModelController {
         if (dto.getId() == null) return "ID不能为空";
         AiModel entity = toEntity(dto);
         entity.setUpdateTime(LocalDateTime.now());
-        dao.updateById(entity);
+        aiModelDAO.updateById(entity);
         return "OK";
     }
 
     @Operation(summary = "删除模型")
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id) {
-        dao.deleteById(id);
+    public String delete(@PathVariable("id") Long id) {
+        aiModelDAO.deleteById(id);
         return "OK";
     }
 
     private AiModel toEntity(AiModelDTO dto) {
+        if (dto == null) {
+            return new AiModel();
+        }
         AiModel entity = new AiModel();
         BeanUtils.copyProperties(dto, entity);
         if (dto.getIsEnabled() != null) {

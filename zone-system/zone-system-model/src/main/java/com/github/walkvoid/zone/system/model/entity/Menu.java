@@ -47,15 +47,12 @@ public class Menu implements Serializable {
     /** 权限标识 */
     private String permission;
 
-    /** 是否显示：1-是，0-否 */
+    /** 是否可见：1-是，0-否 */
     @TableField
     private BooleanEnum visible;
 
     /** 备注 */
     private String remark;
-
-    /** 状态：1-启用，0-禁用 */
-    private Integer status;
 
     /** 创建者ID */
     private Long createId;

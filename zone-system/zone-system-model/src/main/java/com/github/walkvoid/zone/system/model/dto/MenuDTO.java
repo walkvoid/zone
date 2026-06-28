@@ -1,5 +1,6 @@
 package com.github.walkvoid.zone.system.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -19,16 +20,21 @@ public class MenuDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /** 菜单ID（响应用） */
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
 
     private String name;
     private String type;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long pid;
     private String path;
     private String component;
     private String redirect;
     private String authCode;
-    private Integer status;
+    /** 是否可见：1-是，0-否 */
+    private Integer visible;
+    /** 排序号（对应数据库 sort 字段，升序） */
+    private Integer sort;
     private String linkSrc;
     private String activePath;
     private MenuMeta meta;

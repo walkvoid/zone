@@ -25,8 +25,8 @@ public class MenuTreeServiceImpl implements MenuTreeService {
     @Override
     public List<MenuTreeNode> getMenuTree(MenuTreeQueryDTO query) {
         List<Menu> menus;
-        if (Boolean.TRUE.equals(query.getOnlyEnabled())) {
-            menus = menuDAO.selectAllEnabledMenus();
+        if (Boolean.TRUE.equals(query.getOnlyVisible())) {
+            menus = menuDAO.selectAllVisibleMenus();
         } else {
             menus = menuDAO.selectAll();
         }
@@ -35,35 +35,33 @@ public class MenuTreeServiceImpl implements MenuTreeService {
                 .filter(m -> !MENU_TYPE_BUTTON.equals(m.getMenuType()))
                 .collect(Collectors.toList());
 
-        if (Boolean.TRUE.equals(query.getOnlyVisible())) {
-            menus = menus.stream()
-                    .filter(m -> m.getVisible() == null || m.getVisible().getKey() != 0)
-                    .collect(Collectors.toList());
-        }
-
         return buildTree(menus);
     }
 
     @Override
     public List<MenuTreeNode> getAllMenuTree() {
         MenuTreeQueryDTO query = new MenuTreeQueryDTO();
-        query.setOnlyEnabled(false);
         query.setOnlyVisible(false);
         return getMenuTree(query);
     }
 
     private List<MenuTreeNode> buildTree(List<Menu> menus) {
         Map<Long, List<Menu>> parentMap = menus.stream()
-                .collect(Collectors.groupingBy(
-                        Menu::getParentId,
-                        LinkedHashMap::new,
-                        Collectors.toList()));
+                .collect(Collectors.groupingBy(Menu::getParentId));
+
+        parentMap.values().forEach(this::sortMenusBySort);
 
         List<Menu> roots = parentMap.getOrDefault(0L, Collections.emptyList());
 
         return roots.stream()
                 .map(menu -> convertToNode(menu, parentMap))
                 .collect(Collectors.toList());
+    }
+
+    private void sortMenusBySort(List<Menu> menus) {
+        menus.sort(Comparator
+                .comparing((Menu menu) -> menu.getSort() != null ? menu.getSort() : 0)
+                .thenComparing(menu -> menu.getId() != null ? menu.getId() : 0L));
     }
 
     private MenuTreeNode convertToNode(Menu menu, Map<Long, List<Menu>> parentMap) {
@@ -77,14 +75,14 @@ public class MenuTreeServiceImpl implements MenuTreeService {
         } else if (MENU_TYPE_MENU.equals(menu.getMenuType())) {
             String url = menu.getUrl();
             if (StringUtils.hasText(url)) {
-                node.setComponent("views" + url + "/index.vue");
+                node.setComponent(resolveViewComponent(url));
             }
         }
 
         MenuTreeNode.MenuMeta meta = new MenuTreeNode.MenuMeta();
         meta.setTitle(menu.getMenuName());
         meta.setIcon(menu.getIcon());
-        meta.setOrder(menu.getSort());
+        meta.setOrder(menu.getSort() != null ? menu.getSort() : 0);
         meta.setHideInMenu(menu.getVisible() != null && menu.getVisible().getKey() == 0);
 
         if (StringUtils.hasText(menu.getPermission())) {
@@ -102,5 +100,12 @@ public class MenuTreeServiceImpl implements MenuTreeService {
         }
 
         return node;
+    }
+
+    private String resolveViewComponent(String url) {
+        if ("/ai/ai-model".equals(url)) {
+            return "views/ai/model/list.vue";
+        }
+        return "views" + url + "/list.vue";
     }
 }

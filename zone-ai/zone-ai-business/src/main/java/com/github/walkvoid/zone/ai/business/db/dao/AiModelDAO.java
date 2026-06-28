@@ -1,7 +1,13 @@
 package com.github.walkvoid.zone.ai.business.db.dao;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
+import com.github.walkvoid.wvframework.models.PageRequest;
+import com.github.walkvoid.wvframework.models.PageResponse;
+import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
 import com.github.walkvoid.zone.ai.business.db.mapper.AiModelMapper;
+import com.github.walkvoid.zone.ai.model.dto.AiModelDTO;
 import com.github.walkvoid.zone.ai.model.entity.AiModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -52,6 +58,12 @@ public class AiModelDAO {
         return mapper.selectList(qw);
     }
 
+    public PageDTO<AiModel> selectPage(PageDTO<AiModel> pageDTO, AiModel condition) {
+        QueryWrapper<AiModel> qw = new QueryWrapper<>(condition);
+        qw.orderByDesc("priority").orderByDesc("update_time");
+        return mapper.selectPage(pageDTO, qw);
+    }
+
     public int checkCodeExists(String modelCode) {
         return Math.toIntExact(mapper.selectCount(
                 new QueryWrapper<AiModel>().eq("model_code", modelCode)));
@@ -65,5 +77,13 @@ public class AiModelDAO {
         update.setId(id);
         update.setCallCount(model.getCallCount() + 1);
         return mapper.updateById(update);
+    }
+
+    public PageResponse<AiModelDTO> page(PageRequest<AiModelDTO> pageRequest) {
+        AiModel aiModel = BeanCopyUtils.copyBean(pageRequest.getParameter(), AiModel.class);
+        Page<AiModel> aiModelPage = mapper.selectPage(new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
+                new QueryWrapper<>(aiModel));
+        List<AiModelDTO> aiModelDTOS = BeanCopyUtils.copyList(aiModelPage.getRecords(), AiModelDTO.class);
+        return new PageResponse<>(aiModelPage.getTotal(), (int)aiModelPage.getSize(), aiModelPage.getCurrent(),aiModelDTOS);
     }
 }

@@ -32,6 +32,11 @@ public class RoleMenuRelDAO {
                 .eq("role_id", roleId).eq("menu_id", menuId));
     }
 
+    public int deleteByMenuId(Long menuId) {
+        return roleMenuRelMapper.delete(new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<RoleMenuRel>()
+                .eq("menu_id", menuId));
+    }
+
     public List<Long> selectMenuIdsByRoleId(Long roleId) {
         return roleMenuRelMapper.selectMenuIdsByRoleId(roleId);
     }

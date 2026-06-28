@@ -1,13 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding" defaultCharsetForPropertiesFiles="UTF-8">
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-ai/zone-ai-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-ai/zone-ai-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-ai/zone-ai-business/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-ai/zone-ai-business/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-ai/zone-ai-model/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-ai/zone-ai-model/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zone-common/zone-common-api/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zone-common/zone-common-business/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zone-common/zone-common-model/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-finance/zone-finance-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-finance/zone-finance-api/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zone-finance/zone-finance-business/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-finance/zone-finance-business/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-finance/zone-finance-model/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-finance/zone-finance-model/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zone-gateway/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zone-gateway/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-system/zone-system-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-system/zone-system-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-system/zone-system-business/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-system/zone-system-business/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-system/zone-system-model/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-system/zone-system-model/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-tools/zone-tools-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-tools/zone-tools-api/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-tools/zone-tools-business/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-tools/zone-tools-business/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-tools/zone-tools-model/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-tools/zone-tools-model/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-user/zone-user-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-user/zone-user-api/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zone-user/zone-user-business/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-user/zone-user-business/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zone-user/zone-user-model/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/zone-user/zone-user-model/src/main/resources" charset="UTF-8" />
   </component>
 </project>
