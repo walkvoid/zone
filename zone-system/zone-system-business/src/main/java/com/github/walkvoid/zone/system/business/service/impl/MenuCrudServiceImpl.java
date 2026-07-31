@@ -10,7 +10,8 @@ import com.github.walkvoid.zone.system.api.service.MenuCrudService;
 import com.github.walkvoid.zone.system.business.db.dao.MenuDAO;
 import com.github.walkvoid.zone.system.model.dto.MenuDTO;
 import com.github.walkvoid.zone.system.model.entity.Menu;
-import com.github.walkvoid.zone.user.business.db.dao.RoleMenuRelDAO;
+import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -25,14 +26,15 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @date 2025/11/30
  */
+@DubboService
 @Service
 public class MenuCrudServiceImpl implements MenuCrudService {
 
     @Autowired
     private MenuDAO menuDAO;
 
-    @Autowired
-    private RoleMenuRelDAO roleMenuRelDAO;
+    @DubboReference
+    private com.github.walkvoid.zone.user.api.service.RoleMenuRelService roleMenuRelService;
 
     @Override
     public List<MenuDTO> getMenuList() {
@@ -94,7 +96,7 @@ public class MenuCrudServiceImpl implements MenuCrudService {
         if (menuDAO.countByParentId(id) > 0) {
             throw new RuntimeException("存在子菜单，无法删除");
         }
-        roleMenuRelDAO.deleteByMenuId(id);
+        roleMenuRelService.deleteByMenuId(id);
         if (menuDAO.deleteById(id) <= 0) {
             throw new RuntimeException("删除菜单失败: " + id);
         }

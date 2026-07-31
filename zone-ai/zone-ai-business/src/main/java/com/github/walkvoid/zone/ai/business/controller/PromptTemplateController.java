@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
  */
 @Tag(name = "Prompt模板管理")
 @RestController
-@RequestMapping("/prompt-template")
+@RequestMapping("/ai/prompt-template")
 public class PromptTemplateController {
 
     @Autowired

@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  */
 @Tag(name = "AI模型管理")
 @RestController
-@RequestMapping("/ai-model")
+@RequestMapping("/ai/ai-model")
 public class AiModelController {
 
     @Autowired

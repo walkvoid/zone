@@ -19,7 +19,7 @@ import java.util.List;
 
 @Tag(name = "股票日K线")
 @RestController
-@RequestMapping("/stock/daily")
+@RequestMapping("/finance/stock/daily")
 public class StockDailyController {
 
     @Autowired

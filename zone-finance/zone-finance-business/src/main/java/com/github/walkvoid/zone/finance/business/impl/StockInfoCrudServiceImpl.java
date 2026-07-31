@@ -12,6 +12,7 @@ import com.github.walkvoid.zone.finance.model.dto.StockInfoDTO;
 import com.github.walkvoid.zone.finance.model.dto.StockInfoQueryDTO;
 import com.github.walkvoid.zone.finance.model.entity.StockInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@DubboService
 @Service
 public class StockInfoCrudServiceImpl implements StockInfoCrudService {
 

@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  */
 @Tag(name = "角色管理")
 @RestController
-@RequestMapping("/role")
+@RequestMapping("/user/role")
 public class RoleController {
 
     @Autowired

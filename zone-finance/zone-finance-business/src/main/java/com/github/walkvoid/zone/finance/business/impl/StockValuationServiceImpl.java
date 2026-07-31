@@ -4,9 +4,11 @@ import com.github.walkvoid.zone.finance.api.service.StockValuationService;
 import com.github.walkvoid.zone.finance.business.db.dao.StockValuationDAO;
 import com.github.walkvoid.zone.finance.model.entity.StockValuation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
+@DubboService
 @Service
 public class StockValuationServiceImpl implements StockValuationService {
 

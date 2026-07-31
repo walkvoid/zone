@@ -16,6 +16,7 @@
         <mybatis-plus.version>3.5.5</mybatis-plus.version>
         <spring-boot.version>3.2.11</spring-boot.version>
         <spring-cloud.version>2023.0.1</spring-cloud.version>
+        <dubbo.version>3.3.6</dubbo.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -60,6 +61,16 @@
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-finance-api</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-finance-model</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-finance-business</artifactId><version>${project.version}</version></dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-starter</artifactId>
+                <version>${dubbo.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-gateway</artifactId>
+                <version>${spring-cloud.version}</version>
+            </dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-tools-api</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-tools-model</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-tools-business</artifactId><version>${project.version}</version></dependency>
