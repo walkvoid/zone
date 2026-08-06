@@ -3,6 +3,7 @@ package com.github.walkvoid.zone.gateway.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,7 +41,7 @@ public class SecurityConfig {
                 .pathMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/doc.html", "/webjars/**").permitAll()
                 .anyExchange().authenticated()
             )
-            .addFilterAt(jwtAuthFilter, org.springframework.security.web.server.authentication.AuthenticationWebFilter.class);
+            .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.FORM_LOGIN);
 
         return http.build();
     }

@@ -13,10 +13,6 @@
 
     <properties>
         <java.version>21</java.version>
-        <mybatis-plus.version>3.5.5</mybatis-plus.version>
-        <spring-boot.version>3.2.11</spring-boot.version>
-        <spring-cloud.version>2023.0.1</spring-cloud.version>
-        <dubbo.version>3.3.6</dubbo.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,7 +20,7 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- Import wv-framework BOM for version management -->
+            <!-- Import wv-framework BOM for unified version management -->
             <dependency>
                 <groupId>com.github.walkvoid.wvframework</groupId>
                 <artifactId>wvframework-dependencies</artifactId>
@@ -32,21 +28,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- BOM doesn't resolve in reactor → explicit versions -->
+            <!-- Import LangChain4j BOM for unified version management -->
             <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-annotation</artifactId>
-                <version>${mybatis-plus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
-                <version>${mybatis-plus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>1.18.30</version>
+                <groupId>dev.langchain4j</groupId>
+                <artifactId>langchain4j-bom</artifactId>
+                <version>1.10.0</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <!-- Zone internal modules -->
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-system-api</artifactId><version>${project.version}</version></dependency>
@@ -61,16 +49,6 @@
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-finance-api</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-finance-model</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-finance-business</artifactId><version>${project.version}</version></dependency>
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-spring-boot-starter</artifactId>
-                <version>${dubbo.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-starter-gateway</artifactId>
-                <version>${spring-cloud.version}</version>
-            </dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-tools-api</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-tools-model</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-tools-business</artifactId><version>${project.version}</version></dependency>
@@ -92,9 +70,14 @@
                     </configuration>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.2.2</version>
+                </plugin>
+                <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>3.2.11</version>
+                    <version>3.3.13</version>
                 </plugin>
             </plugins>
         </pluginManagement>

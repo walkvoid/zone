@@ -101,6 +101,7 @@ logs/
 application-dev.properties
 application-test.properties
 application-prod.properties
+application-lls.properties
 
 # 数据库文件
 *.db
