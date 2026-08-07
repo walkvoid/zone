@@ -1,4 +1,4 @@
-package com.github.walkvoid.zone.ai.api.service;
+package com.github.walkvoid.zone.ai.business.service;
 
 import com.github.walkvoid.zone.ai.model.entity.PromptTemplate;
 import java.util.List;

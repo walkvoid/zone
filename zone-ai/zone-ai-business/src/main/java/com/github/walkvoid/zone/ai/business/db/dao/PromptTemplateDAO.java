@@ -1,4 +1,4 @@
-package com.github.walkvoid.zone.ai.business.db.dao;
+﻿package com.github.walkvoid.zone.ai.business.db.dao;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * Prompt模板 DAO
+ * Prompt妯℃澘 DAO
  *
  * @author walkvoid
  */
@@ -52,7 +52,7 @@ public class PromptTemplateDAO {
     }
 
     public PageResponse<PromptTemplateDTO> page(PageRequest<PromptTemplateDTO> pageRequest) {
-        PromptTemplate condition = BeanCopyUtils.copyBean(pageRequest.getParameter(), PromptTemplate.class);
+        PromptTemplate condition = BeanCopyUtils.copyBean(pageRequest.getParam(), PromptTemplate.class);
         Page<PromptTemplate> page = mapper.selectPage(
                 new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
                 new QueryWrapper<>(condition).orderByDesc("update_time"));

@@ -1,6 +1,6 @@
 package com.github.walkvoid.zone.ai.business.service.impl;
 
-import com.github.walkvoid.zone.ai.api.service.AiModelService;
+import com.github.walkvoid.zone.ai.business.service.AiModelService;
 import com.github.walkvoid.zone.ai.business.db.dao.AiModelDAO;
 import com.github.walkvoid.zone.ai.model.entity.AiModel;
 import org.apache.dubbo.config.annotation.DubboService;

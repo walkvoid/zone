@@ -1,4 +1,4 @@
-package com.github.walkvoid.zone.ai.business.db.dao;
+﻿package com.github.walkvoid.zone.ai.business.db.dao;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * AI模型 DAO
+ * AI妯″瀷 DAO
  *
  * @author walkvoid
  */
@@ -69,7 +69,7 @@ public class AiModelDAO {
                 new QueryWrapper<AiModel>().eq("model_code", modelCode)));
     }
 
-    /** 调用次数 +1 */
+    /** 璋冪敤娆℃暟 +1 */
     public int incrementCallCount(Long id) {
         AiModel model = mapper.selectById(id);
         if (model == null || model.getCallCount() == null) return 0;
@@ -80,7 +80,7 @@ public class AiModelDAO {
     }
 
     public PageResponse<AiModelDTO> page(PageRequest<AiModelDTO> pageRequest) {
-        AiModel aiModel = BeanCopyUtils.copyBean(pageRequest.getParameter(), AiModel.class);
+        AiModel aiModel = BeanCopyUtils.copyBean(pageRequest.getParam(), AiModel.class);
         Page<AiModel> aiModelPage = mapper.selectPage(new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
                 new QueryWrapper<>(aiModel));
         List<AiModelDTO> aiModelDTOS = BeanCopyUtils.copyList(aiModelPage.getRecords(), AiModelDTO.class);

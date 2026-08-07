@@ -1,4 +1,4 @@
-package com.github.walkvoid.zone.user.business.db.dao;
+﻿package com.github.walkvoid.zone.user.business.db.dao;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -14,11 +14,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * 角色DAO类
+ * 瑙掕壊DAO绫?
  * @author walkvoid
  * @version 1.0
  * @date 2025/11/30
- * @desc 角色数据访问层类，提供角色相关的数据库操作
+ * @desc 瑙掕壊鏁版嵁璁块棶灞傜被锛屾彁渚涜鑹茬浉鍏崇殑鏁版嵁搴撴搷浣?
  */
 @Repository
 public class RoleDAO {
@@ -27,18 +27,18 @@ public class RoleDAO {
     private RoleMapper roleMapper;
 
     /**
-     * 根据ID查询角色
-     * @param id 角色ID
-     * @return 角色信息
+     * 鏍规嵁ID鏌ヨ瑙掕壊
+     * @param id 瑙掕壊ID
+     * @return 瑙掕壊淇℃伅
      */
     public Role selectById(Long id) {
         return roleMapper.selectById(id);
     }
 
     /**
-     * 根据角色代码查询角色
-     * @param roleCode 角色代码
-     * @return 角色信息
+     * 鏍规嵁瑙掕壊浠ｇ爜鏌ヨ瑙掕壊
+     * @param roleCode 瑙掕壊浠ｇ爜
+     * @return 瑙掕壊淇℃伅
      */
     public Role selectByRoleCode(String roleCode) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Role> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
@@ -47,45 +47,45 @@ public class RoleDAO {
     }
 
     /**
-     * 插入角色
-     * @param role 角色信息
-     * @return 影响行数
+     * 鎻掑叆瑙掕壊
+     * @param role 瑙掕壊淇℃伅
+     * @return 褰卞搷琛屾暟
      */
     public int insert(Role role) {
         return roleMapper.insert(role);
     }
 
     /**
-     * 更新角色
-     * @param role 角色信息
-     * @return 影响行数
+     * 鏇存柊瑙掕壊
+     * @param role 瑙掕壊淇℃伅
+     * @return 褰卞搷琛屾暟
      */
     public int updateById(Role role) {
         return roleMapper.updateById(role);
     }
 
     /**
-     * 删除角色
-     * @param id 角色ID
-     * @return 影响行数
+     * 鍒犻櫎瑙掕壊
+     * @param id 瑙掕壊ID
+     * @return 褰卞搷琛屾暟
      */
     public int deleteById(Long id) {
         return roleMapper.deleteById(id);
     }
 
     /**
-     * 批量删除角色
-     * @param ids 角色ID列表
-     * @return 影响行数
+     * 鎵归噺鍒犻櫎瑙掕壊
+     * @param ids 瑙掕壊ID鍒楄〃
+     * @return 褰卞搷琛屾暟
      */
     public int deleteBatchIds(List<Long> ids) {
         return roleMapper.deleteBatchIds(ids);
     }
 
     /**
-     * 根据用户ID查询角色列表
-     * @param userId 用户ID
-     * @return 角色列表
+     * 鏍规嵁鐢ㄦ埛ID鏌ヨ瑙掕壊鍒楄〃
+     * @param userId 鐢ㄦ埛ID
+     * @return 瑙掕壊鍒楄〃
      */
     public List<Role> selectRolesByUserId(Long userId) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Role> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
@@ -94,8 +94,8 @@ public class RoleDAO {
     }
 
     /**
-     * 查询所有可用的角色
-     * @return 角色列表
+     * 鏌ヨ鎵€鏈夊彲鐢ㄧ殑瑙掕壊
+     * @return 瑙掕壊鍒楄〃
      */
     public List<Role> selectAvailableRoles() {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Role> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
@@ -104,8 +104,8 @@ public class RoleDAO {
     }
 
     /**
-     * 查询非系统角色
-     * @return 角色列表
+     * 鏌ヨ闈炵郴缁熻鑹?
+     * @return 瑙掕壊鍒楄〃
      */
     public List<Role> selectNonSystemRoles() {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Role> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
@@ -114,17 +114,17 @@ public class RoleDAO {
     }
 
     /**
-     * 查询所有角色
-     * @return 角色列表
+     * 鏌ヨ鎵€鏈夎鑹?
+     * @return 瑙掕壊鍒楄〃
      */
     public List<Role> selectAll() {
         return roleMapper.selectList(null);
     }
 
     /**
-     * 根据条件查询角色列表
-     * @param role 查询条件
-     * @return 角色列表
+     * 鏍规嵁鏉′欢鏌ヨ瑙掕壊鍒楄〃
+     * @param role 鏌ヨ鏉′欢
+     * @return 瑙掕壊鍒楄〃
      */
     public List<Role> selectList(Role role) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Role> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>(role);
@@ -132,7 +132,7 @@ public class RoleDAO {
     }
 
     /**
-     * 分页查询角色列表
+     * 鍒嗛〉鏌ヨ瑙掕壊鍒楄〃
      */
     public PageDTO<Role> selectPage(PageDTO<Role> pageDTO, Role role) {
         QueryWrapper<Role> queryWrapper = new QueryWrapper<>(role);
@@ -140,7 +140,7 @@ public class RoleDAO {
     }
 
     public PageResponse<RoleDTO> page(PageRequest<RoleDTO> pageRequest) {
-        Role condition = BeanCopyUtils.copyBean(pageRequest.getParameter(), Role.class);
+        Role condition = BeanCopyUtils.copyBean(pageRequest.getParam(), Role.class);
         Page<Role> page = roleMapper.selectPage(
                 new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
                 new QueryWrapper<>(condition));
@@ -149,17 +149,17 @@ public class RoleDAO {
     }
 
     /**
-     * 统计角色数量
-     * @return 角色数量
+     * 缁熻瑙掕壊鏁伴噺
+     * @return 瑙掕壊鏁伴噺
      */
     public long count() {
         return roleMapper.selectCount(null);
     }
 
     /**
-     * 根据条件统计角色数量
-     * @param role 查询条件
-     * @return 角色数量
+     * 鏍规嵁鏉′欢缁熻瑙掕壊鏁伴噺
+     * @param role 鏌ヨ鏉′欢
+     * @return 瑙掕壊鏁伴噺
      */
     public long countByCondition(Role role) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Role> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>(role);
@@ -167,9 +167,9 @@ public class RoleDAO {
     }
 
     /**
-     * 检查角色代码是否存在
-     * @param roleCode 角色代码
-     * @return 存在数量
+     * 妫€鏌ヨ鑹蹭唬鐮佹槸鍚﹀瓨鍦?
+     * @param roleCode 瑙掕壊浠ｇ爜
+     * @return 瀛樺湪鏁伴噺
      */
     public long checkRoleCodeExists(String roleCode) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Role> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
@@ -178,9 +178,9 @@ public class RoleDAO {
     }
 
     /**
-     * 检查角色名称是否存在
-     * @param roleName 角色名称
-     * @return 存在数量
+     * 妫€鏌ヨ鑹插悕绉版槸鍚﹀瓨鍦?
+     * @param roleName 瑙掕壊鍚嶇О
+     * @return 瀛樺湪鏁伴噺
      */
     public long checkRoleNameExists(String roleName) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Role> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();

@@ -1,4 +1,4 @@
-package com.github.walkvoid.zone.finance.business.db.dao;
+﻿package com.github.walkvoid.zone.finance.business.db.dao;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -47,7 +47,7 @@ public class StockDailyDAO {
     }
 
     public PageResponse<StockDaily> page(PageRequest<StockDailyQueryDTO> pageRequest) {
-        StockDailyQueryDTO query = pageRequest.getParameter();
+        StockDailyQueryDTO query = pageRequest.getParam();
         String stockCode = query != null ? query.getStockCode() : null;
         LocalDate startDate = query != null ? query.getStartDate() : null;
         LocalDate endDate = query != null ? query.getEndDate() : null;

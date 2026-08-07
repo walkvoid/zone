@@ -1,10 +1,16 @@
-package com.github.walkvoid.zone.ai.business.controller;
+﻿package com.github.walkvoid.zone.ai.business.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.walkvoid.wvframework.models.PageRequest;
 import com.github.walkvoid.wvframework.models.PageResponse;
+import com.github.walkvoid.zone.ai.business.db.dao.AiModelDAO;
 import com.github.walkvoid.zone.ai.business.db.dao.PromptTemplateDAO;
+import com.github.walkvoid.zone.ai.business.db.dao.PromptTemplateRunRecordDAO;
+import com.github.walkvoid.zone.ai.business.service.PromptTemplateApi;
 import com.github.walkvoid.zone.ai.model.dto.PromptTemplateDTO;
+import com.github.walkvoid.zone.ai.model.entity.AiModel;
 import com.github.walkvoid.zone.ai.model.entity.PromptTemplate;
+import com.github.walkvoid.zone.ai.model.entity.PromptTemplateRunRecord;
 import com.github.walkvoid.wvframework.models.WebPageResponse;
 import com.github.walkvoid.wvframework.models.WebResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,7 +19,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Prompt模板管理 Controller
@@ -27,6 +36,18 @@ public class PromptTemplateController {
 
     @Autowired
     private PromptTemplateDAO dao;
+
+    @Autowired
+    private PromptTemplateApi promptTemplateApi;
+
+    @Autowired
+    private PromptTemplateRunRecordDAO runRecordDAO;
+
+    @Autowired
+    private AiModelDAO aiModelDAO;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Operation(summary = "分页查询模板列表")
     @GetMapping("/page")
@@ -87,6 +108,70 @@ public class PromptTemplateController {
     public WebResponse<String> delete(@PathVariable("id") Long id) {
         dao.deleteById(id);
         return WebResponse.ok("OK");
+    }
+
+    @Operation(summary = "运行模板")
+    @PostMapping("/run")
+    public WebResponse<String> run(@RequestBody Map<String, Object> request) {
+        String templateCode = (String) request.get("templateCode");
+        @SuppressWarnings("unchecked")
+        Map<String, String> variables = (Map<String, String>) request.get("variables");
+
+        if (templateCode == null || templateCode.isBlank()) {
+            return WebResponse.of(400, "模板编码不能为空", null, "warn");
+        }
+
+        PromptTemplate template = dao.selectByCode(templateCode);
+        if (template == null) {
+            return WebResponse.of(400, "模板不存在: " + templateCode, null, "warn");
+        }
+
+        // 渲染 prompt
+        String renderedPrompt = template.getTemplateContent();
+        if (variables != null) {
+            for (Map.Entry<String, String> entry : variables.entrySet()) {
+                renderedPrompt = renderedPrompt.replace("{" + entry.getKey() + "}", entry.getValue());
+            }
+        }
+
+        // 获取模型名称
+        String modelName = null;
+        List<AiModel> models = aiModelDAO.selectEnabled();
+        if (models != null && !models.isEmpty()) {
+            modelName = models.get(0).getModelCode();
+        }
+
+        // 构建运行记录
+        PromptTemplateRunRecord record = new PromptTemplateRunRecord();
+        record.setTemplateId(template.getId());
+        record.setRenderedPrompt(renderedPrompt);
+        record.setModelName(modelName);
+        record.setRunStartTime(LocalDateTime.now());
+        try {
+            record.setInputParams(variables != null ? objectMapper.writeValueAsString(variables) : null);
+        } catch (Exception e) {
+            record.setInputParams(variables != null ? variables.toString() : null);
+        }
+
+        try {
+            String result = promptTemplateApi.executePrompt(templateCode, variables);
+            record.setRunResult(result);
+            record.setStatus(1);
+        } catch (Exception e) {
+            record.setStatus(0);
+            record.setErrorMessage(e.getMessage());
+        }
+
+        record.setRunEndTime(LocalDateTime.now());
+        record.setDurationMs(Duration.between(record.getRunStartTime(), record.getRunEndTime()).toMillis());
+        record.setCreateTime(LocalDateTime.now());
+        runRecordDAO.insert(record);
+
+        if (record.getStatus() == 1) {
+            return WebResponse.ok(record.getRunResult());
+        } else {
+            return WebResponse.of(500, record.getErrorMessage(), null, "error");
+        }
     }
 
     private PromptTemplate toEntity(PromptTemplateDTO dto) {

@@ -1,6 +1,6 @@
 package com.github.walkvoid.zone.ai.business.service.impl;
 
-import com.github.walkvoid.zone.ai.api.PromptTemplateApi;
+import com.github.walkvoid.zone.ai.business.service.PromptTemplateApi;
 import com.github.walkvoid.zone.ai.business.db.dao.AiModelDAO;
 import com.github.walkvoid.zone.ai.business.db.dao.PromptTemplateDAO;
 import com.github.walkvoid.zone.ai.business.llm.LLMClient;

@@ -1,4 +1,4 @@
-package com.github.walkvoid.zone.ai.api;
+package com.github.walkvoid.zone.ai.business.service;
 
 import com.github.walkvoid.zone.ai.model.dto.PromptTemplateDTO;
 import org.springframework.web.bind.annotation.GetMapping;

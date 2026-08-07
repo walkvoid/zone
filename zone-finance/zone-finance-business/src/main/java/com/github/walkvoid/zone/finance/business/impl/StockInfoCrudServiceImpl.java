@@ -1,4 +1,4 @@
-package com.github.walkvoid.zone.finance.business.impl;
+﻿package com.github.walkvoid.zone.finance.business.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -40,8 +40,8 @@ public class StockInfoCrudServiceImpl implements StockInfoCrudService {
 
     @Override
     public PageResponse<StockInfoDTO> page(PageRequest<StockInfoQueryDTO> pageRequest) {
-        StockInfoQueryDTO query = pageRequest.getParameter() != null
-                ? pageRequest.getParameter() : new StockInfoQueryDTO();
+        StockInfoQueryDTO query = pageRequest.getParam() != null
+                ? pageRequest.getParam() : new StockInfoQueryDTO();
         IPage<StockInfo> iPage = stockInfoDAO.selectPage(
                 new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
                 buildWrapper(query));
@@ -119,7 +119,7 @@ public class StockInfoCrudServiceImpl implements StockInfoCrudService {
     public void update(Long id, StockInfoDTO dto) {
         StockInfo entity = stockInfoDAO.selectById(id);
         if (entity == null) {
-            throw new RuntimeException("股票不存在: " + id);
+            throw new RuntimeException("鑲＄エ涓嶅瓨鍦? " + id);
         }
         StockInfo updated = BeanCopyUtils.copyBean(dto, StockInfo.class);
         updated.setId(id);

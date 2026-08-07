@@ -1,6 +1,6 @@
 package com.github.walkvoid.zone.ai.business.service.impl;
 
-import com.github.walkvoid.zone.ai.api.service.PromptTemplateService;
+import com.github.walkvoid.zone.ai.business.service.PromptTemplateService;
 import com.github.walkvoid.zone.ai.business.db.dao.PromptTemplateDAO;
 import com.github.walkvoid.zone.ai.model.entity.PromptTemplate;
 import org.apache.dubbo.config.annotation.DubboService;
