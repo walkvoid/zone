@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.walkvoid.wvframework.models.PageRequest;
-import com.github.walkvoid.wvframework.models.PageResponse;
 import com.github.walkvoid.zone.finance.business.db.mapper.StockDailyMapper;
 import com.github.walkvoid.zone.finance.model.dto.StockDailyQueryDTO;
 import com.github.walkvoid.zone.finance.model.entity.StockDaily;
@@ -46,15 +45,17 @@ public class StockDailyDAO {
         return mapper.selectPage(pageDTO, buildWrapper(stockCode, startDate, endDate));
     }
 
-    public PageResponse<StockDaily> page(PageRequest<StockDailyQueryDTO> pageRequest) {
+    public PageDTO<StockDaily> page(PageRequest<StockDailyQueryDTO> pageRequest) {
         StockDailyQueryDTO query = pageRequest.getParam();
         String stockCode = query != null ? query.getStockCode() : null;
         LocalDate startDate = query != null ? query.getStartDate() : null;
         LocalDate endDate = query != null ? query.getEndDate() : null;
-        Page<StockDaily> page = mapper.selectPage(
+        Page<StockDaily> mpPage = mapper.selectPage(
                 new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
                 buildWrapper(stockCode, startDate, endDate));
-        return new PageResponse<>(page.getTotal(), (int) page.getSize(), page.getCurrent(), page.getRecords());
+        PageDTO<StockDaily> result = new PageDTO<>(mpPage.getCurrent(), mpPage.getSize(), mpPage.getTotal());
+        result.setRecords(mpPage.getRecords());
+        return result;
     }
 
     private QueryWrapper<StockDaily> buildWrapper(String stockCode, LocalDate startDate, LocalDate endDate) {

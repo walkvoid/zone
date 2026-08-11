@@ -1,7 +1,7 @@
-package com.github.walkvoid.zone.finance.api.service;
+﻿package com.github.walkvoid.zone.finance.api.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.walkvoid.wvframework.models.PageRequest;
-import com.github.walkvoid.wvframework.models.PageResponse;
 import com.github.walkvoid.zone.finance.model.dto.StockInfoDTO;
 import com.github.walkvoid.zone.finance.model.dto.StockInfoQueryDTO;
 
@@ -22,7 +22,7 @@ public interface StockInfoCrudService {
     /**
      * 分页查询股票列表
      */
-    PageResponse<StockInfoDTO> page(PageRequest<StockInfoQueryDTO> pageRequest);
+    PageDTO<StockInfoDTO> page(PageRequest<StockInfoQueryDTO> pageRequest);
 
     /**
      * 按ID查询详情

@@ -13,7 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * LLM 调用客户端
+ * LLM 调用客户端，封装OpenAI兼容的Chat Completions API调用
+ *
+ * @author walkvoid
  */
 @Component
 public class LLMClient {
@@ -22,6 +24,16 @@ public class LLMClient {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    /**
+     * 发送Chat请求到LLM服务并返回响应内容
+     *
+     * @param baseUrl      LLM服务Base URL
+     * @param apiKey       API Key
+     * @param model        模型名称
+     * @param systemPrompt 系统提示词
+     * @param userPrompt   用户提示词
+     * @return LLM返回的文本内容
+     */
     public String chat(String baseUrl, String apiKey, String model,
                        String systemPrompt, String userPrompt) {
         String url = baseUrl + "/chat/completions";

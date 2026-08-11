@@ -9,6 +9,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Prompt模板 Service 实现
+ *
+ * @author walkvoid
+ */
 @DubboService
 @Service
 public class PromptTemplateServiceImpl implements PromptTemplateService {

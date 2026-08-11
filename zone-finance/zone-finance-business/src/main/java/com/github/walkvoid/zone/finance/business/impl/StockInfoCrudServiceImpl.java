@@ -3,8 +3,8 @@
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.walkvoid.wvframework.models.PageRequest;
-import com.github.walkvoid.wvframework.models.PageResponse;
 import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
 import com.github.walkvoid.zone.finance.api.service.StockInfoCrudService;
 import com.github.walkvoid.zone.finance.business.db.dao.StockInfoDAO;
@@ -39,14 +39,16 @@ public class StockInfoCrudServiceImpl implements StockInfoCrudService {
     }
 
     @Override
-    public PageResponse<StockInfoDTO> page(PageRequest<StockInfoQueryDTO> pageRequest) {
+    public PageDTO<StockInfoDTO> page(PageRequest<StockInfoQueryDTO> pageRequest) {
         StockInfoQueryDTO query = pageRequest.getParam() != null
                 ? pageRequest.getParam() : new StockInfoQueryDTO();
         IPage<StockInfo> iPage = stockInfoDAO.selectPage(
                 new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
                 buildWrapper(query));
         List<StockInfoDTO> records = iPage.getRecords().stream().map(this::toDTO).toList();
-        return new PageResponse<>(iPage.getTotal(), (int) iPage.getSize(), iPage.getCurrent(), records);
+        PageDTO<StockInfoDTO> result = new PageDTO<>(iPage.getCurrent(), iPage.getSize(), iPage.getTotal());
+        result.setRecords(records);
+        return result;
     }
 
     private QueryWrapper<StockInfo> buildWrapper(StockInfoQueryDTO query) {
@@ -119,7 +121,7 @@ public class StockInfoCrudServiceImpl implements StockInfoCrudService {
     public void update(Long id, StockInfoDTO dto) {
         StockInfo entity = stockInfoDAO.selectById(id);
         if (entity == null) {
-            throw new RuntimeException("鑲＄エ涓嶅瓨鍦? " + id);
+            throw new RuntimeException("股票不存在: " + id);
         }
         StockInfo updated = BeanCopyUtils.copyBean(dto, StockInfo.class);
         updated.setId(id);

@@ -1,7 +1,7 @@
-package com.github.walkvoid.zone.system.business.controller;
+﻿package com.github.walkvoid.zone.system.business.controller;
 
+import com.github.walkvoid.wvframework.models.ApiResult;
 import com.github.walkvoid.wvframework.models.BooleanEnum;
-import com.github.walkvoid.wvframework.models.WebResponse;
 import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
 import com.github.walkvoid.wvframework.utils.JwtUtils;
 import com.github.walkvoid.zone.user.api.service.RoleMenuRelService;
@@ -48,16 +48,16 @@ public class AuthController {
 
     @Operation(summary = "用户注册")
     @PostMapping("/auth/register")
-    public WebResponse<Map<String, String>> register(@RequestBody RegisterRequest req,
+    public ApiResult<Map<String, String>> register(@RequestBody RegisterRequest req,
                                                       HttpServletResponse response) {
         if (req.username == null || req.username.trim().length() < 3 || req.username.trim().length() > 20) {
-            return WebResponse.of(400, "用户名需 3-20 个字符", null, "warn");
+            return ApiResult.error(400, "用户名需 3-20 个字符");
         }
         if (req.password == null || req.password.length() < 6) {
-            return WebResponse.of(400, "密码至少 6 位", null, "warn");
+            return ApiResult.error(400, "密码至少 6 位");
         }
         if (userInfoService.checkUsernameExists(req.username)) {
-            return WebResponse.of(400, "用户名已存在", null, "warn");
+            return ApiResult.error(400, "用户名已存在");
         }
 
         UserInfo user = new UserInfo();
@@ -84,21 +84,21 @@ public class AuthController {
         response.addCookie(cookie);
 
         Map<String, String> data = Map.of("accessToken", accessToken);
-        return WebResponse.ok(data);
+        return ApiResult.ok(data);
     }
 
     // ==================== 登录 ====================
 
     @Operation(summary = "用户登录")
     @PostMapping("/auth/login")
-    public WebResponse<Map<String, String>> login(@RequestBody LoginRequest req,
+    public ApiResult<Map<String, String>> login(@RequestBody LoginRequest req,
                                                    HttpServletResponse response) {
         UserInfo user = userInfoService.getByUsername(req.username);
         if (user == null) {
-            return WebResponse.of(401, "用户名或密码错误", null, "error");
+            return ApiResult.error(401, "用户名或密码错误");
         }
         if (!passwordEncoder.matches(req.password, user.getPassword())) {
-            return WebResponse.of(401, "用户名或密码错误", null, "error");
+            return ApiResult.error(401, "用户名或密码错误");
         }
 
         List<String> roleCodes = roleService.getRoleCodesByUserId(user.getId());
@@ -115,23 +115,23 @@ public class AuthController {
         userInfoService.updateLastLoginInfo(user.getId(), LocalDateTime.now(), getClientIp());
 
         Map<String, String> data = Map.of("accessToken", accessToken);
-        return WebResponse.ok(data);
+        return ApiResult.ok(data);
     }
 
     // ==================== 刷新 Token ====================
 
     @Operation(summary = "刷新 accessToken")
     @PostMapping("/auth/refresh")
-    public WebResponse<String> refresh(HttpServletRequest request, HttpServletResponse response) {
+    public ApiResult<String> refresh(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = getCookieValue(request, "jwt");
         if (refreshToken == null) {
-            return WebResponse.of(401, "未登录", null, "error");
+            return ApiResult.error(401, "未登录");
         }
 
         var claims = JwtUtils.parseRefreshToken(refreshToken);
         if (claims == null) {
             clearCookie(response);
-            return WebResponse.of(401, "登录已过期", null, "error");
+            return ApiResult.error(401, "登录已过期");
         }
 
         Long userId = JwtUtils.getUserId(claims);
@@ -147,39 +147,37 @@ public class AuthController {
         cookie.setMaxAge(30 * 24 * 60 * 60);
         response.addCookie(cookie);
 
-        return WebResponse.ok(newAccessToken);
+        return ApiResult.ok(newAccessToken);
     }
 
     // ==================== 退出 ====================
 
     @Operation(summary = "退出登录")
     @PostMapping("/auth/logout")
-    public WebResponse<Void> logout(HttpServletResponse response) {
+    public ApiResult<String> logout(HttpServletResponse response) {
         clearCookie(response);
-        return WebResponse.ok(null);
+        return ApiResult.ok("OK");
     }
 
     // ==================== 权限码 ====================
 
     @Operation(summary = "获取当前用户权限码")
     @GetMapping("/auth/codes")
-    public WebResponse<List<String>> getCodes() {
+    public ApiResult<List<String>> getCodes() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
-            return WebResponse.of(401, "未登录", null, "error");
+            return ApiResult.error(401, "未登录");
         }
 
         String username = auth.getName();
         UserInfo user = userInfoService.getByUsername(username);
         if (user == null) {
-            return WebResponse.ok(List.of());
+            return ApiResult.ok(List.of());
         }
 
-        // 获取用户角色 → 角色菜单关联 → 菜单权限码
         Set<Long> menuIdSet = new HashSet<>();
         var roles = roleService.getRoleCodesByUserId(user.getId());
-        // 需要通过 RoleMenuRelService 获取菜单权限码
-        // 先获取角色ID列表（通过角色编码反查）
+
         var allRoles = roleService.selectAll();
         List<Long> roleIds = allRoles.stream()
                 .filter(r -> roles.contains(r.getRoleCode()))
@@ -198,28 +196,28 @@ public class AuthController {
                 .distinct()
                 .collect(Collectors.toList());
 
-        return WebResponse.ok(codes);
+        return ApiResult.ok(codes);
     }
 
     // ==================== 用户信息 ====================
 
     @Operation(summary = "获取当前用户信息")
     @GetMapping("/system/user/info")
-    public WebResponse<UserInfoDTO> getUserInfo() {
+    public ApiResult<UserInfoDTO> getUserInfo() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
-            return WebResponse.of(401, "未登录", null, "error");
+            return ApiResult.error(401, "未登录");
         }
 
         String username = auth.getName();
         UserInfo user = userInfoService.getByUsername(username);
         if (user == null) {
-            return WebResponse.of(401, "用户不存在", null, "error");
+            return ApiResult.error(401, "用户不存在");
         }
 
         UserInfoDTO dto = BeanCopyUtils.copyBean(user, UserInfoDTO.class);
         dto.setPassword(null);
-        return WebResponse.ok(dto);
+        return ApiResult.ok(dto);
     }
 
     // ==================== 辅助方法 ====================
@@ -243,7 +241,7 @@ public class AuthController {
     }
 
     private String getClientIp() {
-        return "127.0.0.1"; // TODO: 从 request 获取真实 IP
+        return "127.0.0.1";
     }
 
     // ==================== DTO ====================

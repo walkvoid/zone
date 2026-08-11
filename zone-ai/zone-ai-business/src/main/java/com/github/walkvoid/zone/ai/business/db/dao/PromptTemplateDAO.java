@@ -2,8 +2,8 @@
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.walkvoid.wvframework.models.PageRequest;
-import com.github.walkvoid.wvframework.models.PageResponse;
 import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
 import com.github.walkvoid.zone.ai.business.db.mapper.PromptTemplateMapper;
 import com.github.walkvoid.zone.ai.model.dto.PromptTemplateDTO;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * Prompt妯℃澘 DAO
+ * Prompt模板 DAO
  *
  * @author walkvoid
  */
@@ -51,13 +51,15 @@ public class PromptTemplateDAO {
         return mapper.selectList(qw);
     }
 
-    public PageResponse<PromptTemplateDTO> page(PageRequest<PromptTemplateDTO> pageRequest) {
+    public PageDTO<PromptTemplateDTO> page(PageRequest<PromptTemplateDTO> pageRequest) {
         PromptTemplate condition = BeanCopyUtils.copyBean(pageRequest.getParam(), PromptTemplate.class);
-        Page<PromptTemplate> page = mapper.selectPage(
+        Page<PromptTemplate> mpPage = mapper.selectPage(
                 new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
                 new QueryWrapper<>(condition).orderByDesc("update_time"));
-        List<PromptTemplateDTO> records = BeanCopyUtils.copyList(page.getRecords(), PromptTemplateDTO.class);
-        return new PageResponse<>(page.getTotal(), (int) page.getSize(), page.getCurrent(), records);
+        List<PromptTemplateDTO> records = BeanCopyUtils.copyList(mpPage.getRecords(), PromptTemplateDTO.class);
+        PageDTO<PromptTemplateDTO> result = new PageDTO<>(mpPage.getCurrent(), mpPage.getSize(), mpPage.getTotal());
+        result.setRecords(records);
+        return result;
     }
 
     public int checkCodeExists(String templateCode) {

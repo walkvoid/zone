@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.walkvoid.wvframework.models.PageRequest;
-import com.github.walkvoid.wvframework.models.PageResponse;
 import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
 import com.github.walkvoid.zone.ai.business.db.mapper.AiModelMapper;
 import com.github.walkvoid.zone.ai.model.dto.AiModelDTO;
@@ -15,7 +14,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * AI妯″瀷 DAO
+ * AI模型 DAO
  *
  * @author walkvoid
  */
@@ -69,7 +68,7 @@ public class AiModelDAO {
                 new QueryWrapper<AiModel>().eq("model_code", modelCode)));
     }
 
-    /** 璋冪敤娆℃暟 +1 */
+    /** 调用次数 +1 */
     public int incrementCallCount(Long id) {
         AiModel model = mapper.selectById(id);
         if (model == null || model.getCallCount() == null) return 0;
@@ -79,11 +78,14 @@ public class AiModelDAO {
         return mapper.updateById(update);
     }
 
-    public PageResponse<AiModelDTO> page(PageRequest<AiModelDTO> pageRequest) {
-        AiModel aiModel = BeanCopyUtils.copyBean(pageRequest.getParam(), AiModel.class);
-        Page<AiModel> aiModelPage = mapper.selectPage(new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
-                new QueryWrapper<>(aiModel));
-        List<AiModelDTO> aiModelDTOS = BeanCopyUtils.copyList(aiModelPage.getRecords(), AiModelDTO.class);
-        return new PageResponse<>(aiModelPage.getTotal(), (int)aiModelPage.getSize(), aiModelPage.getCurrent(),aiModelDTOS);
+    public PageDTO<AiModelDTO> page(PageRequest<AiModelDTO> pageRequest) {
+        AiModel condition = BeanCopyUtils.copyBean(pageRequest.getParam(), AiModel.class);
+        Page<AiModel> mpPage = mapper.selectPage(
+                new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
+                new QueryWrapper<>(condition));
+        List<AiModelDTO> records = BeanCopyUtils.copyList(mpPage.getRecords(), AiModelDTO.class);
+        PageDTO<AiModelDTO> result = new PageDTO<>(mpPage.getCurrent(), mpPage.getSize(), mpPage.getTotal());
+        result.setRecords(records);
+        return result;
     }
 }

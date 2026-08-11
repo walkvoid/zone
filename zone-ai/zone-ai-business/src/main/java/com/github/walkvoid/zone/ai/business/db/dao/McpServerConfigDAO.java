@@ -2,8 +2,8 @@
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.walkvoid.wvframework.models.PageRequest;
-import com.github.walkvoid.wvframework.models.PageResponse;
 import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
 import com.github.walkvoid.zone.ai.business.db.mapper.McpServerConfigMapper;
 import com.github.walkvoid.zone.ai.model.dto.McpServerConfigDTO;
@@ -60,13 +60,15 @@ public class McpServerConfigDAO {
                 .orderByDesc("update_time"));
     }
 
-    public PageResponse<McpServerConfigDTO> page(PageRequest<McpServerConfigDTO> pageRequest) {
+    public PageDTO<McpServerConfigDTO> page(PageRequest<McpServerConfigDTO> pageRequest) {
         McpServerConfig condition = BeanCopyUtils.copyBean(pageRequest.getParam(), McpServerConfig.class);
-        Page<McpServerConfig> page = mapper.selectPage(
+        Page<McpServerConfig> mpPage = mapper.selectPage(
                 new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
                 new QueryWrapper<>(condition).orderByDesc("update_time"));
-        List<McpServerConfigDTO> records = BeanCopyUtils.copyList(page.getRecords(), McpServerConfigDTO.class);
-        return new PageResponse<>(page.getTotal(), (int) page.getSize(), page.getCurrent(), records);
+        List<McpServerConfigDTO> records = BeanCopyUtils.copyList(mpPage.getRecords(), McpServerConfigDTO.class);
+        PageDTO<McpServerConfigDTO> result = new PageDTO<>(mpPage.getCurrent(), mpPage.getSize(), mpPage.getTotal());
+        result.setRecords(records);
+        return result;
     }
 
     public int checkCodeExists(String serverCode) {

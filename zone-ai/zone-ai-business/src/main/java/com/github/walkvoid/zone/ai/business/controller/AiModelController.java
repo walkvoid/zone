@@ -1,12 +1,12 @@
-package com.github.walkvoid.zone.ai.business.controller;
+﻿package com.github.walkvoid.zone.ai.business.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
+import com.github.walkvoid.wvframework.models.ApiResult;
 import com.github.walkvoid.wvframework.models.PageRequest;
-import com.github.walkvoid.wvframework.models.PageResponse;
 import com.github.walkvoid.zone.ai.business.db.dao.AiModelDAO;
 import com.github.walkvoid.zone.ai.model.dto.AiModelDTO;
 import com.github.walkvoid.zone.ai.model.entity.AiModel;
 import com.github.walkvoid.wvframework.models.BooleanEnum;
-import com.github.walkvoid.wvframework.models.WebPageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.BeanUtils;
@@ -32,68 +32,69 @@ public class AiModelController {
 
     @Operation(summary = "分页查询模型列表")
     @GetMapping("/page")
-    public WebPageResponse<AiModelDTO> page(
+    public ApiResult<PageDTO<AiModelDTO>> page(
             @RequestParam(value = "current", defaultValue = "0") long current,
             @RequestParam(value = "size", defaultValue = "10") int size,
             @ModelAttribute AiModelDTO parameter) {
         PageRequest<AiModelDTO> pageRequest = PageRequest.of(current, size, parameter);
-        PageResponse<AiModelDTO> pageResponse = aiModelDAO.page(pageRequest);
-        return WebPageResponse.ok(pageResponse);
+        PageDTO<AiModelDTO> pageResult = aiModelDAO.page(pageRequest);
+        return ApiResult.ok(pageResult);
     }
 
     @Operation(summary = "查询启用的模型（供AI调用使用）")
     @GetMapping("/enabled")
-    public List<AiModelDTO> enabled() {
-        return aiModelDAO.selectEnabled().stream()
+    public ApiResult<List<AiModelDTO>> enabled() {
+        List<AiModelDTO> list = aiModelDAO.selectEnabled().stream()
                 .map(this::toDTO).collect(Collectors.toList());
+        return ApiResult.ok(list);
     }
 
     @Operation(summary = "按ID查询")
     @GetMapping("/{id}")
-    public AiModelDTO getById(@PathVariable("id") Long id) {
+    public ApiResult<AiModelDTO> getById(@PathVariable("id") Long id) {
         AiModel m = aiModelDAO.selectById(id);
-        return m != null ? toDTO(m) : null;
+        return ApiResult.ok(m != null ? toDTO(m) : null);
     }
 
     @Operation(summary = "按编码查询")
     @GetMapping("/code/{modelCode}")
-    public AiModelDTO getByCode(@PathVariable("modelCode") String modelCode) {
+    public ApiResult<AiModelDTO> getByCode(@PathVariable("modelCode") String modelCode) {
         AiModel m = aiModelDAO.selectByCode(modelCode);
-        return m != null ? toDTO(m) : null;
+        return ApiResult.ok(m != null ? toDTO(m) : null);
     }
 
     @Operation(summary = "创建模型")
     @PostMapping
-    public String create(@RequestBody AiModelDTO dto) {
+    public ApiResult<String> create(@RequestBody AiModelDTO dto) {
         if (dto.getModelCode() == null || dto.getModelCode().isBlank()) {
-            return "模型编码不能为空";
+            return ApiResult.error(400, "模型编码不能为空");
         }
         if (aiModelDAO.checkCodeExists(dto.getModelCode()) > 0) {
-            return "模型编码已存在";
+            return ApiResult.error(400, "模型编码已存在");
         }
         AiModel entity = toEntity(dto);
         entity.setCallCount(0L);
         entity.setCreateTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
         aiModelDAO.insert(entity);
-        return "OK";
+        return ApiResult.ok("OK");
     }
 
     @Operation(summary = "更新模型")
     @PutMapping
-    public String update(@RequestBody AiModelDTO dto) {
-        if (dto.getId() == null) return "ID不能为空";
+    public ApiResult<String> update(@RequestBody AiModelDTO dto) {
+        if (dto.getId() == null) return ApiResult.error(400, "ID不能为空");
         AiModel entity = toEntity(dto);
         entity.setUpdateTime(LocalDateTime.now());
         aiModelDAO.updateById(entity);
-        return "OK";
+        return ApiResult.ok("OK");
     }
 
     @Operation(summary = "删除模型")
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable("id") Long id) {
+    public ApiResult<String> delete(@PathVariable("id") Long id) {
         aiModelDAO.deleteById(id);
-        return "OK";
+        return ApiResult.ok("OK");
     }
 
     private AiModel toEntity(AiModelDTO dto) {

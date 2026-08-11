@@ -1,11 +1,10 @@
-package com.github.walkvoid.zone.system.business.service.impl;
+﻿package com.github.walkvoid.zone.system.business.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.walkvoid.wvframework.models.BooleanEnum;
 import com.github.walkvoid.wvframework.models.PageRequest;
-import com.github.walkvoid.wvframework.models.PageResponse;
 import com.github.walkvoid.zone.system.api.service.MenuCrudService;
 import com.github.walkvoid.zone.system.business.db.dao.MenuDAO;
 import com.github.walkvoid.zone.system.model.dto.MenuDTO;
@@ -125,13 +124,15 @@ public class MenuCrudServiceImpl implements MenuCrudService {
     }
 
     @Override
-    public PageResponse<MenuDTO> page(PageRequest<Void> pageRequest) {
+    public PageDTO<MenuDTO> page(PageRequest<Void> pageRequest) {
         Page<Menu> result = menuDAO.selectPage(
                 new PageDTO<>(pageRequest.getCurrent(), pageRequest.getSize()));
         List<MenuDTO> records = result.getRecords().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
-        return new PageResponse<>(result.getTotal(), (int) result.getSize(), result.getCurrent(), records);
+        PageDTO<MenuDTO> pageResult = new PageDTO<>(result.getCurrent(), result.getSize(), result.getTotal());
+        pageResult.setRecords(records);
+        return pageResult;
     }
 
     // ==================== 转换方法 ====================
@@ -182,7 +183,6 @@ public class MenuCrudServiceImpl implements MenuCrudService {
         if (dto.getVisible() != null) {
             return dto.getVisible() == 0 ? BooleanEnum.NO : BooleanEnum.YES;
         }
-        // 兼容旧数据：meta.hideInMenu
         if (dto.getMeta() != null && Boolean.TRUE.equals(dto.getMeta().getHideInMenu())) {
             return BooleanEnum.NO;
         }

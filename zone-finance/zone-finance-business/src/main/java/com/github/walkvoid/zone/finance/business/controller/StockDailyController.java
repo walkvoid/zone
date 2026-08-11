@@ -1,8 +1,8 @@
-package com.github.walkvoid.zone.finance.business.controller;
+﻿package com.github.walkvoid.zone.finance.business.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
+import com.github.walkvoid.wvframework.models.ApiResult;
 import com.github.walkvoid.wvframework.models.PageRequest;
-import com.github.walkvoid.wvframework.models.PageResponse;
-import com.github.walkvoid.wvframework.models.WebPageResponse;
 import com.github.walkvoid.zone.finance.api.service.StockDailyService;
 import com.github.walkvoid.zone.finance.business.db.dao.StockDailyDAO;
 import com.github.walkvoid.zone.finance.business.job.StockDailyJobHandler;
@@ -35,9 +35,9 @@ public class StockDailyController {
      * 手动触发一次定时任务（测试用）
      */
     @PostMapping("/job/trigger")
-    public String triggerJob() {
+    public ApiResult<String> triggerJob() {
         stockDailyJobHandler.execute();
-        return "triggered";
+        return ApiResult.ok("triggered");
     }
 
     /**
@@ -46,20 +46,21 @@ public class StockDailyController {
      */
     @Operation(summary = "拉取并保存日K线数据")
     @GetMapping("/fetch")
-    public List<StockDaily> fetch(@RequestParam("stockCode") String stockCode,
+    public ApiResult<List<StockDaily>> fetch(@RequestParam("stockCode") String stockCode,
                                   @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
                                   @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
-        return stockDailyService.fetchAndSaveDaily(stockCode, startDate, endDate);
+        List<StockDaily> list = stockDailyService.fetchAndSaveDaily(stockCode, startDate, endDate);
+        return ApiResult.ok(list);
     }
 
     @Operation(summary = "分页查询日K线数据")
     @GetMapping("/page")
-    public WebPageResponse<StockDaily> page(
+    public ApiResult<PageDTO<StockDaily>> page(
             @RequestParam(value = "current", defaultValue = "0") long current,
             @RequestParam(value = "size", defaultValue = "10") int size,
             @ModelAttribute StockDailyQueryDTO parameter) {
         PageRequest<StockDailyQueryDTO> pageRequest = PageRequest.of(current, size, parameter);
-        PageResponse<StockDaily> pageResponse = stockDailyDAO.page(pageRequest);
-        return WebPageResponse.ok(pageResponse);
+        PageDTO<StockDaily> pageResult = stockDailyDAO.page(pageRequest);
+        return ApiResult.ok(pageResult);
     }
 }

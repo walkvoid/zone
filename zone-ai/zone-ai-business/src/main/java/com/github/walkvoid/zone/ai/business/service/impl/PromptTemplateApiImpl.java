@@ -16,6 +16,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Prompt模板 API 实现
+ *
+ * @author walkvoid
+ */
 @Service
 public class PromptTemplateApiImpl implements PromptTemplateApi {
 

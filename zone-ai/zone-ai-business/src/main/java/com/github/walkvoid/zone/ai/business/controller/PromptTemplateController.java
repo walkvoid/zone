@@ -1,8 +1,9 @@
-ï»¿package com.github.walkvoid.zone.ai.business.controller;
+package com.github.walkvoid.zone.ai.business.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
+import com.github.walkvoid.wvframework.models.ApiResult;
 import com.github.walkvoid.wvframework.models.PageRequest;
-import com.github.walkvoid.wvframework.models.PageResponse;
 import com.github.walkvoid.zone.ai.business.db.dao.AiModelDAO;
 import com.github.walkvoid.zone.ai.business.db.dao.PromptTemplateDAO;
 import com.github.walkvoid.zone.ai.business.db.dao.PromptTemplateRunRecordDAO;
@@ -11,8 +12,6 @@ import com.github.walkvoid.zone.ai.model.dto.PromptTemplateDTO;
 import com.github.walkvoid.zone.ai.model.entity.AiModel;
 import com.github.walkvoid.zone.ai.model.entity.PromptTemplate;
 import com.github.walkvoid.zone.ai.model.entity.PromptTemplateRunRecord;
-import com.github.walkvoid.wvframework.models.WebPageResponse;
-import com.github.walkvoid.wvframework.models.WebResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.BeanUtils;
@@ -25,11 +24,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Promptæ¨¡æ¿ç®¡ç† Controller
+ * PromptÄ£°å¹ÜÀí Controller
  *
  * @author walkvoid
  */
-@Tag(name = "Promptæ¨¡æ¿ç®¡ç†")
+@Tag(name = "PromptÄ£°å¹ÜÀí")
 @RestController
 @RequestMapping("/ai/prompt-template")
 public class PromptTemplateController {
@@ -49,84 +48,80 @@ public class PromptTemplateController {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Operation(summary = "åˆ†é¡µæŸ¥è¯¢æ¨¡æ¿åˆ—è¡¨")
+    @Operation(summary = "·ÖÒ³²éÑ¯Ä£°åÁĞ±í")
     @GetMapping("/page")
-    public WebPageResponse<PromptTemplateDTO> page(
-            @RequestParam(value = "current", defaultValue = "0") long current,
-            @RequestParam(value = "size", defaultValue = "10") int size,
-            @ModelAttribute PromptTemplateDTO parameter) {
-        PageRequest<PromptTemplateDTO> pageRequest = PageRequest.of(current, size, parameter);
-        PageResponse<PromptTemplateDTO> pageResponse = dao.page(pageRequest);
-        return WebPageResponse.ok(pageResponse);
+    public ApiResult<PageDTO<PromptTemplateDTO>> page(PageRequest<PromptTemplateDTO> pageRequest) {
+        PageDTO<PromptTemplateDTO> pageResult = dao.page(pageRequest);
+        return ApiResult.ok(pageResult);
     }
 
-    @Operation(summary = "æŒ‰IDæŸ¥è¯¢")
+    @Operation(summary = "°´ID²éÑ¯")
     @GetMapping("/{id}")
-    public WebResponse<PromptTemplateDTO> getById(@PathVariable("id") Long id) {
+    public ApiResult<PromptTemplateDTO> getById(@PathVariable("id") Long id) {
         PromptTemplate m = dao.selectById(id);
-        return WebResponse.ok(m != null ? toDTO(m) : null);
+        return ApiResult.ok(m != null ? toDTO(m) : null);
     }
 
-    @Operation(summary = "æŒ‰ç¼–ç æŸ¥è¯¢")
+    @Operation(summary = "°´±àÂë²éÑ¯")
     @GetMapping("/code/{templateCode}")
-    public WebResponse<PromptTemplateDTO> getByCode(@PathVariable("templateCode") String templateCode) {
+    public ApiResult<PromptTemplateDTO> getByCode(@PathVariable("templateCode") String templateCode) {
         PromptTemplate m = dao.selectByCode(templateCode);
-        return WebResponse.ok(m != null ? toDTO(m) : null);
+        return ApiResult.ok(m != null ? toDTO(m) : null);
     }
 
-    @Operation(summary = "åˆ›å»ºæ¨¡æ¿")
+    @Operation(summary = "´´½¨Ä£°å")
     @PostMapping
-    public WebResponse<String> create(@RequestBody PromptTemplateDTO dto) {
+    public ApiResult<String> create(@RequestBody PromptTemplateDTO dto) {
         if (dto.getTemplateCode() == null || dto.getTemplateCode().isBlank()) {
-            return WebResponse.of(400, "æ¨¡æ¿ç¼–ç ä¸èƒ½ä¸ºç©º", null, "warn");
+            return ApiResult.error(400, "Ä£°å±àÂë²»ÄÜÎª¿Õ");
         }
         if (dao.checkCodeExists(dto.getTemplateCode()) > 0) {
-            return WebResponse.of(400, "æ¨¡æ¿ç¼–ç å·²å­˜åœ¨", null, "warn");
+            return ApiResult.error(400, "Ä£°å±àÂëÒÑ´æÔÚ");
         }
         PromptTemplate entity = toEntity(dto);
         entity.setStatus(entity.getStatus() != null ? entity.getStatus() : 1);
         entity.setCreateTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
         dao.insert(entity);
-        return WebResponse.ok("OK");
+        return ApiResult.ok("OK");
     }
 
-    @Operation(summary = "æ›´æ–°æ¨¡æ¿")
+    @Operation(summary = "¸üĞÂÄ£°å")
     @PutMapping
-    public WebResponse<String> update(@RequestBody PromptTemplateDTO dto) {
+    public ApiResult<String> update(@RequestBody PromptTemplateDTO dto) {
         if (dto.getId() == null) {
-            return WebResponse.of(400, "IDä¸èƒ½ä¸ºç©º", null, "warn");
+            return ApiResult.error(400, "ID²»ÄÜÎª¿Õ");
         }
         PromptTemplate entity = toEntity(dto);
         entity.setUpdateTime(LocalDateTime.now());
         dao.updateById(entity);
-        return WebResponse.ok("OK");
+        return ApiResult.ok("OK");
     }
 
-    @Operation(summary = "åˆ é™¤æ¨¡æ¿")
+    @Operation(summary = "É¾³ıÄ£°å")
     @DeleteMapping("/{id}")
-    public WebResponse<String> delete(@PathVariable("id") Long id) {
+    public ApiResult<String> delete(@PathVariable("id") Long id) {
         dao.deleteById(id);
-        return WebResponse.ok("OK");
+        return ApiResult.ok("OK");
     }
 
-    @Operation(summary = "è¿è¡Œæ¨¡æ¿")
+    @Operation(summary = "ÔËĞĞÄ£°å")
     @PostMapping("/run")
-    public WebResponse<String> run(@RequestBody Map<String, Object> request) {
+    public ApiResult<String> run(@RequestBody Map<String, Object> request) {
         String templateCode = (String) request.get("templateCode");
         @SuppressWarnings("unchecked")
         Map<String, String> variables = (Map<String, String>) request.get("variables");
 
         if (templateCode == null || templateCode.isBlank()) {
-            return WebResponse.of(400, "æ¨¡æ¿ç¼–ç ä¸èƒ½ä¸ºç©º", null, "warn");
+            return ApiResult.error(400, "Ä£°å±àÂë²»ÄÜÎª¿Õ");
         }
 
         PromptTemplate template = dao.selectByCode(templateCode);
         if (template == null) {
-            return WebResponse.of(400, "æ¨¡æ¿ä¸å­˜åœ¨: " + templateCode, null, "warn");
+            return ApiResult.error(400, "Ä£°å²»´æÔÚ: " + templateCode);
         }
 
-        // æ¸²æŸ“ prompt
+        // äÖÈ¾ prompt
         String renderedPrompt = template.getTemplateContent();
         if (variables != null) {
             for (Map.Entry<String, String> entry : variables.entrySet()) {
@@ -134,14 +129,14 @@ public class PromptTemplateController {
             }
         }
 
-        // è·å–æ¨¡å‹åç§°
+        // »ñÈ¡Ä£ĞÍÃû³Æ
         String modelName = null;
         List<AiModel> models = aiModelDAO.selectEnabled();
         if (models != null && !models.isEmpty()) {
             modelName = models.get(0).getModelCode();
         }
 
-        // æ„å»ºè¿è¡Œè®°å½•
+        // ¹¹½¨ÔËĞĞ¼ÇÂ¼
         PromptTemplateRunRecord record = new PromptTemplateRunRecord();
         record.setTemplateId(template.getId());
         record.setRenderedPrompt(renderedPrompt);
@@ -168,9 +163,9 @@ public class PromptTemplateController {
         runRecordDAO.insert(record);
 
         if (record.getStatus() == 1) {
-            return WebResponse.ok(record.getRunResult());
+            return ApiResult.ok(record.getRunResult());
         } else {
-            return WebResponse.of(500, record.getErrorMessage(), null, "error");
+            return ApiResult.error(500, record.getErrorMessage());
         }
     }
 

@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.walkvoid.wvframework.models.PageRequest;
-import com.github.walkvoid.wvframework.models.PageResponse;
 import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
 import com.github.walkvoid.zone.user.business.db.mapper.UserInfoMapper;
 import com.github.walkvoid.zone.user.model.dto.UserInfoDTO;
@@ -15,11 +14,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 鐢ㄦ埛淇℃伅DAO绫?
+ * 用户信息DAO类
  * @author walkvoid
  * @version 1.0
  * @date 2025/11/30
- * @desc 鐢ㄦ埛淇℃伅鏁版嵁璁块棶灞傜被锛屾彁渚涚敤鎴风浉鍏崇殑鏁版嵁搴撴搷浣?
+ * @desc 用户信息数据访问层类，提供用户相关的数据库操作
  */
 @Repository
 public class UserInfoDAO {
@@ -28,30 +27,29 @@ public class UserInfoDAO {
     private UserInfoMapper userInfoMapper;
 
     /**
-     * 鏍规嵁鐢ㄦ埛ID鏌ヨ鐢ㄦ埛淇℃伅
-     * @param id 鐢ㄦ埛ID
-     * @return 鐢ㄦ埛淇℃伅
+     * 根据用户ID查询用户信息
+     * @param id 用户ID
+     * @return 用户信息
      */
     public UserInfo selectById(Long id) {
         return userInfoMapper.selectById(id);
     }
 
     /**
-     * 鏍规嵁鐢ㄦ埛鍚嶆煡璇㈢敤鎴蜂俊鎭?
-     * @param username 鐢ㄦ埛鍚?
-     * @return 鐢ㄦ埛淇℃伅
+     * 根据用户名查询用户信息
+     * @param username 用户名
+     * @return 用户信息
      */
     public UserInfo selectByUsername(String username) {
-        // 浣跨敤鏉′欢鏋勯€犲櫒鏌ヨ
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UserInfo> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
         queryWrapper.eq("username", username);
         return userInfoMapper.selectOne(queryWrapper);
     }
 
     /**
-     * 鏍规嵁鎵嬫満鍙锋煡璇㈢敤鎴蜂俊鎭?
-     * @param phone 鎵嬫満鍙?
-     * @return 鐢ㄦ埛淇℃伅
+     * 根据手机号查询用户信息
+     * @param phone 手机号
+     * @return 用户信息
      */
     public UserInfo selectByPhone(String phone) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UserInfo> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
@@ -60,9 +58,9 @@ public class UserInfoDAO {
     }
 
     /**
-     * 鏍规嵁閭鏌ヨ鐢ㄦ埛淇℃伅
-     * @param email 閭
-     * @return 鐢ㄦ埛淇℃伅
+     * 根据邮箱查询用户信息
+     * @param email 邮箱
+     * @return 用户信息
      */
     public UserInfo selectByEmail(String email) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UserInfo> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
@@ -71,47 +69,47 @@ public class UserInfoDAO {
     }
 
     /**
-     * 鎻掑叆鐢ㄦ埛淇℃伅
-     * @param userInfo 鐢ㄦ埛淇℃伅
-     * @return 褰卞搷琛屾暟
+     * 插入用户信息
+     * @param userInfo 用户信息
+     * @return 影响行数
      */
     public int insert(UserInfo userInfo) {
         return userInfoMapper.insert(userInfo);
     }
 
     /**
-     * 鏇存柊鐢ㄦ埛淇℃伅
-     * @param userInfo 鐢ㄦ埛淇℃伅
-     * @return 褰卞搷琛屾暟
+     * 更新用户信息
+     * @param userInfo 用户信息
+     * @return 影响行数
      */
     public int updateById(UserInfo userInfo) {
         return userInfoMapper.updateById(userInfo);
     }
 
     /**
-     * 鍒犻櫎鐢ㄦ埛
-     * @param id 鐢ㄦ埛ID
-     * @return 褰卞搷琛屾暟
+     * 删除用户
+     * @param id 用户ID
+     * @return 影响行数
      */
     public int deleteById(Long id) {
         return userInfoMapper.deleteById(id);
     }
 
     /**
-     * 鎵归噺鍒犻櫎鐢ㄦ埛
-     * @param ids 鐢ㄦ埛ID鍒楄〃
-     * @return 褰卞搷琛屾暟
+     * 批量删除用户
+     * @param ids 用户ID列表
+     * @return 影响行数
      */
     public int deleteBatchIds(List<Long> ids) {
         return userInfoMapper.deleteBatchIds(ids);
     }
 
     /**
-     * 鏇存柊鐢ㄦ埛鏈€鍚庣櫥褰曚俊鎭?
-     * @param id 鐢ㄦ埛ID
-     * @param lastLoginTime 鏈€鍚庣櫥褰曟椂闂?
-     * @param lastLoginIp 鏈€鍚庣櫥褰旾P
-     * @return 褰卞搷琛屾暟
+     * 更新用户最后登录信息
+     * @param id 用户ID
+     * @param lastLoginTime 最后登录时间
+     * @param lastLoginIp 最后登录IP
+     * @return 影响行数
      */
     public int updateLastLoginInfo(Long id, LocalDateTime lastLoginTime, String lastLoginIp) {
         UserInfo userInfo = new UserInfo();
@@ -122,17 +120,17 @@ public class UserInfoDAO {
     }
 
     /**
-     * 鏌ヨ鎵€鏈夌敤鎴?
-     * @return 鐢ㄦ埛鍒楄〃
+     * 查询所有用户
+     * @return 用户列表
      */
     public List<UserInfo> selectAll() {
         return userInfoMapper.selectList(null);
     }
 
     /**
-     * 鏍规嵁鏉′欢鏌ヨ鐢ㄦ埛鍒楄〃
-     * @param userInfo 鏌ヨ鏉′欢
-     * @return 鐢ㄦ埛鍒楄〃
+     * 根据条件查询用户列表
+     * @param userInfo 查询条件
+     * @return 用户列表
      */
     public List<UserInfo> selectList(UserInfo userInfo) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UserInfo> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>(userInfo);
@@ -140,38 +138,39 @@ public class UserInfoDAO {
     }
 
     /**
-     * 鍒嗛〉鏌ヨ鐢ㄦ埛鍒楄〃
-     * @param page 椤电爜锛堜粠1寮€濮嬶級
-     * @param size 姣忛〉鏁伴噺
-     * @param userInfo 鏌ヨ鏉′欢
-     * @return 鍒嗛〉缁撴灉
+     * 分页查询用户列表
+     * @param pageDTO 分页信息
+     * @param userInfo 查询条件
+     * @return 分页结果
      */
     public PageDTO<UserInfo> selectPage(PageDTO<UserInfo> pageDTO, UserInfo userInfo) {
         QueryWrapper<UserInfo> queryWrapper = new QueryWrapper<>(userInfo);
         return userInfoMapper.selectPage(pageDTO, queryWrapper);
     }
 
-    public PageResponse<UserInfoDTO> page(PageRequest<UserInfoDTO> pageRequest) {
+    public PageDTO<UserInfoDTO> page(PageRequest<UserInfoDTO> pageRequest) {
         UserInfo condition = BeanCopyUtils.copyBean(pageRequest.getParam(), UserInfo.class);
-        Page<UserInfo> page = userInfoMapper.selectPage(
+        Page<UserInfo> mpPage = userInfoMapper.selectPage(
                 new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
                 new QueryWrapper<>(condition));
-        List<UserInfoDTO> records = BeanCopyUtils.copyList(page.getRecords(), UserInfoDTO.class);
-        return new PageResponse<>(page.getTotal(), (int) page.getSize(), page.getCurrent(), records);
+        List<UserInfoDTO> records = BeanCopyUtils.copyList(mpPage.getRecords(), UserInfoDTO.class);
+        PageDTO<UserInfoDTO> result = new PageDTO<>(mpPage.getCurrent(), mpPage.getSize(), mpPage.getTotal());
+        result.setRecords(records);
+        return result;
     }
 
     /**
-     * 缁熻鐢ㄦ埛鏁伴噺
-     * @return 鐢ㄦ埛鏁伴噺
+     * 统计用户数量
+     * @return 用户数量
      */
     public long count() {
         return userInfoMapper.selectCount(null);
     }
 
     /**
-     * 鏍规嵁鏉′欢缁熻鐢ㄦ埛鏁伴噺
-     * @param userInfo 鏌ヨ鏉′欢
-     * @return 鐢ㄦ埛鏁伴噺
+     * 根据条件统计用户数量
+     * @param userInfo 查询条件
+     * @return 用户数量
      */
     public long countByCondition(UserInfo userInfo) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UserInfo> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>(userInfo);
@@ -179,9 +178,9 @@ public class UserInfoDAO {
     }
 
     /**
-     * 妫€鏌ユ墜鏈哄彿鏄惁宸插瓨鍦?
-     * @param phone 鎵嬫満鍙?
-     * @return 瀛樺湪鏁伴噺
+     * 检查手机号是否已存在
+     * @param phone 手机号
+     * @return 存在数量
      */
     public int checkPhoneExists(String phone) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UserInfo> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
@@ -190,9 +189,9 @@ public class UserInfoDAO {
     }
 
     /**
-     * 妫€鏌ラ偖绠辨槸鍚﹀凡瀛樺湪
-     * @param email 閭
-     * @return 瀛樺湪鏁伴噺
+     * 检查邮箱是否已存在
+     * @param email 邮箱
+     * @return 存在数量
      */
     public int checkEmailExists(String email) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UserInfo> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
@@ -201,9 +200,9 @@ public class UserInfoDAO {
     }
 
     /**
-     * 妫€鏌ョ敤鎴峰悕鏄惁宸插瓨鍦?
-     * @param username 鐢ㄦ埛鍚?
-     * @return 瀛樺湪鏁伴噺
+     * 检查用户名是否已存在
+     * @param username 用户名
+     * @return 存在数量
      */
     public int checkUsernameExists(String username) {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UserInfo> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
@@ -212,31 +211,29 @@ public class UserInfoDAO {
     }
 
     /**
-     * 鏍规嵁瑙掕壊ID鏌ヨ鐢ㄦ埛鍒楄〃
-     * @param roleId 瑙掕壊ID
-     * @return 鐢ㄦ埛鍒楄〃
+     * 根据角色ID查询用户列表
+     * @param roleId 角色ID
+     * @return 用户列表
      */
     public List<UserInfo> selectUsersByRoleId(Long roleId) {
-        // 姝ゆ柟娉曞彲鑳介渶瑕佸湪UserInfoMapper涓嚜瀹氫箟SQL瀹炵幇
-        // 杩欓噷鍏堢敤绌哄垪琛ㄨ繑鍥烇紝鍚庣画鍙互鎵╁睍
         return null;
     }
 
     /**
-     * 鏌ヨ鍚敤鐨勭敤鎴?
-     * @return 鐢ㄦ埛鍒楄〃
+     * 查询启用的用户
+     * @return 用户列表
      */
     public List<UserInfo> selectEnabledUsers() {
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<UserInfo> queryWrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
-        queryWrapper.eq("status", 1); // 鍋囪1琛ㄧず鍚敤鐘舵€?
+        queryWrapper.eq("status", 1);
         return userInfoMapper.selectList(queryWrapper);
     }
 
     /**
-     * 鎵归噺鏇存柊鐢ㄦ埛鐘舵€?
-     * @param ids 鐢ㄦ埛ID鍒楄〃
-     * @param status 鐘舵€?
-     * @return 褰卞搷琛屾暟
+     * 批量更新用户状态
+     * @param ids 用户ID列表
+     * @param status 状态
+     * @return 影响行数
      */
     public int updateBatchStatus(List<Long> ids, Integer status) {
         com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<UserInfo> updateWrapper = new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<>();

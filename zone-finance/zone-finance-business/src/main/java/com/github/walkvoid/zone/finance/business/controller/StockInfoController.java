@@ -1,9 +1,8 @@
-package com.github.walkvoid.zone.finance.business.controller;
+﻿package com.github.walkvoid.zone.finance.business.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
+import com.github.walkvoid.wvframework.models.ApiResult;
 import com.github.walkvoid.wvframework.models.PageRequest;
-import com.github.walkvoid.wvframework.models.PageResponse;
-import com.github.walkvoid.wvframework.models.WebPageResponse;
-import com.github.walkvoid.wvframework.models.WebResponse;
 import com.github.walkvoid.zone.finance.api.service.StockInfoCrudService;
 import com.github.walkvoid.zone.finance.model.dto.StockInfoDTO;
 import com.github.walkvoid.zone.finance.model.dto.StockInfoQueryDTO;
@@ -25,52 +24,52 @@ public class StockInfoController {
 
     @Operation(summary = "分页查询股票列表")
     @GetMapping("/list")
-    public WebResponse<Map<String, Object>> listPage(StockInfoQueryDTO query) {
-        return WebResponse.ok(stockInfoCrudService.listPage(query));
+    public ApiResult<Map<String, Object>> listPage(StockInfoQueryDTO query) {
+        return ApiResult.ok(stockInfoCrudService.listPage(query));
     }
 
     @Operation(summary = "分页查询股票列表")
     @GetMapping("/page")
-    public WebPageResponse<StockInfoDTO> page(
+    public ApiResult<PageDTO<StockInfoDTO>> page(
             @RequestParam(value = "current", defaultValue = "0") long current,
             @RequestParam(value = "size", defaultValue = "10") int size,
             @ModelAttribute StockInfoQueryDTO parameter) {
         PageRequest<StockInfoQueryDTO> pageRequest = PageRequest.of(current, size, parameter);
-        PageResponse<StockInfoDTO> pageResponse = stockInfoCrudService.page(pageRequest);
-        return WebPageResponse.ok(pageResponse);
+        PageDTO<StockInfoDTO> pageResult = stockInfoCrudService.page(pageRequest);
+        return ApiResult.ok(pageResult);
     }
 
     @Operation(summary = "获取股票详情")
     @GetMapping("/{id}")
-    public WebResponse<StockInfoDTO> getById(@Parameter(description = "股票ID") @PathVariable("id") Long id) {
-        return WebResponse.ok(stockInfoCrudService.getById(id));
+    public ApiResult<StockInfoDTO> getById(@Parameter(description = "股票ID") @PathVariable("id") Long id) {
+        return ApiResult.ok(stockInfoCrudService.getById(id));
     }
 
     @Operation(summary = "按代码查询股票")
     @GetMapping("/code/{stockCode}")
-    public WebResponse<StockInfoDTO> getByCode(@Parameter(description = "股票代码") @PathVariable("stockCode") String stockCode) {
-        return WebResponse.ok(stockInfoCrudService.getByCode(stockCode));
+    public ApiResult<StockInfoDTO> getByCode(@Parameter(description = "股票代码") @PathVariable("stockCode") String stockCode) {
+        return ApiResult.ok(stockInfoCrudService.getByCode(stockCode));
     }
 
     @Operation(summary = "新增股票")
     @PostMapping
-    public WebResponse<Void> create(@RequestBody StockInfoDTO dto) {
+    public ApiResult<String> create(@RequestBody StockInfoDTO dto) {
         stockInfoCrudService.create(dto);
-        return WebResponse.ok(null);
+        return ApiResult.ok("OK");
     }
 
     @Operation(summary = "更新股票")
     @PutMapping("/{id}")
-    public WebResponse<Void> update(@Parameter(description = "股票ID") @PathVariable("id") Long id,
+    public ApiResult<String> update(@Parameter(description = "股票ID") @PathVariable("id") Long id,
                                      @RequestBody StockInfoDTO dto) {
         stockInfoCrudService.update(id, dto);
-        return WebResponse.ok(null);
+        return ApiResult.ok("OK");
     }
 
     @Operation(summary = "删除股票")
     @DeleteMapping("/{id}")
-    public WebResponse<Void> delete(@Parameter(description = "股票ID") @PathVariable("id") Long id) {
+    public ApiResult<String> delete(@Parameter(description = "股票ID") @PathVariable("id") Long id) {
         stockInfoCrudService.delete(id);
-        return WebResponse.ok(null);
+        return ApiResult.ok("OK");
     }
 }

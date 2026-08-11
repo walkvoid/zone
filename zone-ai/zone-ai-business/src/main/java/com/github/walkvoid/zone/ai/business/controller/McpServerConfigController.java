@@ -1,13 +1,12 @@
-﻿package com.github.walkvoid.zone.ai.business.controller;
+package com.github.walkvoid.zone.ai.business.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
+import com.github.walkvoid.wvframework.models.ApiResult;
 import com.github.walkvoid.wvframework.models.PageRequest;
-import com.github.walkvoid.wvframework.models.PageResponse;
 import com.github.walkvoid.zone.ai.business.db.dao.McpServerConfigDAO;
 import com.github.walkvoid.zone.ai.business.service.McpServerConfigService;
 import com.github.walkvoid.zone.ai.model.dto.McpServerConfigDTO;
 import com.github.walkvoid.zone.ai.model.entity.McpServerConfig;
-import com.github.walkvoid.wvframework.models.WebPageResponse;
-import com.github.walkvoid.wvframework.models.WebResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.BeanUtils;
@@ -20,11 +19,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * MCP Server配置 Controller
+ * MCP Server闁板秶鐤?Controller
  *
  * @author walkvoid
  */
-@Tag(name = "MCP Server配置")
+@Tag(name = "MCP Server闁板秶鐤?)
 @RestController
 @RequestMapping("/ai/mcp-server-config")
 public class McpServerConfigController {
@@ -37,36 +36,36 @@ public class McpServerConfigController {
 
     // ==================== CRUD ====================
 
-    @Operation(summary = "分页查询MCP服务配置")
+    @Operation(summary = "閸掑棝銆夐弻銉嚄MCP閺堝秴濮熼柊宥囩枂")
     @GetMapping("/page")
-    public WebPageResponse<McpServerConfigDTO> page(PageRequest<McpServerConfigDTO> pageRequest) {
-        PageResponse<McpServerConfigDTO> pageResponse = dao.page(pageRequest);
-        return WebPageResponse.ok(pageResponse);
+    public ApiResult<PageDTO<McpServerConfigDTO>> page(PageRequest<McpServerConfigDTO> pageRequest) {
+        PageDTO<McpServerConfigDTO> pageResult = dao.page(pageRequest);
+        return ApiResult.ok(pageResult);
     }
 
-    @Operation(summary = "按ID查询")
+    @Operation(summary = "閹稿D閺屻儴顕?)
     @GetMapping("/{id}")
-    public WebResponse<McpServerConfigDTO> getById(@PathVariable("id") Long id) {
+    public ApiResult<McpServerConfigDTO> getById(@PathVariable("id") Long id) {
         McpServerConfig m = dao.selectById(id);
-        return WebResponse.ok(m != null ? toDTO(m) : null);
+        return ApiResult.ok(m != null ? toDTO(m) : null);
     }
 
-    @Operation(summary = "查询全部")
+    @Operation(summary = "閺屻儴顕楅崗銊╁劥")
     @GetMapping("/list")
-    public WebResponse<List<McpServerConfigDTO>> listAll() {
+    public ApiResult<List<McpServerConfigDTO>> listAll() {
         List<McpServerConfig> list = dao.selectList(new McpServerConfig());
         List<McpServerConfigDTO> dtoList = list.stream().map(this::toDTO).collect(Collectors.toList());
-        return WebResponse.ok(dtoList);
+        return ApiResult.ok(dtoList);
     }
 
-    @Operation(summary = "创建MCP服务配置")
+    @Operation(summary = "閸掓稑缂揗CP閺堝秴濮熼柊宥囩枂")
     @PostMapping
-    public WebResponse<String> create(@RequestBody McpServerConfigDTO dto) {
+    public ApiResult<String> create(@RequestBody McpServerConfigDTO dto) {
         if (dto.getServerCode() == null || dto.getServerCode().isBlank()) {
-            return WebResponse.of(400, "服务编码不能为空", null, "warn");
+            return ApiResult.error(400, "閺堝秴濮熺紓鏍垳娑撳秷鍏樻稉铏光敄");
         }
         if (dao.checkCodeExists(dto.getServerCode()) > 0) {
-            return WebResponse.of(400, "服务编码已存在", null, "warn");
+            return ApiResult.error(400, "閺堝秴濮熺紓鏍垳瀹告彃鐡ㄩ崷?);
         }
         McpServerConfig entity = toEntity(dto);
         entity.setStatus(entity.getStatus() != null ? entity.getStatus() : 1);
@@ -74,80 +73,80 @@ public class McpServerConfigController {
         entity.setCreateTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
         dao.insert(entity);
-        return WebResponse.ok("OK");
+        return ApiResult.ok("OK");
     }
 
-    @Operation(summary = "更新MCP服务配置")
+    @Operation(summary = "閺囧瓨鏌奙CP閺堝秴濮熼柊宥囩枂")
     @PutMapping
-    public WebResponse<String> update(@RequestBody McpServerConfigDTO dto) {
+    public ApiResult<String> update(@RequestBody McpServerConfigDTO dto) {
         if (dto.getId() == null) {
-            return WebResponse.of(400, "ID不能为空", null, "warn");
+            return ApiResult.error(400, "ID娑撳秷鍏樻稉铏光敄");
         }
         McpServerConfig entity = toEntity(dto);
         entity.setUpdateTime(LocalDateTime.now());
         dao.updateById(entity);
-        return WebResponse.ok("OK");
+        return ApiResult.ok("OK");
     }
 
-    @Operation(summary = "删除MCP服务配置")
+    @Operation(summary = "閸掔娀娅嶮CP閺堝秴濮熼柊宥囩枂")
     @DeleteMapping("/{id}")
-    public WebResponse<String> delete(@PathVariable("id") Long id) {
+    public ApiResult<String> delete(@PathVariable("id") Long id) {
         service.delete(id);
-        return WebResponse.ok("OK");
+        return ApiResult.ok("OK");
     }
 
-    // ==================== 启停控制 ====================
+    // ==================== 閸氼垰浠犻幒褍鍩?====================
 
-    @Operation(summary = "启动MCP服务")
+    @Operation(summary = "閸氼垰濮㎝CP閺堝秴濮?)
     @PostMapping("/start/{serverCode}")
-    public WebResponse<Map<String, Object>> start(@PathVariable("serverCode") String serverCode) {
+    public ApiResult<Map<String, Object>> start(@PathVariable("serverCode") String serverCode) {
         Map<String, Object> result = service.start(serverCode);
-        return WebResponse.ok(result);
+        return ApiResult.ok(result);
     }
 
-    @Operation(summary = "停止MCP服务")
+    @Operation(summary = "閸嬫粍顒汳CP閺堝秴濮?)
     @PostMapping("/stop/{serverCode}")
-    public WebResponse<Map<String, Object>> stop(@PathVariable("serverCode") String serverCode) {
+    public ApiResult<Map<String, Object>> stop(@PathVariable("serverCode") String serverCode) {
         Map<String, Object> result = service.stop(serverCode);
-        return WebResponse.ok(result);
+        return ApiResult.ok(result);
     }
 
-    @Operation(summary = "重启MCP服务")
+    @Operation(summary = "闁插秴鎯嶮CP閺堝秴濮?)
     @PostMapping("/restart/{serverCode}")
-    public WebResponse<Map<String, Object>> restart(@PathVariable("serverCode") String serverCode) {
+    public ApiResult<Map<String, Object>> restart(@PathVariable("serverCode") String serverCode) {
         Map<String, Object> result = service.restart(serverCode);
-        return WebResponse.ok(result);
+        return ApiResult.ok(result);
     }
 
-    @Operation(summary = "启动全部已启用的MCP服务")
+    @Operation(summary = "閸氼垰濮╅崗銊╁劥瀹告彃鎯庨悽銊ф畱MCP閺堝秴濮?)
     @PostMapping("/start-all")
-    public WebResponse<Map<String, Object>> startAll() {
+    public ApiResult<Map<String, Object>> startAll() {
         Map<String, Object> result = service.startAll();
-        return WebResponse.ok(result);
+        return ApiResult.ok(result);
     }
 
-    @Operation(summary = "停止全部运行中的MCP服务")
+    @Operation(summary = "閸嬫粍顒涢崗銊╁劥鏉╂劘顢戞稉顓犳畱MCP閺堝秴濮?)
     @PostMapping("/stop-all")
-    public WebResponse<Map<String, Object>> stopAll() {
+    public ApiResult<Map<String, Object>> stopAll() {
         Map<String, Object> result = service.stopAll();
-        return WebResponse.ok(result);
+        return ApiResult.ok(result);
     }
 
-    @Operation(summary = "查询MCP服务运行状态")
+    @Operation(summary = "閺屻儴顕桵CP閺堝秴濮熸潻鎰攽閻樿埖鈧?)
     @GetMapping("/status/{serverCode}")
-    public WebResponse<Map<String, Object>> runningStatus(@PathVariable("serverCode") String serverCode) {
+    public ApiResult<Map<String, Object>> runningStatus(@PathVariable("serverCode") String serverCode) {
         Map<String, Object> result = service.getRunningStatus(serverCode);
-        return WebResponse.ok(result);
+        return ApiResult.ok(result);
     }
 
-    @Operation(summary = "查询所有运行中的MCP服务编码")
+    @Operation(summary = "閺屻儴顕楅幍鈧張澶庣箥鐞涘奔鑵戦惃鍑狢P閺堝秴濮熺紓鏍垳")
     @GetMapping("/running-codes")
-    public WebResponse<List<String>> runningCodes() {
+    public ApiResult<List<String>> runningCodes() {
         List<String> codes = service.listRunningCodes();
-        return WebResponse.ok(codes);
+        return ApiResult.ok(codes);
     }
 
-    // ==================== 内部方法 ====================
+    // ==================== 閸愬懘鍎撮弬瑙勭《 ====================
 
     private McpServerConfig toEntity(McpServerConfigDTO dto) {
         if (dto == null) {
@@ -164,3 +163,4 @@ public class McpServerConfigController {
         return dto;
     }
 }
+

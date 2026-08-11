@@ -1,4 +1,4 @@
-﻿package com.github.walkvoid.zone.ai.business.service.impl;
+package com.github.walkvoid.zone.ai.business.service.impl;
 
 import com.github.walkvoid.zone.ai.business.db.dao.PromptTemplateRunRecordDAO;
 import com.github.walkvoid.zone.ai.business.service.PromptTemplateRunRecordService;
@@ -8,6 +8,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Prompt模板运行记录 Service 实现
+ *
+ * @author walkvoid
+ */
 @Service
 public class PromptTemplateRunRecordServiceImpl implements PromptTemplateRunRecordService {
 

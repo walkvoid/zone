@@ -1,7 +1,7 @@
-package com.github.walkvoid.zone.system.api.service;
+﻿package com.github.walkvoid.zone.system.api.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.walkvoid.wvframework.models.PageRequest;
-import com.github.walkvoid.wvframework.models.PageResponse;
 import com.github.walkvoid.zone.system.model.dto.MenuDTO;
 
 import java.util.List;
@@ -48,5 +48,5 @@ public interface MenuCrudService {
     /**
      * 分页查询菜单列表
      */
-    PageResponse<MenuDTO> page(PageRequest<Void> pageRequest);
+    PageDTO<MenuDTO> page(PageRequest<Void> pageRequest);
 }

@@ -2,8 +2,8 @@
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.walkvoid.wvframework.models.PageRequest;
-import com.github.walkvoid.wvframework.models.PageResponse;
 import com.github.walkvoid.wvframework.utils.BeanCopyUtils;
 import com.github.walkvoid.zone.ai.business.db.mapper.PromptTemplateRunRecordMapper;
 import com.github.walkvoid.zone.ai.model.dto.PromptTemplateRunRecordDTO;
@@ -38,12 +38,14 @@ public class PromptTemplateRunRecordDAO {
                 .orderByDesc("create_time"));
     }
 
-    public PageResponse<PromptTemplateRunRecordDTO> page(PageRequest<PromptTemplateRunRecordDTO> pageRequest) {
+    public PageDTO<PromptTemplateRunRecordDTO> page(PageRequest<PromptTemplateRunRecordDTO> pageRequest) {
         PromptTemplateRunRecord condition = BeanCopyUtils.copyBean(pageRequest.getParam(), PromptTemplateRunRecord.class);
-        Page<PromptTemplateRunRecord> page = mapper.selectPage(
+        Page<PromptTemplateRunRecord> mpPage = mapper.selectPage(
                 new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
                 new QueryWrapper<>(condition).orderByDesc("create_time"));
-        List<PromptTemplateRunRecordDTO> records = BeanCopyUtils.copyList(page.getRecords(), PromptTemplateRunRecordDTO.class);
-        return new PageResponse<>(page.getTotal(), (int) page.getSize(), page.getCurrent(), records);
+        List<PromptTemplateRunRecordDTO> records = BeanCopyUtils.copyList(mpPage.getRecords(), PromptTemplateRunRecordDTO.class);
+        PageDTO<PromptTemplateRunRecordDTO> result = new PageDTO<>(mpPage.getCurrent(), mpPage.getSize(), mpPage.getTotal());
+        result.setRecords(records);
+        return result;
     }
 }

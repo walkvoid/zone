@@ -9,6 +9,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * AI模型 Service 实现
+ *
+ * @author walkvoid
+ */
 @DubboService
 @Service
 public class AiModelServiceImpl implements AiModelService {
