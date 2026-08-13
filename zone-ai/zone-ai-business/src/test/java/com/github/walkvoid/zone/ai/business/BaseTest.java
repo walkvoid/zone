@@ -1,21 +1,25 @@
 package com.github.walkvoid.zone.ai.business;
 
 import com.github.walkvoid.zone.ai.business.db.mapper.AiModelMapper;
+import com.github.walkvoid.zone.ai.business.db.mapper.McpServerConfigMapper;
 import com.github.walkvoid.zone.ai.business.db.mapper.PromptTemplateMapper;
+import com.github.walkvoid.zone.ai.business.db.mapper.PromptTemplateRunRecordMapper;
 import com.github.walkvoid.zone.ai.business.db.vec.QdrantRagDAO;
+import com.github.walkvoid.zone.ai.business.tool.CodeAssistantTool;
+import java.util.List;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -34,7 +38,13 @@ public class BaseTest {
     private AiModelMapper aiModelMapper;
 
     @MockBean
+    private McpServerConfigMapper mcpServerConfigMapper;
+
+    @MockBean
     private PromptTemplateMapper promptTemplateMapper;
+
+    @MockBean
+    private PromptTemplateRunRecordMapper promptTemplateRunRecordMapper;
 
     @Autowired
     private EmbeddingModel embeddingModel;
@@ -100,5 +110,26 @@ public class BaseTest {
                         && "success".equals(doc.getMetadata().get("code")));
         org.junit.jupiter.api.Assertions.assertTrue(foundSuccess,
                 "'交易成功' should be in the search results for query '融资成功状态是什么'");
+    }
+
+
+    @Autowired
+    private OpenAiChatModel chatModel;
+
+    @Autowired
+    private CodeAssistantTool logSearchTool;
+
+    @Test
+    void testAiInvokeLogSearchTool() {
+        String userPrompt = "搜一下traceId为7fb9fffcffb74845b54f1b3e6e6ea05f.163.17866150400450123最近一小时的beecloud搜索日志";
+        //String userPrompt = "测试一下";
+
+        ChatClient chatClient = ChatClient.builder(chatModel).build();
+        String resp = chatClient.prompt()
+                .user(userPrompt)
+                .tools(logSearchTool) // 注册工具，AI会读取@Tool注解
+                .call()
+                .content();
+        System.out.println("AI返回结果：" + resp);
     }
 }
