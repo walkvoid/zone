@@ -19,11 +19,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * MCP Server闁板秶鐤?Controller
+ * MCP Server Config Controller
  *
  * @author walkvoid
  */
-@Tag(name = "MCP Server闁板秶鐤?)
+@Tag(name = "MCP Server Config")
 @RestController
 @RequestMapping("/ai/mcp-server-config")
 public class McpServerConfigController {
@@ -36,21 +36,21 @@ public class McpServerConfigController {
 
     // ==================== CRUD ====================
 
-    @Operation(summary = "閸掑棝銆夐弻銉嚄MCP閺堝秴濮熼柊宥囩枂")
+    @Operation(summary = "Page query MCP server configs")
     @GetMapping("/page")
     public ApiResult<PageDTO<McpServerConfigDTO>> page(PageRequest<McpServerConfigDTO> pageRequest) {
         PageDTO<McpServerConfigDTO> pageResult = dao.page(pageRequest);
         return ApiResult.ok(pageResult);
     }
 
-    @Operation(summary = "閹稿D閺屻儴顕?)
+    @Operation(summary = "Get MCP server config by id")
     @GetMapping("/{id}")
     public ApiResult<McpServerConfigDTO> getById(@PathVariable("id") Long id) {
         McpServerConfig m = dao.selectById(id);
         return ApiResult.ok(m != null ? toDTO(m) : null);
     }
 
-    @Operation(summary = "閺屻儴顕楅崗銊╁劥")
+    @Operation(summary = "List MCP server configs")
     @GetMapping("/list")
     public ApiResult<List<McpServerConfigDTO>> listAll() {
         List<McpServerConfig> list = dao.selectList(new McpServerConfig());
@@ -58,14 +58,14 @@ public class McpServerConfigController {
         return ApiResult.ok(dtoList);
     }
 
-    @Operation(summary = "閸掓稑缂揗CP閺堝秴濮熼柊宥囩枂")
+    @Operation(summary = "Create MCP server config")
     @PostMapping
     public ApiResult<String> create(@RequestBody McpServerConfigDTO dto) {
         if (dto.getServerCode() == null || dto.getServerCode().isBlank()) {
-            return ApiResult.error(400, "閺堝秴濮熺紓鏍垳娑撳秷鍏樻稉铏光敄");
+            return ApiResult.error(400, "Server code is required");
         }
         if (dao.checkCodeExists(dto.getServerCode()) > 0) {
-            return ApiResult.error(400, "閺堝秴濮熺紓鏍垳瀹告彃鐡ㄩ崷?);
+            return ApiResult.error(400, "Server code already exists");
         }
         McpServerConfig entity = toEntity(dto);
         entity.setStatus(entity.getStatus() != null ? entity.getStatus() : 1);
@@ -76,11 +76,11 @@ public class McpServerConfigController {
         return ApiResult.ok("OK");
     }
 
-    @Operation(summary = "閺囧瓨鏌奙CP閺堝秴濮熼柊宥囩枂")
+    @Operation(summary = "Update MCP server config")
     @PutMapping
     public ApiResult<String> update(@RequestBody McpServerConfigDTO dto) {
         if (dto.getId() == null) {
-            return ApiResult.error(400, "ID娑撳秷鍏樻稉铏光敄");
+            return ApiResult.error(400, "ID is required");
         }
         McpServerConfig entity = toEntity(dto);
         entity.setUpdateTime(LocalDateTime.now());
@@ -88,65 +88,65 @@ public class McpServerConfigController {
         return ApiResult.ok("OK");
     }
 
-    @Operation(summary = "閸掔娀娅嶮CP閺堝秴濮熼柊宥囩枂")
+    @Operation(summary = "Delete MCP server config")
     @DeleteMapping("/{id}")
     public ApiResult<String> delete(@PathVariable("id") Long id) {
         service.delete(id);
         return ApiResult.ok("OK");
     }
 
-    // ==================== 閸氼垰浠犻幒褍鍩?====================
+    // ==================== Lifecycle Operations ====================
 
-    @Operation(summary = "閸氼垰濮㎝CP閺堝秴濮?)
+    @Operation(summary = "Start MCP server")
     @PostMapping("/start/{serverCode}")
     public ApiResult<Map<String, Object>> start(@PathVariable("serverCode") String serverCode) {
         Map<String, Object> result = service.start(serverCode);
         return ApiResult.ok(result);
     }
 
-    @Operation(summary = "閸嬫粍顒汳CP閺堝秴濮?)
+    @Operation(summary = "Stop MCP server")
     @PostMapping("/stop/{serverCode}")
     public ApiResult<Map<String, Object>> stop(@PathVariable("serverCode") String serverCode) {
         Map<String, Object> result = service.stop(serverCode);
         return ApiResult.ok(result);
     }
 
-    @Operation(summary = "闁插秴鎯嶮CP閺堝秴濮?)
+    @Operation(summary = "Restart MCP server")
     @PostMapping("/restart/{serverCode}")
     public ApiResult<Map<String, Object>> restart(@PathVariable("serverCode") String serverCode) {
         Map<String, Object> result = service.restart(serverCode);
         return ApiResult.ok(result);
     }
 
-    @Operation(summary = "閸氼垰濮╅崗銊╁劥瀹告彃鎯庨悽銊ф畱MCP閺堝秴濮?)
+    @Operation(summary = "Start all MCP servers")
     @PostMapping("/start-all")
     public ApiResult<Map<String, Object>> startAll() {
         Map<String, Object> result = service.startAll();
         return ApiResult.ok(result);
     }
 
-    @Operation(summary = "閸嬫粍顒涢崗銊╁劥鏉╂劘顢戞稉顓犳畱MCP閺堝秴濮?)
+    @Operation(summary = "Stop all MCP servers")
     @PostMapping("/stop-all")
     public ApiResult<Map<String, Object>> stopAll() {
         Map<String, Object> result = service.stopAll();
         return ApiResult.ok(result);
     }
 
-    @Operation(summary = "閺屻儴顕桵CP閺堝秴濮熸潻鎰攽閻樿埖鈧?)
+    @Operation(summary = "Get MCP server running status")
     @GetMapping("/status/{serverCode}")
     public ApiResult<Map<String, Object>> runningStatus(@PathVariable("serverCode") String serverCode) {
         Map<String, Object> result = service.getRunningStatus(serverCode);
         return ApiResult.ok(result);
     }
 
-    @Operation(summary = "閺屻儴顕楅幍鈧張澶庣箥鐞涘奔鑵戦惃鍑狢P閺堝秴濮熺紓鏍垳")
+    @Operation(summary = "List running MCP server codes")
     @GetMapping("/running-codes")
     public ApiResult<List<String>> runningCodes() {
         List<String> codes = service.listRunningCodes();
         return ApiResult.ok(codes);
     }
 
-    // ==================== 閸愬懘鍎撮弬瑙勭《 ====================
+    // ==================== DTO Converters ====================
 
     private McpServerConfig toEntity(McpServerConfigDTO dto) {
         if (dto == null) {

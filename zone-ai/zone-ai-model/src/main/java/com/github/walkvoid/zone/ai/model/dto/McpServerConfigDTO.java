@@ -1,4 +1,4 @@
-﻿package com.github.walkvoid.zone.ai.model.dto;
+package com.github.walkvoid.zone.ai.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;

@@ -1,5 +1,5 @@
-# 构建输出目录
-/target/
+# 构建输出目录（必须是 target/，不能写成 /target/，否则子模块 target 仍会被跟踪）
+target/
 build/
 out/
 bin/

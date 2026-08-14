@@ -24,11 +24,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * PromptÄ£°å¹ÜÀí Controller
+ * Promptæ¨¡æ¿ç®¡ç† Controller
  *
  * @author walkvoid
  */
-@Tag(name = "PromptÄ£°å¹ÜÀí")
+@Tag(name = "Promptæ¨¡æ¿ç®¡ç†")
 @RestController
 @RequestMapping("/ai/prompt-template")
 public class PromptTemplateController {
@@ -48,35 +48,35 @@ public class PromptTemplateController {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Operation(summary = "·ÖÒ³²éÑ¯Ä£°åÁĞ±í")
+    @Operation(summary = "åˆ†é¡µæŸ¥è¯¢æ¨¡æ¿åˆ—è¡¨")
     @GetMapping("/page")
     public ApiResult<PageDTO<PromptTemplateDTO>> page(PageRequest<PromptTemplateDTO> pageRequest) {
         PageDTO<PromptTemplateDTO> pageResult = dao.page(pageRequest);
         return ApiResult.ok(pageResult);
     }
 
-    @Operation(summary = "°´ID²éÑ¯")
+    @Operation(summary = "æŒ‰IDæŸ¥è¯¢")
     @GetMapping("/{id}")
     public ApiResult<PromptTemplateDTO> getById(@PathVariable("id") Long id) {
         PromptTemplate m = dao.selectById(id);
         return ApiResult.ok(m != null ? toDTO(m) : null);
     }
 
-    @Operation(summary = "°´±àÂë²éÑ¯")
+    @Operation(summary = "æŒ‰ç¼–ç æŸ¥è¯¢")
     @GetMapping("/code/{templateCode}")
     public ApiResult<PromptTemplateDTO> getByCode(@PathVariable("templateCode") String templateCode) {
         PromptTemplate m = dao.selectByCode(templateCode);
         return ApiResult.ok(m != null ? toDTO(m) : null);
     }
 
-    @Operation(summary = "´´½¨Ä£°å")
+    @Operation(summary = "åˆ›å»ºæ¨¡æ¿")
     @PostMapping
     public ApiResult<String> create(@RequestBody PromptTemplateDTO dto) {
         if (dto.getTemplateCode() == null || dto.getTemplateCode().isBlank()) {
-            return ApiResult.error(400, "Ä£°å±àÂë²»ÄÜÎª¿Õ");
+            return ApiResult.error(400, "æ¨¡æ¿ç¼–ç ä¸èƒ½ä¸ºç©º");
         }
         if (dao.checkCodeExists(dto.getTemplateCode()) > 0) {
-            return ApiResult.error(400, "Ä£°å±àÂëÒÑ´æÔÚ");
+            return ApiResult.error(400, "æ¨¡æ¿ç¼–ç å·²å­˜åœ¨");
         }
         PromptTemplate entity = toEntity(dto);
         entity.setStatus(entity.getStatus() != null ? entity.getStatus() : 1);
@@ -86,11 +86,11 @@ public class PromptTemplateController {
         return ApiResult.ok("OK");
     }
 
-    @Operation(summary = "¸üĞÂÄ£°å")
+    @Operation(summary = "æ›´æ–°æ¨¡æ¿")
     @PutMapping
     public ApiResult<String> update(@RequestBody PromptTemplateDTO dto) {
         if (dto.getId() == null) {
-            return ApiResult.error(400, "ID²»ÄÜÎª¿Õ");
+            return ApiResult.error(400, "IDä¸èƒ½ä¸ºç©º");
         }
         PromptTemplate entity = toEntity(dto);
         entity.setUpdateTime(LocalDateTime.now());
@@ -98,14 +98,14 @@ public class PromptTemplateController {
         return ApiResult.ok("OK");
     }
 
-    @Operation(summary = "É¾³ıÄ£°å")
+    @Operation(summary = "åˆ é™¤æ¨¡æ¿")
     @DeleteMapping("/{id}")
     public ApiResult<String> delete(@PathVariable("id") Long id) {
         dao.deleteById(id);
         return ApiResult.ok("OK");
     }
 
-    @Operation(summary = "ÔËĞĞÄ£°å")
+    @Operation(summary = "è¿è¡Œæ¨¡æ¿")
     @PostMapping("/run")
     public ApiResult<String> run(@RequestBody Map<String, Object> request) {
         String templateCode = (String) request.get("templateCode");
@@ -113,15 +113,15 @@ public class PromptTemplateController {
         Map<String, String> variables = (Map<String, String>) request.get("variables");
 
         if (templateCode == null || templateCode.isBlank()) {
-            return ApiResult.error(400, "Ä£°å±àÂë²»ÄÜÎª¿Õ");
+            return ApiResult.error(400, "æ¨¡æ¿ç¼–ç ä¸èƒ½ä¸ºç©º");
         }
 
         PromptTemplate template = dao.selectByCode(templateCode);
         if (template == null) {
-            return ApiResult.error(400, "Ä£°å²»´æÔÚ: " + templateCode);
+            return ApiResult.error(400, "æ¨¡æ¿ä¸å­˜åœ¨: " + templateCode);
         }
 
-        // äÖÈ¾ prompt
+        // æ¸²æŸ“ prompt
         String renderedPrompt = template.getTemplateContent();
         if (variables != null) {
             for (Map.Entry<String, String> entry : variables.entrySet()) {
@@ -129,14 +129,14 @@ public class PromptTemplateController {
             }
         }
 
-        // »ñÈ¡Ä£ĞÍÃû³Æ
+        // è·å–æ¨¡å‹åç§°
         String modelName = null;
         List<AiModel> models = aiModelDAO.selectEnabled();
         if (models != null && !models.isEmpty()) {
             modelName = models.get(0).getModelCode();
         }
 
-        // ¹¹½¨ÔËĞĞ¼ÇÂ¼
+        // æ„å»ºè¿è¡Œè®°å½•
         PromptTemplateRunRecord record = new PromptTemplateRunRecord();
         record.setTemplateId(template.getId());
         record.setRenderedPrompt(renderedPrompt);

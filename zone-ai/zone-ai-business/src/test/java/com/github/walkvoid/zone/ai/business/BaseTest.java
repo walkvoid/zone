@@ -5,7 +5,9 @@ import com.github.walkvoid.zone.ai.business.db.mapper.McpServerConfigMapper;
 import com.github.walkvoid.zone.ai.business.db.mapper.PromptTemplateMapper;
 import com.github.walkvoid.zone.ai.business.db.mapper.PromptTemplateRunRecordMapper;
 import com.github.walkvoid.zone.ai.business.db.vec.QdrantRagDAO;
-import com.github.walkvoid.zone.ai.business.tool.CodeAssistantTool;
+import com.github.walkvoid.zone.ai.business.tool.AppLogSearchTool;
+import com.github.walkvoid.zone.ai.business.tool.SqlQueryTool;
+import com.github.walkvoid.zone.ai.business.tool.sql.SqlQuerySupport;
 import java.util.List;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -30,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  * @date 2026/8/6
  */
 @SpringBootTest(classes = AiApplication.class)
-@ActiveProfiles("lls")
+@ActiveProfiles({"lls", "test"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BaseTest {
 
@@ -117,17 +119,53 @@ public class BaseTest {
     private OpenAiChatModel chatModel;
 
     @Autowired
-    private CodeAssistantTool logSearchTool;
+    private AppLogSearchTool logSearchTool;
 
     @Test
     void testAiInvokeLogSearchTool() {
-        String userPrompt = "搜一下traceId为7fb9fffcffb74845b54f1b3e6e6ea05f.163.17866150400450123最近一小时的beecloud搜索日志";
+        String userPrompt = "搜一下traceId为abef69813c36423d97d8755d35de89ca.153.17867000988760251最近一小时qa环境的beecloud搜索日志,并且帮我查一下分析查询用了什么sql";
         //String userPrompt = "测试一下";
 
         ChatClient chatClient = ChatClient.builder(chatModel).build();
         String resp = chatClient.prompt()
                 .user(userPrompt)
                 .tools(logSearchTool) // 注册工具，AI会读取@Tool注解
+                .call()
+                .content();
+        System.out.println("AI返回结果：" + resp);
+    }
+
+
+    @Autowired
+    private SqlQueryTool sqlQueryTool;
+
+    @Autowired
+    private SqlQuerySupport sqlQuerySupport;
+
+    @Test
+    void testSqlQueryTool() {
+        System.out.println("sqlQuery enabled=" + sqlQuerySupport.properties().isEnabled()
+                + ", ready=" + sqlQuerySupport.isReady()
+                + ", url=" + sqlQuerySupport.properties().getUrl());
+        org.junit.jupiter.api.Assertions.assertTrue(sqlQuerySupport.isReady(),
+                "SqlQueryTool should be connected. Ensure profile lls is active (application-lls.properties).");
+
+        String id = "1381447308451790883";
+        System.out.println("direct ts_transaction=" + sqlQueryTool.runNamedQuery("ts_transaction",
+                "{\"value\":\"" + id + "\"}", 20));
+        System.out.println("direct ts_asset=" + sqlQueryTool.runNamedQuery("ts_asset",
+                "{\"by\":\"id\",\"value\":\"" + id + "\"}", 20));
+        System.out.println("direct pay_trade=" + sqlQueryTool.runNamedQuery("pay_trade",
+                "{\"by\":\"id\",\"value\":\"" + id + "\"}", 20));
+
+        String userPrompt = "帮忙查一下融资Id1381447308451790883的状态，融资发起方是谁，向哪个资金方银行发起的";
+        ChatClient chatClient = ChatClient.builder(chatModel).build();
+        String resp = chatClient.prompt()
+                .system("你是供应链金融排障助手。必须调用 SqlQueryTool。"
+                        + "融资Id 先 runNamedQuery：ts_transaction（value=id）、ts_asset（by=id）、pay_trade（by=id 或 transaction_id）。"
+                        + "不要在未成功调用工具时声称查询被禁用。")
+                .user(userPrompt)
+                .tools(sqlQueryTool)
                 .call()
                 .content();
         System.out.println("AI返回结果：" + resp);
