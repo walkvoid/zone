@@ -1,6 +1,7 @@
 package com.github.walkvoid.zone.ai.business.channel.core;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,6 +17,7 @@ public class ChannelInboundMessage {
     private final String userId;
     private final String msgType;
     private final String textContent;
+    private final List<ChannelImage> images;
     private final Map<String, Object> rawBody;
 
     private ChannelInboundMessage(Builder builder) {
@@ -27,6 +29,9 @@ public class ChannelInboundMessage {
         this.userId = builder.userId;
         this.msgType = builder.msgType;
         this.textContent = builder.textContent;
+        this.images = builder.images == null || builder.images.isEmpty()
+                ? List.of()
+                : List.copyOf(builder.images);
         this.rawBody = builder.rawBody == null
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(builder.rawBody);
@@ -64,6 +69,14 @@ public class ChannelInboundMessage {
         return textContent;
     }
 
+    public List<ChannelImage> getImages() {
+        return images;
+    }
+
+    public boolean hasImages() {
+        return images != null && !images.isEmpty();
+    }
+
     public Map<String, Object> getRawBody() {
         return rawBody;
     }
@@ -81,6 +94,7 @@ public class ChannelInboundMessage {
         private String userId;
         private String msgType;
         private String textContent;
+        private List<ChannelImage> images;
         private Map<String, Object> rawBody;
 
         public Builder channelType(ChannelType channelType) {
@@ -120,6 +134,11 @@ public class ChannelInboundMessage {
 
         public Builder textContent(String textContent) {
             this.textContent = textContent;
+            return this;
+        }
+
+        public Builder images(List<ChannelImage> images) {
+            this.images = images;
             return this;
         }
 

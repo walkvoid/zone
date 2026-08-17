@@ -4,14 +4,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelInboundMessage;
+import com.github.walkvoid.zone.ai.business.channel.core.ChannelImage;
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelMessageHandler;
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelReplySink;
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -46,16 +49,20 @@ public class WeiXinMessageBridge {
                 // 订阅/心跳响应通常只有 headers + errcode
                 int errcode = root.path("errcode").asInt(Integer.MIN_VALUE);
                 if (errcode != Integer.MIN_VALUE) {
-                    log.debug("WeiXin response errcode={}, errmsg={}", errcode, root.path("errmsg").asText());
+                    log.info("WeiXin response without cmd, errcode={}, errmsg={}",
+                            errcode, root.path("errmsg").asText());
+                } else {
+                    log.info("WeiXin frame has no cmd, keys={}", fieldNames(root));
                 }
                 return;
             }
 
+            log.info("WeiXin onFrame cmd={}", cmd);
             switch (cmd) {
                 case WeiXinCmd.MSG_CALLBACK -> handleMsgCallback(root);
                 case WeiXinCmd.EVENT_CALLBACK -> handleEventCallback(root);
-                case WeiXinCmd.PING -> log.trace("WeiXin ping echo ignored");
-                default -> log.info("WeiXin unhandled cmd={}", cmd);
+                case WeiXinCmd.PING -> log.info("WeiXin ping echo ignored");
+                default -> log.info("WeiXin unhandled cmd={}, bodyKeys={}", cmd, fieldNames(root.path("body")));
             }
         } catch (Exception e) {
             log.error("WeiXin frame handle failed: {}", e.getMessage(), e);
@@ -65,6 +72,12 @@ public class WeiXinMessageBridge {
     private void handleMsgCallback(JsonNode root) {
         String reqId = root.path("headers").path("req_id").asText();
         JsonNode body = root.path("body");
+        log.info("WeiXin msg_callback reqId={}, chatid={}, chattype={}, userid={}, msgtype={}",
+                reqId,
+                body.path("chatid").asText(),
+                body.path("chattype").asText(),
+                body.path("from").path("userid").asText(),
+                body.path("msgtype").asText());
         ChannelInboundMessage message = ChannelInboundMessage.builder()
                 .channelType(ChannelType.WEIXIN)
                 .requestId(reqId)
@@ -74,16 +87,44 @@ public class WeiXinMessageBridge {
                 .userId(body.path("from").path("userid").asText(null))
                 .msgType(body.path("msgtype").asText(null))
                 .textContent(extractText(body))
+                .images(extractImages(body))
                 .rawBody(toMap(body))
                 .build();
 
         ChannelReplySink sink = new WeiXinReplySink(reqId);
         try {
+            log.info("WeiXin dispatch onMessage, handler={}, msgType={}, textPreview={}, images={}",
+                    messageHandler.getClass().getSimpleName(),
+                    message.getMsgType(),
+                    preview(message.getTextContent()),
+                    message.getImages().size());
             messageHandler.onMessage(message, sink);
         } catch (Exception e) {
             log.error("WeiXin message handler error", e);
             sink.replyText("处理消息时出错，请稍后重试。");
         }
+    }
+
+    private static String preview(String text) {
+        if (text == null) {
+            return "";
+        }
+        String trimmed = text.replace("\n", " ");
+        return trimmed.length() > 120 ? trimmed.substring(0, 120) + "..." : trimmed;
+    }
+
+    private static String fieldNames(JsonNode node) {
+        if (node == null || !node.isObject()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        node.fieldNames().forEachRemaining(name -> {
+            if (!sb.isEmpty()) {
+                sb.append(',');
+            }
+            sb.append(name);
+        });
+        return sb.toString();
     }
 
     private void handleEventCallback(JsonNode root) {
@@ -119,6 +160,38 @@ public class WeiXinMessageBridge {
             return sb.toString();
         }
         return "";
+    }
+
+    static List<ChannelImage> extractImages(JsonNode body) {
+        List<ChannelImage> images = new ArrayList<>();
+        if (body == null || body.isMissingNode()) {
+            return images;
+        }
+        String msgType = body.path("msgtype").asText("");
+        if ("image".equals(msgType)) {
+            addImage(images, body.path("image"));
+            return images;
+        }
+        if ("mixed".equals(msgType)) {
+            for (JsonNode item : body.path("mixed").path("msg_item")) {
+                if ("image".equals(item.path("msgtype").asText())) {
+                    addImage(images, item.path("image"));
+                }
+            }
+        }
+        return images;
+    }
+
+    private static void addImage(List<ChannelImage> images, JsonNode image) {
+        if (image == null || image.isMissingNode() || image.isNull()) {
+            return;
+        }
+        String url = image.path("url").asText(image.path("pic_url").asText(""));
+        String aesKey = image.path("aeskey").asText(image.path("aes_key").asText(""));
+        if (url == null || url.isBlank()) {
+            return;
+        }
+        images.add(new ChannelImage(url, aesKey));
     }
 
     private Map<String, Object> toMap(JsonNode node) {

@@ -74,6 +74,7 @@ public class WeiXinAiBotClient extends AbstractChannelBotLifecycle {
 
     @Override
     protected void doStart() {
+        System.out.println("=======开始启动微信WeiXin========");
         WeiXinAiBotProperties props = channelProperties.getWeixin();
         if (!props.hasCredentials()) {
             throw new IllegalStateException("WeiXin botId/secret is empty");
@@ -248,6 +249,8 @@ public class WeiXinAiBotClient extends AbstractChannelBotLifecycle {
             if (last) {
                 String payload = textBuffer.toString();
                 textBuffer.setLength(0);
+                System.out.println("=======WeiXin onText len=" + payload.length() + "=======");
+                log.info("WeiXin onText last=true, len={}", payload.length());
                 handlePayload(payload);
             }
             webSocket.request(1);
@@ -256,6 +259,14 @@ public class WeiXinAiBotClient extends AbstractChannelBotLifecycle {
 
         @Override
         public CompletionStage<?> onBinary(WebSocket webSocket, ByteBuffer data, boolean last) {
+            byte[] bytes = new byte[data.remaining()];
+            data.get(bytes);
+            String payload = new String(bytes, java.nio.charset.StandardCharsets.UTF_8);
+            System.out.println("=======WeiXin onBinary last=" + last + " len=" + payload.length() + "=======");
+            log.info("WeiXin onBinary last={}, len={}", last, payload.length());
+            if (last && StringUtils.hasText(payload)) {
+                handlePayload(payload);
+            }
             webSocket.request(1);
             return CompletableFuture.completedFuture(null);
         }
@@ -287,9 +298,16 @@ public class WeiXinAiBotClient extends AbstractChannelBotLifecycle {
             if (!StringUtils.hasText(payload)) {
                 return;
             }
+            String preview = payload.length() > 500 ? payload.substring(0, 500) + "..." : payload;
+            preview = preview.replaceAll("(?i)\"secret\"\\s*:\\s*\"[^\"]*\"", "\"secret\":\"***\"");
+            System.out.println("=======WeiXin inbound=======\n" + preview);
+            log.info("WeiXin inbound: {}", preview);
             // 订阅成功响应：无 cmd，errcode=0
             try {
                 var root = objectMapper.readTree(payload);
+                String cmd = root.path("cmd").asText("");
+                log.info("WeiXin inbound cmd='{}', errcode={}, subscribed={}",
+                        cmd, root.path("errcode").asInt(Integer.MIN_VALUE), subscribed.get());
                 if (!root.has("cmd") && root.path("errcode").asInt(-1) == 0 && !subscribed.get()) {
                     onSubscribed();
                     return;
@@ -300,10 +318,12 @@ public class WeiXinAiBotClient extends AbstractChannelBotLifecycle {
                     return;
                 }
             } catch (Exception e) {
-                log.debug("WeiXin payload parse probe failed: {}", e.getMessage());
+                log.warn("WeiXin payload parse probe failed: {}", e.getMessage());
             }
             if (bridge != null) {
                 bridge.onFrame(payload);
+            } else {
+                log.warn("WeiXin inbound dropped, bridge is null");
             }
         }
     }

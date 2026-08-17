@@ -8,11 +8,11 @@
 --   3) 可重复执行（CREATE DATABASE / CREATE TABLE IF NOT EXISTS）
 -- ============================================
 
-CREATE DATABASE IF NOT EXISTS `zone-ai`
+CREATE DATABASE IF NOT EXISTS `zone_ai`
     DEFAULT CHARACTER SET utf8mb4
     DEFAULT COLLATE utf8mb4_unicode_ci;
 
-USE `zone-ai`;
+USE `zone_ai`;
 
 -- ============================================
 -- 1. AI 模型配置 (ai_model)

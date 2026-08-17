@@ -1,20 +1,17 @@
 package com.github.walkvoid.zone.ai.business.service.impl;
 
-import com.github.walkvoid.zone.ai.business.service.PromptTemplateService;
 import com.github.walkvoid.zone.ai.business.db.dao.PromptTemplateDAO;
+import com.github.walkvoid.zone.ai.business.service.PromptTemplateService;
 import com.github.walkvoid.zone.ai.model.entity.PromptTemplate;
-import org.apache.dubbo.config.annotation.DubboService;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * Prompt模板 Service 实现
  *
  * @author walkvoid
  */
-@DubboService
 @Service
 public class PromptTemplateServiceImpl implements PromptTemplateService {
 

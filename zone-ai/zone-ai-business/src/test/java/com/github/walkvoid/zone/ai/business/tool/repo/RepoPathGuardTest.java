@@ -63,6 +63,24 @@ class RepoPathGuardTest {
     }
 
     @Test
+    void rejectsWritableConfigAndPom() throws Exception {
+        RepoToolProperties properties = writableProps(temp);
+        assertThrows(IllegalArgumentException.class, () ->
+                RepoPathGuard.resolveWritableFile(properties, "zone-finance/application.properties"));
+        assertThrows(IllegalArgumentException.class, () ->
+                RepoPathGuard.resolveWritableFile(properties, "zone-finance/pom.xml"));
+    }
+
+    @Test
+    void allowsWritableJavaFile() throws Exception {
+        Path file = temp.resolve("zone-finance/src/Foo.java");
+        Files.createDirectories(file.getParent());
+        Files.writeString(file, "class Foo {}");
+        Path resolved = RepoPathGuard.resolveWritableFile(writableProps(temp), "zone-finance/src/Foo.java");
+        assertTrue(Files.isSameFile(file, resolved));
+    }
+
+    @Test
     void denyHelpers() {
         assertTrue(RepoPathGuard.isDenied("zone-finance/.env", ".env"));
         assertTrue(RepoPathGuard.isDenied("zone-finance/id_rsa", "id_rsa"));
@@ -70,12 +88,21 @@ class RepoPathGuardTest {
         assertFalse(RepoPathGuard.isDenied("zone-finance/src/Foo.java", "Foo.java"));
         assertTrue(RepoPathGuard.isAllowedRelative("zone-finance/src/Foo.java", List.of("zone-finance/**")));
         assertFalse(RepoPathGuard.isAllowedRelative("zone-ai/src/Foo.java", List.of("zone-finance/**")));
+        assertTrue(RepoPathGuard.isAllowedRelative("zone-ai/src/Foo.java", List.of("**")));
+        assertTrue(RepoPathGuard.isAllowedRelative("any/path/Bar.java", List.of("/**")));
     }
 
     private static RepoToolProperties props(Path root) {
         RepoToolProperties properties = new RepoToolProperties();
         properties.setRoot(root.toString());
         properties.setAllowPaths(List.of("zone-finance/**"));
+        return properties;
+    }
+
+    private static RepoToolProperties writableProps(Path root) {
+        RepoToolProperties properties = props(root);
+        properties.setWriteEnabled(true);
+        properties.setWriteAllowPaths(List.of("zone-finance/**"));
         return properties;
     }
 }

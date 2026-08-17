@@ -6,8 +6,10 @@ import com.github.walkvoid.zone.ai.business.db.mapper.PromptTemplateMapper;
 import com.github.walkvoid.zone.ai.business.db.mapper.PromptTemplateRunRecordMapper;
 import com.github.walkvoid.zone.ai.business.db.vec.QdrantRagDAO;
 import com.github.walkvoid.zone.ai.business.tool.AppLogSearchTool;
+import com.github.walkvoid.zone.ai.business.tool.RepoReadTool;
 import com.github.walkvoid.zone.ai.business.tool.SqlQueryTool;
 import com.github.walkvoid.zone.ai.business.tool.sql.SqlQuerySupport;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.List;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -166,6 +168,53 @@ public class BaseTest {
                         + "不要在未成功调用工具时声称查询被禁用。")
                 .user(userPrompt)
                 .tools(sqlQueryTool)
+                .call()
+                .content();
+        System.out.println("AI返回结果：" + resp);
+    }
+
+
+    @Autowired
+    private RepoReadTool repoReadTool;
+
+    @Test
+    void testRepoReadTool() {
+        JsonNode repos = repoReadTool.listRepos();
+        System.out.println("listRepos=" + repos);
+        org.junit.jupiter.api.Assertions.assertTrue(repos.path("success").asBoolean(),
+                "listRepos should succeed");
+        JsonNode repo = repos.path("repos").get(0);
+        org.junit.jupiter.api.Assertions.assertTrue(repo.path("exists").asBoolean(),
+                "Sandbox should exist at zone.ai.tool.repo.root=" + repo.path("root").asText());
+
+        JsonNode hits = repoReadTool.searchCode("PayTradeController", "jinkoscf-transaction", 20);
+        System.out.println("searchCode=" + hits);
+        org.junit.jupiter.api.Assertions.assertTrue(hits.path("success").asBoolean(),
+                "searchCode failed: " + hits.path("error").asText());
+        org.junit.jupiter.api.Assertions.assertTrue(hits.path("returned").asInt() >= 1,
+                "Should find PayTradeController under jinkoscf-transaction");
+
+        String path = hits.path("hits").get(0).path("path").asText();
+        JsonNode slice = repoReadTool.readSourceFile(path, 1, 80);
+        System.out.println("readSourceFile path=" + path + " result=" + slice);
+        org.junit.jupiter.api.Assertions.assertTrue(slice.path("success").asBoolean(),
+                "readSourceFile failed: " + slice.path("error").asText());
+        org.junit.jupiter.api.Assertions.assertTrue(
+                slice.path("content").asText().contains("PayTrade"),
+                "File content should contain PayTrade");
+
+        JsonNode denied = repoReadTool.readSourceFile("application-lls.properties", 1, 10);
+        System.out.println("denied read=" + denied);
+        org.junit.jupiter.api.Assertions.assertFalse(denied.path("success").asBoolean(),
+                "application-lls.properties must be blocked");
+
+        String userPrompt = "请帮忙分析一下司库推送开立凭证的代码，帮忙解答如果司库的合同文件是压缩文件，我们会怎么处理";
+        ChatClient chatClient = ChatClient.builder(chatModel).build();
+        String resp = chatClient.prompt()
+                .system("你是代码助手。必须调用 RepoReadTool：先 listRepos 或 searchCode，再 readSourceFile。"
+                        + "不要在未调用工具时编造路径。")
+                .user(userPrompt)
+                .tools(repoReadTool)
                 .call()
                 .content();
         System.out.println("AI返回结果：" + resp);

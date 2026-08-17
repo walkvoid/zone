@@ -3,7 +3,6 @@ package com.github.walkvoid.zone.ai.business.service.impl;
 import com.github.walkvoid.zone.ai.business.service.AiModelService;
 import com.github.walkvoid.zone.ai.business.db.dao.AiModelDAO;
 import com.github.walkvoid.zone.ai.model.entity.AiModel;
-import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +13,6 @@ import java.util.List;
  *
  * @author walkvoid
  */
-@DubboService
 @Service
 public class AiModelServiceImpl implements AiModelService {
 

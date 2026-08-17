@@ -72,11 +72,11 @@ public abstract class AbstractChannelBotLifecycle implements SmartLifecycle, Cha
     }
 
     /**
-     * 默认自动启动；子类可按配置覆盖。
+     * 始终进入 start()：未启用时打 skip 日志，避免配置绑失败时完全静默。
      */
     @Override
     public boolean isAutoStartup() {
-        return isEnabled();
+        return true;
     }
 
     /**

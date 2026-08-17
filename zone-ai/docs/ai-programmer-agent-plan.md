@@ -20,7 +20,7 @@
 | 线上排障 | 按 traceId / 报错信息查 BeeCloud 日志，必要时再读代码、查库 |
 | 代码定位 | 在白名单仓库内搜索、阅读源码，指出类 / 方法 / 行号 |
 | 只读查库 | 用只读账号查业务 MySQL（订单、融资单、状态），禁止写库 |
-| 改代码 | 只在沙箱产出补丁，推审计分支 / 开 PR，**禁止直接推 main 和发版** |
+| 改代码 | 沙箱内改代码，模式可配：只生成 unified diff 文件，或直接改源文件；后续再推审计分支 / 开 PR，**禁止直接推 main 和发版** |
 | 发布 | 仅人工 Review 通过后合并、发布 |
 
 ### 1.2 非目标（第一期明确不做）
@@ -134,10 +134,11 @@ zone-ai-business/src/main/java/.../business/
   agent/            # 新建：编排、记忆、权限、流式对接
   rag/              # 扩展：文档切分入库 + 检索顾问（可从 db/vec 长出来）
   tool/
-    CodeAssistantTool.java   # 已有日志
-    RepoReadTool.java        # 新建：只读搜代码 / 读文件
-    SqlQueryTool.java        # 新建：只读 SELECT
-    CodeChangeTool.java      # 新建：补丁 + 审计分支，禁止推 main
+    AppLogSearchTool.java    # BeeCloud 日志
+    RepoReadTool.java        # 只读：listRepos / searchCode / readSourceFile
+    SqlQueryTool.java        # 只读 SELECT
+    RepoChangeTool.java      # 改代码：applyPatch / applyReplace；写入模式见 write-mode
+    # 审计分支 / PR：阶段 5 后半，禁止推 main
   audit/            # 新建：审计单、PR 状态、企微通知
 ```
 
@@ -169,14 +170,17 @@ zone-ai-business/src/main/java/.../business/
 | 报错、traceId、某环境刚失败 | BeeCloud 日志 → 必要时读代码 |
 | 「这段逻辑在哪」「谁写的校验」 | 搜代码 / 读文件 |
 | 「库里有没有这笔」「今天成功几笔」 | 只读 SQL |
-| 「帮我改一下文案 / 修 NPE」 | 补丁预览 → 审计分支 / PR |
+| 「帮我改一下文案 / 修 NPE」 | readSourceFile 后直接 apply（按 write-mode 写 patch 或改源文件）→ 后续审计分支 / PR |
 
 ### 5.3 会话与权限
 
 | 项 | 第一期约定 |
 |---|---|
-| 会话 Key | `chatid + userid` |
-| 记忆 | 内存 LRU，最近 10 轮；后续再落库 |
+| 会话 Key | 群：`{channel}:{chatid}`（整群一份）；单聊：`{channel}:single:{userid}` |
+| 记忆 | 内存窗口最近约 10 轮（20 条）；只存用户短文本 + 助手短回复，不存工具 JSON / 图片字节 |
+| 过期 | 空闲 45 分钟清空；进程重启丢失 |
+| 清空口令 | `@机器人 新对话` / `清空上下文` / `重新开始` / `新开一轮` |
+| 并发 | 同一会话串行，跨群走 4 线程池并行 |
 | 普通成员 | 只能问答 + 只读工具 |
 | 改代码 | `userid` 白名单 |
 | 群 | 仅处理企微推送的 @ 消息（长连接一般已过滤） |
@@ -345,20 +349,28 @@ zone-ai-business/src/main/java/.../business/
 
 #### 5.2 Tool 流程
 
+改代码写入沙箱的方式由配置 **`zone.ai.tool.repo.write-mode`** 决定。没有单独的预览 Tool：读完源码后直接 `applyPatch` / `applyReplace` 落盘。
+
+| write-mode | apply 行为 | 适用 |
+|---|---|---|
+| `DIFF_FILE`（默认，更安全） | 在源文件**同级目录**写出 unified diff（`.patch`），**不修改源文件** | 人工 `git apply`、评审后再改 |
+| `DIRECT` | 用新内容覆盖沙箱源文件 | 本地沙箱快速试改；仍禁止推 main |
+
+patch 文件命名：`fix_yyyyMMdd_HHmm_{源文件主名}.patch`，例如 `fix_20260817_1538_PromptTemplateApi.patch`。  
+patch 内路径相对沙箱 git 根目录（`---` / `+++` 带 `a/` `b/` 前缀），须在沙箱仓库根执行 `git apply`。  
+unified diff 用 **java-diff-utils** 生成，不是自研 LCS。
+
 ```
 用户：「把某提示文案改一下」
-    → propose_patch     预览 diff，不落盘
-    → （白名单用户确认）apply_patch   写入沙箱
-    → run_tests         只跑相关模块，Maven -Xmx1g
-    → open_audit_request
+    → readSourceFile / searchCode
+    → describeWritePolicy   确认 write-enabled、write-mode、白名单
+    → applyPatch / applyReplace
+         DIFF_FILE：只写同级 .patch
+         DIRECT：覆盖沙箱源文件
+    → （后续阶段）run_tests → open_audit_request
          新分支 ai/fix-yyyyMMdd-HHmm-xxx
-         commit（message 标明 AI 生成 + 原因）
-         push 到 origin 该分支
-         开 PR
-         企微发卡片：PR 链接、文件列表、测试结果
-    → 状态 DRAFT → WAITING_AUDIT
-    → 你在 GitHub Review Merge 或点卡片「通过/驳回」
-    → APPROVED 后由人（或受保护的 CI）合并；AI 不执行合 main
+         commit / push / 开 PR
+    → 人工 Review Merge；AI 不执行合 main
 ```
 
 #### 5.3 审计方式（选一个做透）
@@ -370,6 +382,8 @@ zone-ai-business/src/main/java/.../business/
 
 #### 5.4 验收
 
+- [ ] `write-mode=DIFF_FILE`：apply 后源文件不变，同级出现可 `git apply` 的 `.patch`  
+- [ ] `write-mode=DIRECT`：apply 后沙箱源文件已改，main 仍未推送  
 - [ ] 小改动能产出 PR，main 在你合并前无变化  
 - [ ] 让 AI 推 main / 改生产配置 / force push → 拒绝并在群里说明  
 - [ ] 单测失败时 PR 仍可开，但卡片标明失败，默认不能合  
@@ -383,7 +397,8 @@ zone-ai-business/src/main/java/.../business/
 3. 指标：成功率、Tool 失败率、PR 驳回率、P95 耗时。  
 4. 飞书：实现 `FeishuBotClient`，复用同一 `ChannelMessageHandler`。  
 5. MCP Client：仅当需要调用外部 MCP 时再填 `McpServerConfigServiceImpl.doStart()`。  
-6. 多模态：群里发截图排障（需网关视觉模型），与文生图不是同一条链路。
+6. 多模态：群里发截图排障（需网关视觉模型），与文生图不是同一条链路。  
+   企微长连接已接入 `image` / `mixed`：下载 url + AES 解密后交给 ChatClient。
 
 ---
 
@@ -445,6 +460,11 @@ zone.ai.tool.sql.allowed-tables=financing_order,financing_flow
 # 代码沙箱（阶段 3～5）
 zone.ai.tool.repo.root=D:/ai-sandbox/zone
 zone.ai.tool.repo.allow-paths=zone-finance/**
+zone.ai.tool.repo.write-enabled=false
+# DIFF_FILE=只写同级 .patch；DIRECT=直接改沙箱源文件
+zone.ai.tool.repo.write-mode=DIFF_FILE
+# zone.ai.tool.repo.write-allow-paths=zone-finance/**
+zone.ai.tool.repo.max-patch-lines=400
 
 # 审计
 zone.ai.audit.git-remote=origin
@@ -477,6 +497,8 @@ zone.ai.audit.approver-userids=
 
 ### 审计改代码
 
+- [ ] `DIFF_FILE`：生成 patch、源文件不变  
+- [ ] `DIRECT`：沙箱源文件被改、工作区 / main 不变  
 - [ ] PR 产生且 main 不变  
 - [ ] 危险操作全部拒绝  
 
@@ -498,4 +520,6 @@ zone.ai.audit.approver-userids=
 
 | 日期 | 说明 |
 |---|---|
+| 2026-08-17 | 去掉 propose 预览 Tool，改代码直接 apply；write-mode：DIFF_FILE / DIRECT |
+| 2026-08-17 | 改代码支持 write-mode：DIFF_FILE（同级 unified diff）与 DIRECT（覆盖沙箱源文件） |
 | 2026-08-14 | 初稿：基于当前 zone-ai 代码现状整理缺口与分期计划 |

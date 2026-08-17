@@ -30,8 +30,12 @@ public class EchoChannelMessageHandler implements ChannelMessageHandler {
                 message.getMsgType(),
                 text);
 
-        if (!StringUtils.hasText(text)) {
-            replySink.replyText("暂不支持该消息类型，请发送文本。");
+        if (!StringUtils.hasText(text) && !message.hasImages()) {
+            replySink.replyText("暂不支持该消息类型，请发送文本或图片。");
+            return;
+        }
+        if (message.hasImages() && !StringUtils.hasText(text)) {
+            replySink.replyText("收到图片。当前 echo 不识别图片内容，请接入 Agent 或改发文字。");
             return;
         }
 

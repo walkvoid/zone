@@ -5,7 +5,7 @@ import com.github.walkvoid.zone.ai.business.channel.weixin.WeiXinAiBotProperties
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * 通道总配置。前缀 {@code zone.channel}。
+ * 通道总配置。前缀 {@code zone.channel}，与 application*.properties 一致。
  */
 @ConfigurationProperties(prefix = "zone.ai.channel")
 public class ChannelProperties {

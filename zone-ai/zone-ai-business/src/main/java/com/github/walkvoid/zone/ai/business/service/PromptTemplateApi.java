@@ -17,8 +17,7 @@ public interface PromptTemplateApi {
      * @param templateCode 模板编码
      * @return 模板DTO，未找到返回null
      */
-    @GetMapping("/prompt-template/code/{templateCode}")
-    PromptTemplateDTO getByCode(@PathVariable String templateCode);
+    PromptTemplateDTO getByCode(String templateCode);
 
     /**
      * 执行prompt模板，调用大模型并返回响应文本

@@ -29,6 +29,8 @@ public class RepoReadTool {
 
     @Tool(description = "列出允许读取的代码仓库及路径白名单。定位类或改代码之前先调用，确认沙箱是否就绪。")
     public JsonNode listRepos() {
+        log.info("listRepos invoked, enabled={}, sandboxExists={}, root={}",
+                support.properties().isEnabled(), support.sandboxExists(), support.properties().rootPath());
         RepoToolProperties properties = support.properties();
         ObjectNode repo = mapper.createObjectNode();
         repo.put("name", properties.displayName());
@@ -51,22 +53,26 @@ public class RepoReadTool {
         } else if (!support.sandboxExists()) {
             result.put("hint", "Sandbox missing. Clone or git worktree zone to " + properties.rootPath());
         }
+        log.info("listRepos done, exists={}, allowPaths={}", support.sandboxExists(), properties.normalizedAllowPaths());
         return result;
     }
 
     @Tool(description = "在沙箱白名单路径内搜索源码。keyword 匹配文件名或文件内容。"
-            + "pathPrefix 可选，如 zone-finance/zone-finance-business。默认仅 zone-finance，禁止密钥文件。")
+            + "pathPrefix 可选，禁止密钥文件。")
     public JsonNode searchCode(
             @ToolParam(description = "搜索关键词，如类名、方法名、报错文案", required = true) String keyword,
             @ToolParam(description = "可选的相对路径前缀，限制搜索范围") String pathPrefix,
             @ToolParam(description = "最大命中条数，默认配置值，硬上限见 listRepos") Integer maxResults) {
+        log.info("searchCode invoked, keyword={}, pathPrefix={}, maxResults={}", keyword, pathPrefix, maxResults);
         try {
             JsonNode notReady = notReady();
             if (notReady != null) {
+                log.warn("searchCode skipped, not ready: {}", notReady.path("error").asText());
                 return notReady;
             }
             int limit = maxResults == null ? support.properties().getMaxSearchResults() : maxResults;
             var hits = support.search(keyword, pathPrefix, limit);
+            log.info("searchCode done, keyword={}, returned={}", keyword, hits.size());
             ArrayNode rows = mapper.createArrayNode();
             for (RepoReadSupport.SearchHit hit : hits) {
                 ObjectNode row = mapper.createObjectNode();
@@ -88,18 +94,22 @@ public class RepoReadTool {
     }
 
     @Tool(description = "读取沙箱白名单内的源文件片段。path 相对沙箱根目录，例如 "
-            + "zone-finance/zone-finance-business/src/main/java/.../Foo.java。"
+            + "jinkoscf-business-common/jinkoscf-business-common-service/src/main/java/.../Foo.java。"
             + "单次最多约 400 行。禁止 ..、绝对路径和密钥文件。")
     public JsonNode readSourceFile(
             @ToolParam(description = "相对沙箱根目录的文件路径", required = true) String path,
             @ToolParam(description = "起始行号，从 1 开始，默认 1") Integer startLine,
             @ToolParam(description = "结束行号（含），默认 startLine + 最大行数") Integer endLine) {
+        log.info("readSourceFile invoked, path={}, startLine={}, endLine={}", path, startLine, endLine);
         try {
             JsonNode notReady = notReady();
             if (notReady != null) {
+                log.warn("readSourceFile skipped, not ready: {}", notReady.path("error").asText());
                 return notReady;
             }
             RepoReadSupport.FileSlice slice = support.read(path, startLine, endLine);
+            log.info("readSourceFile done, path={}, lines={}~{}/{}",
+                    slice.path(), slice.startLine(), slice.endLine(), slice.totalLines());
             ObjectNode result = mapper.createObjectNode();
             result.put("success", true);
             result.put("path", slice.path());

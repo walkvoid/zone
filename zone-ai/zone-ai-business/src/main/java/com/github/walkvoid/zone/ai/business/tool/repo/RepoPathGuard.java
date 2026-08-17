@@ -32,6 +32,11 @@ public final class RepoPathGuard {
     private static final Set<String> DENIED_EXTENSIONS = Set.of(
             ".pem", ".key", ".p12", ".jks", ".keystore", ".secret", ".pfx");
 
+    static final Set<String> WRITABLE_EXTENSIONS = Set.of(
+            ".java", ".xml", ".yml", ".yaml", ".md", ".sql", ".json",
+            ".txt", ".html", ".js", ".ts", ".vue", ".kt", ".kts", ".gradle", ".csv",
+            ".properties", ".patch");
+
     private static final Pattern DENIED_NAME_PATTERN = Pattern.compile(
             "(?i)^(\\.env\\b.*|.*secret.*|.*credentials.*|id_rsa.*|id_ed25519.*|application-lls.*)$");
 
@@ -72,6 +77,30 @@ public final class RepoPathGuard {
             throw new IllegalArgumentException("Not a directory: " + rel);
         }
         return resolved;
+    }
+
+    public static Path resolveWritableFile(RepoToolProperties properties, String relativePath) {
+        Path root = requireSandboxRoot(properties);
+        Path resolved = resolveInsideRoot(root, relativePath);
+        String rel = toUnix(root, resolved);
+        requireAllowedWrite(rel, properties.normalizedWriteAllowPaths());
+        requireNotDeniedForWrite(rel, resolved.getFileName().toString());
+        if (Files.exists(resolved) && !Files.isRegularFile(resolved)) {
+            throw new IllegalArgumentException("Not a regular file: " + rel);
+        }
+        if (!Files.exists(resolved)) {
+            requireWritableExtension(resolved.getFileName().toString());
+        }
+        return resolved;
+    }
+
+    public static boolean isWritableExtension(String fileName) {
+        String name = fileName == null ? "" : fileName.toLowerCase(Locale.ROOT);
+        int dot = name.lastIndexOf('.');
+        if (dot < 0) {
+            return false;
+        }
+        return WRITABLE_EXTENSIONS.contains(name.substring(dot));
     }
 
     public static boolean isAllowedRelative(String relativeUnix, List<String> allowPaths) {
@@ -168,11 +197,43 @@ public final class RepoPathGuard {
         }
     }
 
+    static void requireNotDeniedForWrite(String relativeUnix, String fileName) {
+        requireNotDenied(relativeUnix, fileName);
+        String name = fileName == null ? "" : fileName.toLowerCase(Locale.ROOT);
+        if ("pom.xml".equals(name) || "application.properties".equals(name)) {
+            throw new IllegalArgumentException("writing this file is forbidden: " + relativeUnix);
+        }
+        if (name.startsWith("application-") && name.endsWith(".properties")) {
+            throw new IllegalArgumentException("writing config file is forbidden: " + relativeUnix);
+        }
+    }
+
+    static void requireAllowedWrite(String relativeUnix, List<String> allowPaths) {
+        if (allowPaths == null || allowPaths.isEmpty()) {
+            throw new IllegalArgumentException("repo write-allow-paths is empty; nothing can be written");
+        }
+        if (!isAllowedRelative(relativeUnix, allowPaths)) {
+            throw new IllegalArgumentException("path is not in write allow-list: " + relativeUnix);
+        }
+    }
+
+    static void requireWritableExtension(String fileName) {
+        if (!isWritableExtension(fileName)) {
+            throw new IllegalArgumentException("file extension is not writable: " + fileName);
+        }
+    }
+
     static boolean matchesPattern(String relativeLower, String patternLower) {
         String pattern = patternLower.replace('\\', '/');
         String rel = relativeLower.replace('\\', '/');
+        if ("**".equals(pattern) || "/**".equals(pattern) || "*".equals(pattern)) {
+            return true;
+        }
         if (pattern.endsWith("/**")) {
             String prefix = pattern.substring(0, pattern.length() - 3);
+            if (!StringUtils.hasText(prefix)) {
+                return true;
+            }
             return rel.equals(prefix) || rel.startsWith(prefix + "/");
         }
         if (pattern.endsWith("/*")) {

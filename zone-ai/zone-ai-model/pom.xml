@@ -15,9 +15,16 @@
     <packaging>jar</packaging>
 
     <dependencies>
+        <!-- @TableId / @TableName -->
         <dependency>
             <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <artifactId>mybatis-plus-annotation</artifactId>
+        </dependency>
+        <!-- PageDTO 等分页模型，compile 以便 api/business 传递依赖可用 -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-extension</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
