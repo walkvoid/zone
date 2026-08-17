@@ -1,4 +1,4 @@
-﻿package com.github.walkvoid.zone.system.business.controller;
+package com.github.walkvoid.zone.system.business.controller;
 
 import com.github.walkvoid.wvframework.models.ApiResult;
 import com.github.walkvoid.wvframework.models.BooleanEnum;

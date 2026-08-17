@@ -1,4 +1,4 @@
-﻿package com.github.walkvoid.zone.finance.business.db.dao;
+package com.github.walkvoid.zone.finance.business.db.dao;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

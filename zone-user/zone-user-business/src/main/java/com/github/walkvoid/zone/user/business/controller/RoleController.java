@@ -1,4 +1,4 @@
-﻿package com.github.walkvoid.zone.user.business.controller;
+package com.github.walkvoid.zone.user.business.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.walkvoid.wvframework.models.ApiResult;

@@ -1,4 +1,4 @@
-﻿package com.github.walkvoid.zone.system.api.service;
+package com.github.walkvoid.zone.system.api.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.walkvoid.wvframework.models.PageRequest;

@@ -2,7 +2,6 @@ package com.github.walkvoid.zone.finance.business.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.walkvoid.zone.ai.api.PromptTemplateApi;
 import com.github.walkvoid.zone.finance.api.service.StockDailyService;
 import com.github.walkvoid.zone.finance.business.db.dao.StockDailyDAO;
 import com.github.walkvoid.zone.finance.model.entity.StockDaily;
@@ -31,8 +30,8 @@ public class StockDailyServiceImpl implements StockDailyService {
     @Autowired
     private StockDailyDAO stockDailyDAO;
 
-    @Autowired
-    private PromptTemplateApi promptTemplateApi;
+//    @Autowired
+//    private PromptTemplateApi promptTemplateApi;
 
     @Override
     public StockDaily getByCodeAndDate(String stockCode, LocalDate tradeDate) {
@@ -69,9 +68,10 @@ public class StockDailyServiceImpl implements StockDailyService {
         variables.put("start_date", startDate.format(DF));
         variables.put("end_date", endDate.format(DF));
 
-        String llmResponse = promptTemplateApi.executePrompt("STOCK_DAILY_QUERY", variables);
+//        String llmResponse = promptTemplateApi.executePrompt("STOCK_DAILY_QUERY", variables);
+        String llmResponse ="";
 
-        // 解析并保存
+                // 解析并保存
         List<StockDaily> result = parseResponse(llmResponse, stockCode);
         if (!result.isEmpty()) {
             batchSave(result);

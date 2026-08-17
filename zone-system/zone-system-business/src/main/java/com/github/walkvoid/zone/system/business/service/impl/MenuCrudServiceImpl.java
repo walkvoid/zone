@@ -1,4 +1,4 @@
-﻿package com.github.walkvoid.zone.system.business.service.impl;
+package com.github.walkvoid.zone.system.business.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
