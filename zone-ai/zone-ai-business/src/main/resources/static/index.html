@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zone AI Demo</title>
+    <link rel="stylesheet" href="/css/admin.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="logo">
+          <span class="logo-mark" aria-hidden="true">AI</span>
+          <div>
+            <div class="logo-title">Zone AI</div>
+            <div class="logo-sub">独立演示</div>
+          </div>
+        </div>
+        <nav class="menu">
+          <a class="menu-item is-active" href="#/prompt" data-page="prompt">
+            <span class="menu-ico">⌘</span>
+            Prompt 模板
+          </a>
+          <a class="menu-item" href="#/bot" data-page="bot">
+            <span class="menu-ico">◎</span>
+            机器人配置
+          </a>
+          <a class="menu-item" href="#/change" data-page="change">
+            <span class="menu-ico">▤</span>
+            改代码历史
+          </a>
+          <a class="menu-item" href="#/turn" data-page="turn">
+            <span class="menu-ico">☰</span>
+            对话日志
+          </a>
+        </nav>
+      </aside>
+      <div class="main">
+        <header class="header">
+          <div class="header-title" id="header-title">Prompt 模板</div>
+          <div class="header-meta">仅 AI 模块 · 无登录 / 无系统菜单</div>
+        </header>
+        <main class="content">
+          <section id="page-prompt" class="page">
+            <div class="card">
+              <div class="toolbar">
+                <div class="toolbar-left">
+                  <input id="prompt-keyword" class="input" placeholder="搜索名称 / 编码" />
+                  <button class="btn" type="button" id="prompt-search">查询</button>
+                </div>
+                <button class="btn btn-primary" type="button" id="prompt-create">新建模板</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>模板名称</th>
+                      <th>编码</th>
+                      <th>分类</th>
+                      <th>变量</th>
+                      <th>状态</th>
+                      <th class="col-op">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="prompt-tbody">
+                    <tr>
+                      <td colspan="6" class="empty">加载中…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="pager" id="prompt-pager"></div>
+            </div>
+          </section>
+
+          <section id="page-bot" class="page is-hidden">
+            <div class="card">
+              <div class="toolbar">
+                <div class="toolbar-left">
+                  <input id="bot-keyword" class="input" placeholder="搜索名称 / 编码 / botId" />
+                  <button class="btn" type="button" id="bot-search">查询</button>
+                </div>
+                <button class="btn btn-primary" type="button" id="bot-create">新建机器人</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>名称</th>
+                      <th>内部编码</th>
+                      <th>BotId</th>
+                      <th>通道</th>
+                      <th>工具</th>
+                      <th>密钥</th>
+                      <th>启用</th>
+                      <th class="col-op">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bot-tbody">
+                    <tr>
+                      <td colspan="8" class="empty">加载中…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="pager" id="bot-pager"></div>
+            </div>
+          </section>
+
+          <section id="page-change" class="page is-hidden">
+            <div class="card">
+              <div class="toolbar">
+                <div class="toolbar-left">
+                  <input id="change-keyword" class="input" placeholder="搜索标题 / 对话ID / 机器人" />
+                  <button class="btn" type="button" id="change-search">查询</button>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>功能点</th>
+                      <th>对话 ID</th>
+                      <th>机器人</th>
+                      <th>文件数</th>
+                      <th>模式</th>
+                      <th>状态</th>
+                      <th>时间</th>
+                      <th class="col-op">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="change-tbody">
+                    <tr>
+                      <td colspan="8" class="empty">加载中…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="pager" id="change-pager"></div>
+            </div>
+          </section>
+
+          <section id="page-turn" class="page is-hidden">
+            <div class="card">
+              <div class="toolbar">
+                <div class="toolbar-left">
+                  <input id="turn-keyword" class="input" placeholder="搜索原话 / 对话ID / 机器人" />
+                  <button class="btn" type="button" id="turn-search">查询</button>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th class="col-turn-text">用户原话</th>
+                      <th>对话 ID</th>
+                      <th>机器人</th>
+                      <th>工具次数</th>
+                      <th>耗时</th>
+                      <th>状态</th>
+                      <th>时间</th>
+                      <th class="col-op">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="turn-tbody">
+                    <tr>
+                      <td colspan="8" class="empty">加载中…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="pager" id="turn-pager"></div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <div id="drawer-mask" class="mask is-hidden"></div>
+    <aside id="drawer" class="drawer" aria-hidden="true">
+      <div class="drawer-head">
+        <h2 id="drawer-title">编辑</h2>
+        <button class="icon-btn" type="button" id="drawer-close" aria-label="关闭">×</button>
+      </div>
+      <div class="drawer-body" id="drawer-body"></div>
+      <div class="drawer-foot">
+        <button class="btn" type="button" id="drawer-cancel">取消</button>
+        <button class="btn btn-primary is-hidden" type="button" id="drawer-extra">应用这次修改</button>
+        <button class="btn btn-primary" type="button" id="drawer-save">确定</button>
+      </div>
+    </aside>
+
+    <div id="confirm-mask" class="mask is-hidden">
+      <div class="modal">
+        <h3 id="confirm-title">确认删除</h3>
+        <p id="confirm-text"></p>
+        <div class="modal-foot">
+          <button class="btn" type="button" id="confirm-cancel">取消</button>
+          <button class="btn btn-danger" type="button" id="confirm-ok">删除</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast is-hidden"></div>
+    <script src="/js/admin.js"></script>
+  </body>
+</html>
