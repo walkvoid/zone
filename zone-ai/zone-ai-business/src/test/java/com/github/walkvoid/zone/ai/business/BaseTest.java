@@ -1,5 +1,10 @@
 package com.github.walkvoid.zone.ai.business;
 
+import com.github.walkvoid.zone.ai.business.db.mapper.AiAgentStepMapper;
+import com.github.walkvoid.zone.ai.business.db.mapper.AiAgentTurnMapper;
+import com.github.walkvoid.zone.ai.business.db.mapper.AiBotConfigMapper;
+import com.github.walkvoid.zone.ai.business.db.mapper.AiCodeChangeMapper;
+import com.github.walkvoid.zone.ai.business.db.mapper.AiCodeChangePatchMapper;
 import com.github.walkvoid.zone.ai.business.db.mapper.AiModelMapper;
 import com.github.walkvoid.zone.ai.business.db.mapper.McpServerConfigMapper;
 import com.github.walkvoid.zone.ai.business.db.mapper.PromptTemplateMapper;
@@ -39,6 +44,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class BaseTest {
 
     @MockBean
+    private AiBotConfigMapper aiBotConfigMapper;
+
+    @MockBean
     private AiModelMapper aiModelMapper;
 
     @MockBean
@@ -49,6 +57,18 @@ public class BaseTest {
 
     @MockBean
     private PromptTemplateRunRecordMapper promptTemplateRunRecordMapper;
+
+    @MockBean
+    private AiCodeChangeMapper aiCodeChangeMapper;
+
+    @MockBean
+    private AiCodeChangePatchMapper aiCodeChangePatchMapper;
+
+    @MockBean
+    private AiAgentTurnMapper aiAgentTurnMapper;
+
+    @MockBean
+    private AiAgentStepMapper aiAgentStepMapper;
 
     @Autowired
     private EmbeddingModel embeddingModel;
