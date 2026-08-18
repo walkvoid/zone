@@ -47,41 +47,41 @@
 ## 2. 总体架构
 
 ```
-企业微信群 @智能机器人
+企业微信群 @智能机器人 A / B / ...
         │
         ▼
 企业微信开放平台  wss://openws.work.weixin.qq.com
-        │  长连接（zone-ai 主动连出，无需公网回调）
+        │  每个 aibot 一条长连接（同一 bot 全局只能一条，多 bot 可同进程）
         ▼
 ┌─────────────────────────────────────────────────────────┐
 │ zone-ai-business                                        │
 │                                                         │
-│  Channel（已有骨架）                                     │
-│    WeiXinAiBotClient  订阅 / 心跳 / 收消息 / 流式回复     │
-│    ChannelMessageHandler  ← 需从 Echo 换成 Agent         │
+│  Channel                                                │
+│    WeiXinAiBotClient  按 ai_bot_config 起 N 条会话       │
+│    AgentChannelMessageHandler  按 botId 选 prompt/工具   │
 │           │                                             │
 │           ▼                                             │
-│  AgentRuntime（缺失，核心）                              │
-│    ├─ 权限 / 会话记忆 / 工具轮次上限                      │
+│  AgentRuntime                                           │
+│    ├─ 会话记忆（weixin:{aibotid}:{chatid}）              │
 │    ├─ RAG：Qdrant 供应链金融知识                         │
-│    ├─ Tools                                             │
-│    │    ├─ BeeCloud 日志（已有，需加固）                  │
-│    │    ├─ 读代码 / 搜仓库（缺失）                        │
-│    │    ├─ 只读 MySQL（缺失）                             │
-│    │    └─ 改代码 + 审计分支 / PR（缺失）                 │
-│    └─ 审计单 / 对话落库（缺失）                           │
+│    ├─ Tools（按 bot.tool_codes 子集挂载）                │
+│    │    ├─ log：BeeCloud 日志                            │
+│    │    ├─ sql：只读 MySQL                               │
+│    │    ├─ repo_read：读代码 / 搜仓库                     │
+│    │    └─ repo_change：沙箱改代码 / .patch               │
+│    └─ 对话审计：进程内队列异步写 ai_agent_turn/step       │
 └─────────────────────────────────────────────────────────┘
         │
         ▼
 人工审计（GitHub/GitLab PR 或企微卡片）→ 合并 → 发布
 ```
 
-两条入口共用同一套 Tool，不要做成两套逻辑：
+两条入口共用同一批 `@Tool` Bean，但企微侧按 bot 勾选子集：
 
 | 入口 | 协议 | 用途 |
 |---|---|---|
-| 企业微信群 | 智能机器人 WebSocket | 业务同学 / 研发在群里问 |
-| Cursor 等 | MCP Server（SSE） | IDE 里调用同一批 `@Tool` |
+| 企业微信群 | 智能机器人 WebSocket（一 bot 一连接） | 业务同学 / 研发在群里问 |
+| Cursor 等 | MCP Server（SSE） | IDE 里调用全部 `@Tool` |
 
 ---
 
@@ -91,7 +91,8 @@
 
 | 能力 | 说明 | 关键位置 |
 |---|---|---|
-| 企微长连接骨架 | 订阅 `aibot_subscribe`、心跳 ping、收 `aibot_msg_callback`、流式 `aibot_respond_msg`、进入会话欢迎语 | `channel/weixin/*` |
+| 企微长连接骨架 | 订阅 `aibot_subscribe`、心跳 ping、收 `aibot_msg_callback`、流式 `aibot_respond_msg`、进入会话欢迎语；**支持配置多个 aibot，各一条 WS** | `channel/weixin/*` |
+| 多 bot 配置表 | `ai_bot_config`：bot_id / secret / system_prompt / tool_codes；启动时按启用行建连 | `docs/init-ai-tables.sql`、`business/db/entity/AiBotConfig` |
 | 通道抽象 | `SmartLifecycle` 启停；飞书占位，便于后续扩展 | `channel/core/*`、`channel/feishu/*` |
 | 大模型 | OpenAI 兼容网关 `https://atk.llschain.com`，chat=`deepseek/deepseek-v4-pro`，embedding=`text-embedding-3-small` | `application-lls.properties` |
 | 日志 Tool | `beecloudSearchLogs`，POST BeeCloud search API；已挂 MCP | `tool/CodeAssistantTool.java`、`config/AIClientConfig.java` |
@@ -111,7 +112,7 @@
 | P1 | 无读代码 Tool（白名单仓库 / grep / 读文件） | 不能当研发助手定位代码 |
 | P1 | 无只读 SQL Tool | 不能核对业务数据 |
 | P2 | 无改代码 / 分支 / PR / 审计状态机 | 「替身改代码」不存在 |
-| P2 | 无对话审计日志、权限白名单、限流 | 群里误用风险高 |
+| P2 | 权限白名单、限流仍缺（对话审计已异步落库） | 群里误用风险高 |
 | P3 | MCP Client（连别人的 MCP）仍是占位 | 不影响「自己当 Server」 |
 | P3 | 飞书未实现 | 不阻塞 |
 
@@ -176,16 +177,52 @@ zone-ai-business/src/main/java/.../business/
 
 | 项 | 第一期约定 |
 |---|---|
-| 会话 Key | 群：`{channel}:{chatid}`（整群一份）；单聊：`{channel}:single:{userid}` |
+| 会话 Key | 群：`{channel}:{aibotid}:{chatid}`（同一 bot 整群一份）；单聊：`{channel}:{aibotid}:single:{userid}` |
 | 记忆 | 内存窗口最近约 10 轮（20 条）；只存用户短文本 + 助手短回复，不存工具 JSON / 图片字节 |
 | 过期 | 空闲 45 分钟清空；进程重启丢失 |
 | 清空口令 | `@机器人 新对话` / `清空上下文` / `重新开始` / `新开一轮` |
-| 并发 | 同一会话串行，跨群走 4 线程池并行 |
-| 普通成员 | 只能问答 + 只读工具 |
-| 改代码 | `userid` 白名单 |
+| 并发 | 同一会话串行，跨群 / 跨 bot 走 4 线程池并行 |
+| 普通成员 | 只能问答 + 该 bot 配置的只读工具 |
+| 改代码 | 仅当该 bot 的 `tool_codes` 含 `repo_change`；后续再加 `userid` 白名单 |
 | 群 | 仅处理企微推送的 @ 消息（长连接一般已过滤） |
 | Tool 轮次 | 单次对话最多 8 轮 |
 | 超时 | 先回「正在分析…」；总超时 120s 必须结束流式 |
+
+### 5.3.1 多机器人（`ai_bot_config`）
+
+企微限制是 **同一个 aibot 全局只能一条 WebSocket**，不是「一个进程只能一条」。多个机器人可以跑在同一个 `zone-ai` 进程里。
+
+| 列 | 说明 |
+|---|---|
+| `bot_code` | 内部编码，如 `supply-chain` |
+| `bot_id` | 企微 `aibotid`，入站 `body.aibotid` 用它匹配 |
+| `secret` | 长连接专用 Secret（不要提交到 Git） |
+| `system_prompt` | 该 bot 的系统提示词 |
+| `tool_codes` | 逗号分隔：`log` / `sql` / `repo_read` / `repo_change` |
+| `welcome_text` | 进入会话欢迎语 |
+| `is_enabled` | 1 启用；启动时只为启用且填了 bot_id+secret 的行建连 |
+| `channel_type` | 目前 `WEIXIN` |
+
+**工具编码**
+
+| code | Bean | 能力 |
+|---|---|---|
+| `log` | `AppLogSearchTool` | BeeCloud 日志 |
+| `sql` | `SqlQueryTool` | 只读命名查询 |
+| `repo_read` | `RepoReadTool` | 沙箱搜/读代码 |
+| `repo_change` | `RepoChangeTool` | 按 write-mode 写 patch 或改源文件 |
+
+`tool_codes` 为空时默认 `log,sql,repo_read`（不含改代码）。
+
+**启动规则**
+
+1. 读 `ai_bot_config` 中 `channel_type=WEIXIN` 且启用的行，每个 bot 一条 WS。  
+2. 表里没有可用行时，回退 `zone.ai.channel.weixin.bot-id` / `secret`（兼容旧配置）。  
+3. 新增 / 停用 bot 后需要**重启进程**才会重新建连。  
+4. 同一 `bot_id` 不要在两个 JVM 同时连，会被踢线。  
+5. 回复仍走入站那条连接的 `req_id`，不会串到别的 bot。
+
+建表与示例 INSERT 见 `zone-ai/docs/init-ai-tables.sql`。把示例行的 `bot_id` / `secret` 改成真实值，并将 `is_enabled` 改为 1。
 
 ### 5.4 流式回复
 
@@ -209,7 +246,7 @@ zone-ai-business/src/main/java/.../business/
 **任务**
 
 1. 统一配置前缀（`zone.ai.channel` 与 `application.properties` 一致）。  
-2. 填写企微 `bot-id` / `secret`，打开 `enabled`。  
+2. 填写企微 `bot-id` / `secret`（现已迁到 `ai_bot_config`，properties 仅作回退），打开 `enabled`。  
 3. Echo 联调：群里 @ 能回「收到 xxx」。  
 4. BeeCloud Cookie、LLM Key、Qdrant Key 迁出仓库，改环境变量或本地未提交配置。  
 5. 确认 Security 不影响出站 WS；若 Cursor 要用 MCP，再放行 `/sse`、`/mcp/**`。
@@ -319,9 +356,10 @@ zone-ai-business/src/main/java/.../business/
 **任务**
 
 1. 一个 `ChatClient` 同时注册上述 Tools。  
-2. 对话落库：`question / tools_called / answer / userid / chatid / latency`。  
+2. 对话落库：`ai_agent_turn` + `ai_agent_step`（`turn_no` 关联单轮，`session_id` 关联同一段上下文）。热路径只截断 JSON 并 `offer` 进进程内有界队列，后台单线程写库；满则丢弃。`CodeChangeHistoryService.record()` 走同一队列，不挡 `@Tool`。  
 3. 企微回复 Markdown；工具原始输出只进模型上下文，进群必须摘要。  
-4. 失败可观测：哪个 Tool 失败、参数是什么（脱敏后）。
+4. 失败可观测：哪个 Tool 失败、参数是什么（脱敏后）。演示页「对话日志」可按轮次看时间线；有改代码时可跳到「改代码历史」。  
+   配置：`zone.ai.agent.audit.*`（`async=false` 仅本地调试）。
 
 **验收用例（供应链金融）**
 
@@ -359,6 +397,15 @@ zone-ai-business/src/main/java/.../business/
 patch 文件命名：`fix_yyyyMMdd_HHmm_{源文件主名}.patch`，例如 `fix_20260817_1538_PromptTemplateApi.patch`。  
 patch 内路径相对沙箱 git 根目录（`---` / `+++` 带 `a/` `b/` 前缀），须在沙箱仓库根执行 `git apply`。  
 unified diff 用 **java-diff-utils** 生成，不是自研 LCS。
+
+每次 `applyPatch` / `applyReplace` 成功后会写入 **改代码历史**：
+
+- 一条 `ai_code_change` = **一轮对话**里的一个小功能点（与 `conversation_id` + `turn_no` 关联）
+- 下面可挂多个 `ai_code_change_patch`（每个源文件一份 unified diff）
+- `DIFF_FILE`：演示页可查看 patch，并一键 Apply 写入沙箱源文件（源文件已变则标冲突）
+- `DIRECT`：记录为已应用，仅供回看 diff
+
+演示入口：`http://localhost:8084/` → 「改代码历史」；对话过程见「对话日志」（`/#/turn`）。改代码历史写入也走审计队列，页面 Apply 仍同步。
 
 ```
 用户：「把某提示文案改一下」
@@ -430,7 +477,7 @@ unified diff 用 **java-diff-utils** 生成，不是自研 LCS。
 | 群成员乱 @ 导致乱改生产 | 改代码白名单；永不 push main |
 | Tool 无限循环 | max rounds + 超时 finish |
 | 错误代码进入资金链路 | PR + 单测 + 人工 Merge；状态机/放款代码提高审计级别 |
-| 多实例互踢企微长连接 | 同一 Bot 同时仅一条连接；K8s replicas=1 或 Redis 选主 |
+| 多实例互踢企微长连接 | **同一 bot_id 同时仅一条连接**；多个不同 bot 可同进程；K8s 对同一 bot replicas=1 |
 
 本机环境约束（必须遵守）：
 
@@ -443,11 +490,14 @@ unified diff 用 **java-diff-utils** 生成，不是自研 LCS。
 ## 9. 配置清单（实施时填写，勿把密钥提交进 Git）
 
 ```properties
-# 通道（前缀需与 ChannelProperties 保持一致）
+# 通道总开关与传输参数；bot 凭证/prompt/工具集以 ai_bot_config 为准
 zone.ai.channel.enabled=true
 zone.ai.channel.weixin.enabled=true
-zone.ai.channel.weixin.bot-id=${WEIXIN_BOT_ID}
-zone.ai.channel.weixin.secret=${WEIXIN_BOT_SECRET}
+zone.ai.channel.weixin.ws-url=wss://openws.work.weixin.qq.com
+# 仅当表中无启用行时回退：
+# zone.ai.channel.weixin.bot-id=${WEIXIN_BOT_ID}
+# zone.ai.channel.weixin.secret=${WEIXIN_BOT_SECRET}
+```
 
 # 大模型 / 向量库已有 spring.ai.* ，密钥改环境变量
 
@@ -520,6 +570,7 @@ zone.ai.audit.approver-userids=
 
 | 日期 | 说明 |
 |---|---|
-| 2026-08-17 | 去掉 propose 预览 Tool，改代码直接 apply；write-mode：DIFF_FILE / DIRECT |
+| 2026-08-18 | 对话日志：`ai_agent_turn` / `ai_agent_step` 异步入队写库；改代码历史 `record()` 同队列 |
+| 2026-08-18 | 改代码历史：按对话轮次记录多 patch，DIFF_FILE 可在演示页 Apply |
 | 2026-08-17 | 改代码支持 write-mode：DIFF_FILE（同级 unified diff）与 DIRECT（覆盖沙箱源文件） |
 | 2026-08-14 | 初稿：基于当前 zone-ai 代码现状整理缺口与分期计划 |
