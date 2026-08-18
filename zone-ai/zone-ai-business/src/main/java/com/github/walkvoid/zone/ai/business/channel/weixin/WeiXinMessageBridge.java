@@ -30,15 +30,18 @@ public class WeiXinMessageBridge {
     private final ChannelMessageHandler messageHandler;
     private final String welcomeText;
     private final Consumer<String> frameSender;
+    private final String configuredBotId;
 
     public WeiXinMessageBridge(ObjectMapper mapper,
                                ChannelMessageHandler messageHandler,
                                String welcomeText,
-                               Consumer<String> frameSender) {
+                               Consumer<String> frameSender,
+                               String configuredBotId) {
         this.mapper = mapper;
         this.messageHandler = messageHandler;
         this.welcomeText = welcomeText;
         this.frameSender = frameSender;
+        this.configuredBotId = configuredBotId;
     }
 
     public void onFrame(String text) {
@@ -72,8 +75,9 @@ public class WeiXinMessageBridge {
     private void handleMsgCallback(JsonNode root) {
         String reqId = root.path("headers").path("req_id").asText();
         JsonNode body = root.path("body");
-        log.info("WeiXin msg_callback reqId={}, chatid={}, chattype={}, userid={}, msgtype={}",
+        log.info("WeiXin msg_callback reqId={}, aibotid={}, chatid={}, chattype={}, userid={}, msgtype={}",
                 reqId,
+                resolveBotId(body),
                 body.path("chatid").asText(),
                 body.path("chattype").asText(),
                 body.path("from").path("userid").asText(),
@@ -84,6 +88,7 @@ public class WeiXinMessageBridge {
                 .messageId(body.path("msgid").asText(null))
                 .chatId(body.path("chatid").asText(null))
                 .chatType(body.path("chattype").asText(null))
+                .botId(resolveBotId(body))
                 .userId(body.path("from").path("userid").asText(null))
                 .msgType(body.path("msgtype").asText(null))
                 .textContent(extractText(body))
@@ -93,8 +98,9 @@ public class WeiXinMessageBridge {
 
         ChannelReplySink sink = new WeiXinReplySink(reqId);
         try {
-            log.info("WeiXin dispatch onMessage, handler={}, msgType={}, textPreview={}, images={}",
+            log.info("WeiXin dispatch onMessage, handler={}, botId={}, msgType={}, textPreview={}, images={}",
                     messageHandler.getClass().getSimpleName(),
+                    message.getBotId(),
                     message.getMsgType(),
                     preview(message.getTextContent()),
                     message.getImages().size());
@@ -103,6 +109,14 @@ public class WeiXinMessageBridge {
             log.error("WeiXin message handler error", e);
             sink.replyText("处理消息时出错，请稍后重试。");
         }
+    }
+
+    private String resolveBotId(JsonNode body) {
+        String inbound = body.path("aibotid").asText(body.path("botid").asText(""));
+        if (inbound != null && !inbound.isBlank()) {
+            return inbound.trim();
+        }
+        return configuredBotId;
     }
 
     private static String preview(String text) {

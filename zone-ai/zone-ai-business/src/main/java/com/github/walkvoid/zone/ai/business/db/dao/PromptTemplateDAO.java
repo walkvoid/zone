@@ -52,10 +52,28 @@ public class PromptTemplateDAO {
     }
 
     public PageDTO<PromptTemplateDTO> page(PageRequest<PromptTemplateDTO> pageRequest) {
-        PromptTemplate condition = BeanCopyUtils.copyBean(pageRequest.getParam(), PromptTemplate.class);
-        Page<PromptTemplate> mpPage = mapper.selectPage(
-                new Page<>(pageRequest.getCurrent(), pageRequest.getSize()),
-                new QueryWrapper<>(condition).orderByDesc("update_time"));
+        PromptTemplateDTO param = pageRequest == null ? null : pageRequest.getParam();
+        QueryWrapper<PromptTemplate> qw = new QueryWrapper<PromptTemplate>().orderByDesc("update_time");
+        if (param != null) {
+            if (param.getTemplateName() != null && !param.getTemplateName().isBlank()) {
+                qw.and(w -> w.like("template_name", param.getTemplateName().trim())
+                        .or()
+                        .like("template_code", param.getTemplateName().trim()));
+            }
+            if (param.getTemplateCode() != null && !param.getTemplateCode().isBlank()
+                    && (param.getTemplateName() == null || param.getTemplateName().isBlank())) {
+                qw.like("template_code", param.getTemplateCode().trim());
+            }
+            if (param.getCategory() != null && !param.getCategory().isBlank()) {
+                qw.eq("category", param.getCategory().trim());
+            }
+            if (param.getStatus() != null) {
+                qw.eq("status", param.getStatus());
+            }
+        }
+        long current = pageRequest == null ? 1L : Math.max(1L, pageRequest.getCurrent());
+        int size = pageRequest == null ? 10 : Math.max(1, pageRequest.getSize());
+        Page<PromptTemplate> mpPage = mapper.selectPage(new Page<>(current, size), qw);
         List<PromptTemplateDTO> records = BeanCopyUtils.copyList(mpPage.getRecords(), PromptTemplateDTO.class);
         PageDTO<PromptTemplateDTO> result = new PageDTO<>(mpPage.getCurrent(), mpPage.getSize(), mpPage.getTotal());
         result.setRecords(records);

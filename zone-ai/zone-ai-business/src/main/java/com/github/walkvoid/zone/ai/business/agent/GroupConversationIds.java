@@ -7,7 +7,7 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * 群会话 Key 与清空口令。群聊整群一份上下文，单聊按人一份。
+ * 群会话 Key 与清空口令。同一机器人在同一群里共用一份上下文。
  */
 public final class GroupConversationIds {
 
@@ -25,10 +25,11 @@ public final class GroupConversationIds {
         String channel = message.getChannelType() == null
                 ? "unknown"
                 : message.getChannelType().name().toLowerCase(Locale.ROOT);
+        String bot = orUnknown(message.getBotId());
         if (isSingleChat(message)) {
-            return channel + ":single:" + orUnknown(message.getUserId());
+            return channel + ":" + bot + ":single:" + orUnknown(message.getUserId());
         }
-        return channel + ":" + message.getChatId().trim();
+        return channel + ":" + bot + ":" + message.getChatId().trim();
     }
 
     public static boolean isResetCommand(String text) {

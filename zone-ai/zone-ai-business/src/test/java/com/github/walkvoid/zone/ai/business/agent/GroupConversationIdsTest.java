@@ -6,24 +6,28 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GroupConversationIdsTest {
 
     @Test
-    void groupUsesChatIdRegardlessOfUser() {
-        String fromZhang = GroupConversationIds.from(group("wr_group_1", "zhangsan"));
-        String fromLi = GroupConversationIds.from(group("wr_group_1", "lisi"));
-        assertEquals("weixin:wr_group_1", fromZhang);
+    void groupUsesChatIdAndBotIdRegardlessOfUser() {
+        String fromZhang = GroupConversationIds.from(group("aib_1", "wr_group_1", "zhangsan"));
+        String fromLi = GroupConversationIds.from(group("aib_1", "wr_group_1", "lisi"));
+        assertEquals("weixin:aib_1:wr_group_1", fromZhang);
         assertEquals(fromZhang, fromLi);
-        assertEquals("weixin:wr_group_2", GroupConversationIds.from(group("wr_group_2", "zhangsan")));
+        assertEquals("weixin:aib_1:wr_group_2",
+                GroupConversationIds.from(group("aib_1", "wr_group_2", "zhangsan")));
+        assertNotEquals(fromZhang,
+                GroupConversationIds.from(group("aib_2", "wr_group_1", "zhangsan")));
     }
 
     @Test
-    void singleChatUsesUserId() {
-        assertEquals("weixin:single:zhangsan",
-                GroupConversationIds.from(single("zhangsan")));
-        assertEquals("weixin:single:zhangsan",
+    void singleChatUsesBotAndUserId() {
+        assertEquals("weixin:aib_1:single:zhangsan",
+                GroupConversationIds.from(single("aib_1", "zhangsan")));
+        assertEquals("weixin:unknown:single:zhangsan",
                 GroupConversationIds.from(ChannelInboundMessage.builder()
                         .channelType(ChannelType.WEIXIN)
                         .chatId("  ")
@@ -42,18 +46,20 @@ class GroupConversationIdsTest {
         assertFalse(GroupConversationIds.isResetCommand(""));
     }
 
-    private static ChannelInboundMessage group(String chatId, String userId) {
+    private static ChannelInboundMessage group(String botId, String chatId, String userId) {
         return ChannelInboundMessage.builder()
                 .channelType(ChannelType.WEIXIN)
+                .botId(botId)
                 .chatId(chatId)
                 .chatType("group")
                 .userId(userId)
                 .build();
     }
 
-    private static ChannelInboundMessage single(String userId) {
+    private static ChannelInboundMessage single(String botId, String userId) {
         return ChannelInboundMessage.builder()
                 .channelType(ChannelType.WEIXIN)
+                .botId(botId)
                 .chatType("single")
                 .userId(userId)
                 .build();

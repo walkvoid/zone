@@ -50,9 +50,12 @@ public class PromptTemplateController {
 
     @Operation(summary = "分页查询模板列表")
     @GetMapping("/page")
-    public ApiResult<PageDTO<PromptTemplateDTO>> page(PageRequest<PromptTemplateDTO> pageRequest) {
-        PageDTO<PromptTemplateDTO> pageResult = dao.page(pageRequest);
-        return ApiResult.ok(pageResult);
+    public ApiResult<PageDTO<PromptTemplateDTO>> page(
+            @RequestParam(value = "current", defaultValue = "1") long current,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @ModelAttribute PromptTemplateDTO parameter) {
+        PageRequest<PromptTemplateDTO> pageRequest = PageRequest.of(current, size, parameter);
+        return ApiResult.ok(dao.page(pageRequest));
     }
 
     @Operation(summary = "按ID查询")

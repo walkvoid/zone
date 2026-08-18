@@ -14,6 +14,7 @@ public class ChannelInboundMessage {
     private final String messageId;
     private final String chatId;
     private final String chatType;
+    private final String botId;
     private final String userId;
     private final String msgType;
     private final String textContent;
@@ -26,6 +27,7 @@ public class ChannelInboundMessage {
         this.messageId = builder.messageId;
         this.chatId = builder.chatId;
         this.chatType = builder.chatType;
+        this.botId = builder.botId;
         this.userId = builder.userId;
         this.msgType = builder.msgType;
         this.textContent = builder.textContent;
@@ -55,6 +57,10 @@ public class ChannelInboundMessage {
 
     public String getChatType() {
         return chatType;
+    }
+
+    public String getBotId() {
+        return botId;
     }
 
     public String getUserId() {
@@ -91,6 +97,7 @@ public class ChannelInboundMessage {
         private String messageId;
         private String chatId;
         private String chatType;
+        private String botId;
         private String userId;
         private String msgType;
         private String textContent;
@@ -119,6 +126,11 @@ public class ChannelInboundMessage {
 
         public Builder chatType(String chatType) {
             this.chatType = chatType;
+            return this;
+        }
+
+        public Builder botId(String botId) {
+            this.botId = botId;
             return this;
         }
 
