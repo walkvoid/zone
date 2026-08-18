@@ -195,12 +195,15 @@ public class NamedSqlQueryCatalog {
                         .build(),
 
                 of("asset_info", "资产",
-                        "查原始资产。params: value=asset_no，支持逗号分隔")
+                        "查原始资产。params: by=id（资产id）|asset_no(资产编号), value=对应值,支持逗号分隔。")
                         .tables("jinkoscf_business_common.asset_info")
+                        .variant("id",
+                                "SELECT * FROM jinkoscf_business_common.asset_info WHERE id = ?", eq("value"))
+                        .variant("asset_no",
+                                "SELECT * FROM jinkoscf_business_common.asset_info WHERE asset_no IN ({in:value})", in("value"))
                         .variant("default",
                                 "SELECT * FROM jinkoscf_business_common.asset_info WHERE asset_no IN ({in:value})", in("value"))
                         .build(),
-
                 of("limit_info", "额度",
                         "查额度。params: value=app_limit_no")
                         .tables("jinkoscf_business_common.limit_info")
@@ -209,7 +212,7 @@ public class NamedSqlQueryCatalog {
                         .build(),
 
                 of("ts_asset", "凭证",
-                        "查交易凭证。params: by=id|asset_no|ts_asset_no|status, value=对应值。asset_no 支持逗号分隔。")
+                        "查交易凭证。params: by=id|asset_no（原始资产id）|ts_asset_no（凭证编号）|status, value=对应值,支持逗号分隔。")
                         .tables("jinkoscf_transaction.ts_asset")
                         .variant("id",
                                 "SELECT * FROM jinkoscf_transaction.ts_asset WHERE id = ?", eq("value"))

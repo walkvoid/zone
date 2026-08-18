@@ -19,14 +19,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.DefaultResponseErrorHandler;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.net.HttpRetryException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.Locale;
 
 /**
  * @author jiangjunqing
@@ -118,13 +121,7 @@ public class AppLogSearchTool {
             log.info("beecloudSearchLogs: url={}, searchStr={}, env={}, gte={}, lte={}",
                     properties.searchUrl(), searchStr, env, gte, lte);
 
-            String token = tokenStore.resolveToken(null);
-            ResponseEntity<String> resp = postSearch(jsonBody, token);
-            if (isAuthFailure(resp)) {
-                log.info("BeeCloud token expired or missing, re-login and retry once");
-                token = tokenStore.refreshToken();
-                resp = postSearch(jsonBody, token);
-            }
+            ResponseEntity<String> resp = searchWithAuthRetry(jsonBody);
 
             String body = resp.getBody();
             if (!resp.getStatusCode().is2xxSuccessful() || body == null) {
@@ -150,6 +147,57 @@ public class AppLogSearchTool {
         headers.set(HttpHeaders.COOKIE, "token=" + token + "; locale=zh-CN");
         return restTemplate.exchange(
                 properties.searchUrl(), HttpMethod.POST, new HttpEntity<>(jsonBody, headers), String.class);
+    }
+
+    private ResponseEntity<String> searchWithAuthRetry(String jsonBody) {
+        String token = tokenStore.resolveToken(null);
+        ResponseEntity<String> resp;
+        try {
+            resp = postSearch(jsonBody, token);
+        } catch (RuntimeException ex) {
+            if (!isStreamingAuthChallenge(ex)) {
+                throw ex;
+            }
+            log.info("BeeCloud auth challenge before response, force re-login and retry once: {}",
+                    rootMessage(ex));
+            token = tokenStore.refreshToken();
+            resp = postSearch(jsonBody, token);
+        }
+        if (isAuthFailure(resp)) {
+            log.info("BeeCloud token expired or missing, re-login and retry once");
+            token = tokenStore.refreshToken();
+            resp = postSearch(jsonBody, token);
+        }
+        return resp;
+    }
+
+    private boolean isStreamingAuthChallenge(Throwable ex) {
+        if (ex == null) {
+            return false;
+        }
+        Throwable cursor = ex;
+        while (cursor != null) {
+            if (cursor instanceof HttpRetryException) {
+                String msg = cursor.getMessage();
+                return msg != null && msg.toLowerCase(Locale.ROOT).contains("server authentication");
+            }
+            String msg = cursor.getMessage();
+            if (cursor instanceof ResourceAccessException
+                    && msg != null
+                    && msg.toLowerCase(Locale.ROOT).contains("cannot retry due to server authentication")) {
+                return true;
+            }
+            cursor = cursor.getCause();
+        }
+        return false;
+    }
+
+    private String rootMessage(Throwable ex) {
+        Throwable cursor = ex;
+        while (cursor != null && cursor.getCause() != null && cursor.getCause() != cursor) {
+            cursor = cursor.getCause();
+        }
+        return cursor == null ? "" : String.valueOf(cursor.getMessage());
     }
 
     private boolean isAuthFailure(ResponseEntity<String> resp) {
