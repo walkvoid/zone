@@ -65,6 +65,7 @@ public class RepoWriteSupport {
                 diff.removedLines(),
                 RepoUnifiedDiff.preview(diff.unifiedDiff(), DIFF_PREVIEW_LINES),
                 diff.unifiedDiff(),
+                oldContent,
                 newContent);
     }
 
@@ -108,28 +109,54 @@ public class RepoWriteSupport {
         RepoWriteMode mode = properties.getWriteMode();
         if (mode == RepoWriteMode.DIFF_FILE) {
             String patchRel = writeSiblingPatch(preview.path(), preview.unifiedDiff());
-            return new ApplyResult(
-                    preview.path(),
-                    preview.newFile(),
-                    preview.addedLines(),
-                    preview.removedLines(),
-                    true,
-                    false,
-                    mode,
-                    patchRel);
+            return toApplyResult(preview, true, false, mode, patchRel);
         }
         Path file = RepoPathGuard.resolveWritableFile(properties, preview.path());
         Files.createDirectories(file.getParent());
         Files.writeString(file, preview.newContent(), StandardCharsets.UTF_8);
+        return toApplyResult(preview, true, true, mode, null);
+    }
+
+    public boolean sourceExists(String relativePath) {
+        Path file = RepoPathGuard.resolveWritableFile(properties, relativePath);
+        return Files.isRegularFile(file);
+    }
+
+    public String readSourceOrEmpty(String relativePath) throws IOException {
+        Path file = RepoPathGuard.resolveWritableFile(properties, relativePath);
+        if (!Files.isRegularFile(file)) {
+            return "";
+        }
+        return Files.readString(file, StandardCharsets.UTF_8);
+    }
+
+    public void writeSource(String relativePath, String newContent) throws IOException {
+        validateWriteReady();
+        if (newContent == null) {
+            throw new IllegalArgumentException("newContent is null");
+        }
+        Path file = RepoPathGuard.resolveWritableFile(properties, relativePath);
+        Files.createDirectories(file.getParent());
+        Files.writeString(file, newContent, StandardCharsets.UTF_8);
+    }
+
+    private ApplyResult toApplyResult(PatchPreview preview,
+                                      boolean written,
+                                      boolean sourceWritten,
+                                      RepoWriteMode mode,
+                                      String patchFile) {
         return new ApplyResult(
                 preview.path(),
                 preview.newFile(),
                 preview.addedLines(),
                 preview.removedLines(),
-                true,
-                true,
+                written,
+                sourceWritten,
                 mode,
-                null);
+                patchFile,
+                preview.unifiedDiff(),
+                preview.baseContent(),
+                preview.newContent());
     }
 
     private String writeSiblingPatch(String sourceRelativeUnix, String unifiedDiff) throws IOException {
@@ -215,6 +242,7 @@ public class RepoWriteSupport {
             int removedLines,
             String diffPreview,
             String unifiedDiff,
+            String baseContent,
             String newContent) {
     }
 
@@ -226,6 +254,9 @@ public class RepoWriteSupport {
             boolean written,
             boolean sourceWritten,
             RepoWriteMode writeMode,
-            String patchFile) {
+            String patchFile,
+            String unifiedDiff,
+            String baseContent,
+            String newContent) {
     }
 }

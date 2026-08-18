@@ -7,10 +7,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.walkvoid.zone.ai.business.tool.repo.RepoToolProperties;
 import com.github.walkvoid.zone.ai.business.tool.repo.RepoWriteMode;
 import com.github.walkvoid.zone.ai.business.tool.repo.RepoWriteSupport;
+import com.github.walkvoid.zone.ai.business.tool.repo.CodeChangeHistoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -23,10 +26,21 @@ public class RepoChangeTool {
     private static final Logger log = LoggerFactory.getLogger(RepoChangeTool.class);
 
     private final RepoWriteSupport support;
+    private final CodeChangeHistoryService history;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public RepoChangeTool(RepoWriteSupport support) {
+        this(support, (CodeChangeHistoryService) null);
+    }
+
+    @Autowired
+    public RepoChangeTool(RepoWriteSupport support, ObjectProvider<CodeChangeHistoryService> history) {
+        this(support, history == null ? null : history.getIfAvailable());
+    }
+
+    RepoChangeTool(RepoWriteSupport support, CodeChangeHistoryService history) {
         this.support = support;
+        this.history = history;
     }
 
     @Tool(description = "查看代码写入策略：是否启用、write-mode（DIFF_FILE 只写同级 .patch / DIRECT 改源文件）、"
@@ -68,6 +82,7 @@ public class RepoChangeTool {
         log.info("applyPatch invoked, path={}", path);
         try {
             RepoWriteSupport.ApplyResult applied = support.applyPatch(path, newContent);
+            recordHistory(applied, "applyPatch");
             log.info("applyPatch done, path={}, newFile={}, written={}, sourceWritten={}, patchFile={}",
                     applied.path(), applied.newFile(), applied.written(), applied.sourceWritten(), applied.patchFile());
             return applyResult(applied);
@@ -88,12 +103,19 @@ public class RepoChangeTool {
         try {
             boolean all = Boolean.TRUE.equals(replaceAll);
             RepoWriteSupport.ApplyResult applied = support.applyReplace(path, oldText, newText, all);
+            recordHistory(applied, "applyReplace");
             log.info("applyReplace done, path={}, written={}, sourceWritten={}, patchFile={}",
                     applied.path(), applied.written(), applied.sourceWritten(), applied.patchFile());
             return applyResult(applied);
         } catch (Exception e) {
             log.warn("applyReplace failed: {}", e.getMessage());
             return errorResult(e.getMessage());
+        }
+    }
+
+    private void recordHistory(RepoWriteSupport.ApplyResult applied, String toolName) {
+        if (history != null) {
+            history.record(applied, toolName);
         }
     }
 
