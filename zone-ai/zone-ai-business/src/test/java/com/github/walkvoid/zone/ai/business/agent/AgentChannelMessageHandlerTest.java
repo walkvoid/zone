@@ -1,6 +1,7 @@
 package com.github.walkvoid.zone.ai.business.agent;
 
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelInboundMessage;
+import com.github.walkvoid.zone.ai.business.channel.core.ChannelProperties;
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelReplySink;
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelType;
 import com.github.walkvoid.zone.ai.business.channel.weixin.WeiXinMediaDownloader;
@@ -33,28 +34,33 @@ class AgentChannelMessageHandlerTest {
     void resetCommandClearsGroupMemoryWithoutCallingModel() {
         OpenAiChatModel chatModel = mock(OpenAiChatModel.class);
         GroupChatMemoryService memory = new GroupChatMemoryService(new AgentMemoryProperties());
-        memory.chatMemory().add("weixin:wr_group_1", List.of(
+        memory.chatMemory().add("weixin:aib_test:wr_group_1", List.of(
                 new UserMessage("这笔融资"),
                 new AssistantMessage("单号 123")));
-        AgentChannelMessageHandler handler = new AgentChannelMessageHandler(
-                chatModel,
-                memory,
+        AgentToolRegistry tools = new AgentToolRegistry(
                 mock(AppLogSearchTool.class),
                 mock(SqlQueryTool.class),
                 mock(RepoReadTool.class),
-                mock(RepoChangeTool.class),
+                mock(RepoChangeTool.class));
+        AgentChannelMessageHandler handler = new AgentChannelMessageHandler(
+                chatModel,
+                memory,
+                mock(AiBotConfigService.class),
+                tools,
+                new ChannelProperties(),
                 mock(WeiXinMediaDownloader.class));
         RecordingSink sink = new RecordingSink();
 
         handler.onMessage(ChannelInboundMessage.builder()
                 .channelType(ChannelType.WEIXIN)
+                .botId("aib_test")
                 .chatId("wr_group_1")
                 .chatType("group")
                 .userId("zhangsan")
                 .textContent("@机器人 新对话")
                 .build(), sink);
 
-        assertTrue(memory.get("weixin:wr_group_1").isEmpty());
+        assertTrue(memory.get("weixin:aib_test:wr_group_1").isEmpty());
         assertEquals(List.of("已清空本群对话上下文，可以开始新问题。"), sink.texts);
         assertTrue(sink.streams.isEmpty());
     }

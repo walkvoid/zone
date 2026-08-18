@@ -1,19 +1,21 @@
 package com.github.walkvoid.zone.ai.business.agent;
 
+import com.github.walkvoid.zone.ai.business.agent.audit.AgentAuditEvent;
+import com.github.walkvoid.zone.ai.business.agent.audit.AgentAuditQueue;
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelInboundMessage;
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelMessageHandler;
+import com.github.walkvoid.zone.ai.business.channel.core.ChannelProperties;
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelReplySink;
 import com.github.walkvoid.zone.ai.business.channel.weixin.WeiXinMediaDownloader;
-import com.github.walkvoid.zone.ai.business.tool.AppLogSearchTool;
-import com.github.walkvoid.zone.ai.business.tool.RepoChangeTool;
-import com.github.walkvoid.zone.ai.business.tool.RepoReadTool;
-import com.github.walkvoid.zone.ai.business.tool.SqlQueryTool;
+import com.github.walkvoid.zone.ai.model.entity.AiBotConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.content.Media;
 import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Component;
@@ -27,40 +29,27 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 /**
- * 企微/飞书消息走大模型，挂上 BeeCloud 日志、只读 SQL 与代码沙箱读取。
+ * 企微/飞书消息走大模型；prompt 与工具集按 {@code ai_bot_config} 按 bot 隔离。
  */
 @Primary
 @Component
 public class AgentChannelMessageHandler implements ChannelMessageHandler {
 
     private static final Logger log = LoggerFactory.getLogger(AgentChannelMessageHandler.class);
-    private static final String SYSTEM_PROMPT = """
-            你是供应链金融排障助手，在企业微信群里回答。
-            规则：
-            1. 用户给 traceId、报错、某环境刚失败时，调用 beecloudSearchLogs；env 常见为 dev 或 qa。
-            2. 查用户、合同、融资单、流水、资方等业务数据时，先 listNamedQueries，再 runNamedQuery。禁止手写 SQL。
-            3. 问「代码在哪」「哪个类/方法」「这段逻辑怎么实现」时，先 listRepos 看沙箱，再 searchCode，需要细节时 readSourceFile。
-            4. 用户明确要求改代码时：先 readSourceFile，再 describeWritePolicy 看 write-mode，然后直接 applyPatch 或 applyReplace。
-               write-mode=DIFF_FILE 时 apply 只在源文件同级生成 .patch，不改源文件；DIRECT 才覆盖沙箱源文件。
-            5. 用户发截图或图片时，先识别图中的文字、报错、traceId、单号，再按上面规则调用工具。
-            6. 不知道就说不知道，禁止编造状态码、金额、接口路径、类名。
-            7. 回复要短，适合群聊。工具原始 JSON 只提炼结论，不要整段贴回群。
-            8. 同一群内的连续提问属于同一段对话，可沿用上文中的单号、traceId、结论。
-            9. 记忆里只有用户短文本和你的短回复，没有工具原始 JSON；需要最新数据时再调工具。
-            """;
     private static final int MAX_REPLY_CHARS = 3500;
     private static final long TIMEOUT_SECONDS = 120;
     private static final String RESET_REPLY = "已清空本群对话上下文，可以开始新问题。";
 
     private final ChatClient chatClient;
     private final GroupChatMemoryService groupChatMemoryService;
-    private final AppLogSearchTool appLogSearchTool;
-    private final SqlQueryTool sqlQueryTool;
-    private final RepoReadTool repoReadTool;
-    private final RepoChangeTool repoChangeTool;
+    private final AiBotConfigService aiBotConfigService;
+    private final AgentToolRegistry agentToolRegistry;
+    private final ChannelProperties channelProperties;
     private final WeiXinMediaDownloader mediaDownloader;
+    private final AgentAuditQueue auditQueue;
     private final ExecutorService executor = Executors.newFixedThreadPool(4, r -> {
         Thread t = new Thread(r, "weixin-agent");
         t.setDaemon(true);
@@ -69,33 +58,40 @@ public class AgentChannelMessageHandler implements ChannelMessageHandler {
 
     public AgentChannelMessageHandler(OpenAiChatModel chatModel,
                                       GroupChatMemoryService groupChatMemoryService,
-                                      AppLogSearchTool appLogSearchTool,
-                                      SqlQueryTool sqlQueryTool,
-                                      RepoReadTool repoReadTool,
-                                      RepoChangeTool repoChangeTool,
+                                      AiBotConfigService aiBotConfigService,
+                                      AgentToolRegistry agentToolRegistry,
+                                      ChannelProperties channelProperties,
                                       WeiXinMediaDownloader mediaDownloader) {
+        this(chatModel, groupChatMemoryService, aiBotConfigService, agentToolRegistry,
+                channelProperties, mediaDownloader, null);
+    }
+
+    @Autowired
+    public AgentChannelMessageHandler(OpenAiChatModel chatModel,
+                                      GroupChatMemoryService groupChatMemoryService,
+                                      AiBotConfigService aiBotConfigService,
+                                      AgentToolRegistry agentToolRegistry,
+                                      ChannelProperties channelProperties,
+                                      WeiXinMediaDownloader mediaDownloader,
+                                      ObjectProvider<AgentAuditQueue> auditQueue) {
         this.groupChatMemoryService = groupChatMemoryService;
+        this.aiBotConfigService = aiBotConfigService;
+        this.agentToolRegistry = agentToolRegistry;
+        this.channelProperties = channelProperties;
+        this.mediaDownloader = mediaDownloader;
+        this.auditQueue = auditQueue == null ? null : auditQueue.getIfAvailable();
         this.chatClient = ChatClient.builder(chatModel)
-                .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(groupChatMemoryService.advisor())
                 .build();
-        this.appLogSearchTool = appLogSearchTool;
-        this.sqlQueryTool = sqlQueryTool;
-        this.repoReadTool = repoReadTool;
-        this.repoChangeTool = repoChangeTool;
-        this.mediaDownloader = mediaDownloader;
-        log.info("Agent tools registered: beecloudSearchLogs, listNamedQueries/runNamedQuery, "
-                + "listRepos/searchCode/readSourceFile, describeWritePolicy/applyPatch/applyReplace");
+        log.info("Agent handler ready, prompt/tools loaded per ai_bot_config");
     }
 
     @Override
     public void onMessage(ChannelInboundMessage message, ChannelReplySink replySink) {
         String text = stripMention(message.getTextContent());
         boolean hasImages = message.hasImages();
-        System.out.println("=======Agent inbound text=[" + text + "] images=" + message.getImages().size()
-                + " user=" + message.getUserId() + "=======");
-        log.info("[{}] agent inbound user={}, chat={}, conversationId={}, msgType={}, text={}, images={}",
-                message.getChannelType(), message.getUserId(), message.getChatId(),
+        log.info("[{}] agent inbound bot={}, user={}, chat={}, conversationId={}, msgType={}, text={}, images={}",
+                message.getChannelType(), message.getBotId(), message.getUserId(), message.getChatId(),
                 GroupConversationIds.from(message),
                 message.getMsgType(), text, message.getImages().size());
 
@@ -154,24 +150,78 @@ public class AgentChannelMessageHandler implements ChannelMessageHandler {
                 ? userText
                 : "请看这张图片，识别其中的文字、报错、traceId 或业务单号，并按排障助手规则回答。";
         String conversationId = GroupConversationIds.from(message);
-        log.info("agent askModel start, conversationId={}, tools=[log,sql,repo,change], text={}, images={}",
-                conversationId, promptText, media.size());
+        AiBotConfig bot = aiBotConfigService.findByBotId(message.getBotId(), channelProperties.getWeixin());
+        String systemPrompt = AiBotConfigService.resolvePrompt(bot);
+        List<AgentToolCode> toolCodes = AiBotConfigService.resolveTools(bot);
+        Object[] tools = agentToolRegistry.resolve(toolCodes);
+        log.info("agent askModel start, conversationId={}, botId={}, tools={}, text={}, images={}",
+                conversationId,
+                message.getBotId(),
+                toolCodes.stream().map(AgentToolCode::code).collect(Collectors.joining(",")),
+                promptText,
+                media.size());
         Media[] mediaArr = media.toArray(Media[]::new);
+        String turnNo = UUID.randomUUID().toString().replace("-", "");
         return groupChatMemoryService.runExclusive(conversationId, () -> {
-            var spec = chatClient.prompt()
-                    .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
-                    .user(u -> {
-                        u.text(promptText);
-                        if (mediaArr.length > 0) {
-                            u.media(mediaArr);
-                        }
-                    })
-                    .tools(appLogSearchTool, sqlQueryTool, repoReadTool, repoChangeTool);
-            String content = spec.call().content();
-            log.info("agent askModel done, conversationId={}, replyChars={}",
-                    conversationId, content == null ? 0 : content.length());
-            return StringUtils.hasText(content) ? content.trim() : "我这边没有生成到有效回答，请换个说法再问一次。";
+            String sessionId = groupChatMemoryService.resolveSessionId(conversationId);
+            CodeChangeTurnContext.Turn turn = new CodeChangeTurnContext.Turn(
+                    conversationId,
+                    sessionId,
+                    turnNo,
+                    message.getMessageId(),
+                    message.getBotId(),
+                    bot == null ? null : bot.getBotCode(),
+                    message.getChatId(),
+                    message.getUserId(),
+                    message.getChannelType() == null ? null : message.getChannelType().name(),
+                    promptText);
+            AgentTurnContext.open(turn, mediaArr.length > 0);
+            offerAudit(AgentAuditEvent.turnStart(turn, mediaArr.length > 0));
+            try {
+                var spec = chatClient.prompt()
+                        .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+                        .system(systemPrompt)
+                        .user(u -> {
+                            u.text(promptText);
+                            if (mediaArr.length > 0) {
+                                u.media(mediaArr);
+                            }
+                        });
+                if (tools.length > 0) {
+                    spec.tools(tools);
+                }
+                String content = spec.call().content();
+                String answer = StringUtils.hasText(content) ? content.trim()
+                        : "我这边没有生成到有效回答，请换个说法再问一次。";
+                log.info("agent askModel done, conversationId={}, turnNo={}, replyChars={}",
+                        conversationId, turnNo, answer.length());
+                offerAudit(AgentAuditEvent.turnFinish(
+                        turn,
+                        AgentTurnContext.STATUS_SUCCESS,
+                        answer,
+                        null,
+                        AgentTurnContext.currentState() == null ? 0L : AgentTurnContext.currentState().elapsedMs(),
+                        mediaArr.length > 0));
+                return answer;
+            } catch (RuntimeException e) {
+                offerAudit(AgentAuditEvent.turnFinish(
+                        turn,
+                        AgentTurnContext.STATUS_FAILED,
+                        null,
+                        e.getMessage(),
+                        AgentTurnContext.currentState() == null ? 0L : AgentTurnContext.currentState().elapsedMs(),
+                        mediaArr.length > 0));
+                throw e;
+            } finally {
+                AgentTurnContext.close();
+            }
         });
+    }
+
+    private void offerAudit(AgentAuditEvent event) {
+        if (auditQueue != null) {
+            auditQueue.offer(event);
+        }
     }
 
     private static List<Media> toMedia(List<WeiXinMediaDownloader.DownloadedImage> images) {

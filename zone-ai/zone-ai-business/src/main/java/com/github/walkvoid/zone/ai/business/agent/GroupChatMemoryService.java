@@ -28,6 +28,8 @@ public class GroupChatMemoryService {
     private final ChatMemory chatMemory;
     private final MessageChatMemoryAdvisor advisor;
     private final ConcurrentHashMap<String, Instant> lastAccess = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, String> sessionIds = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Integer> sessionSeq = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, ReentrantLock> locks = new ConcurrentHashMap<>();
 
     public GroupChatMemoryService(AgentMemoryProperties properties) {
@@ -60,11 +62,29 @@ public class GroupChatMemoryService {
     public void clear(String conversationId) {
         chatMemory.clear(conversationId);
         lastAccess.remove(conversationId);
+        sessionIds.remove(conversationId);
         log.info("cleared conversation {}", conversationId);
     }
 
     public List<Message> get(String conversationId) {
         return chatMemory.get(conversationId);
+    }
+
+    public String resolveSessionId(String conversationId) {
+        if (expired(conversationId)) {
+            window.clear(conversationId);
+            lastAccess.remove(conversationId);
+            sessionIds.remove(conversationId);
+            log.info("expired idle conversation {}, rotate session", conversationId);
+        }
+        String existing = sessionIds.get(conversationId);
+        if (existing != null && !existing.isBlank()) {
+            return existing;
+        }
+        int seq = sessionSeq.merge(conversationId, 1, Integer::sum);
+        String sessionId = conversationId + ":s" + seq;
+        sessionIds.put(conversationId, sessionId);
+        return sessionId;
     }
 
     public <T> T runExclusive(String conversationId, Supplier<T> action) {
@@ -92,6 +112,7 @@ public class GroupChatMemoryService {
             if (expired(conversationId)) {
                 window.clear(conversationId);
                 lastAccess.remove(conversationId);
+                sessionIds.remove(conversationId);
                 return List.of();
             }
             touch(conversationId);
@@ -102,6 +123,7 @@ public class GroupChatMemoryService {
         public void clear(String conversationId) {
             window.clear(conversationId);
             lastAccess.remove(conversationId);
+            sessionIds.remove(conversationId);
         }
     }
 
@@ -128,6 +150,7 @@ public class GroupChatMemoryService {
             if (Duration.between(last, now).compareTo(ttl) >= 0) {
                 window.clear(conversationId);
                 lastAccess.remove(conversationId);
+                sessionIds.remove(conversationId);
                 log.info("expired idle conversation {}", conversationId);
             }
         }
