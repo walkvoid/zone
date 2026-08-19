@@ -1,6 +1,7 @@
 package com.github.walkvoid.zone.ai.business.tool.sql;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.walkvoid.wvframework.utils.JsonNodeUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ public final class NamedSqlBinder {
     }
 
     public static BoundQuery bind(NamedSqlQuery query, JsonNode params, int maxRows, Set<String> allowedTables) {
-        JsonNode node = params == null || params.isNull() ? null : params;
+        JsonNode node = JsonNodeUtils.isAbsent(params) ? null : params;
         String by = text(node, "by");
         NamedSqlQuery.Variant variant = pickVariant(query, by);
         for (String table : variant.tables()) {
@@ -123,14 +124,7 @@ public final class NamedSqlBinder {
     }
 
     private static String text(JsonNode node, String name) {
-        if (node == null || name == null) {
-            return null;
-        }
-        JsonNode value = node.get(name);
-        if (value == null || value.isNull()) {
-            return null;
-        }
-        String text = value.asText();
-        return StringUtils.hasText(text) ? text : null;
+        String value = JsonNodeUtils.asTextOr(node, null, name);
+        return StringUtils.hasText(value) ? value : null;
     }
 }

@@ -1,7 +1,8 @@
 package com.github.walkvoid.zone.ai.business.tool.log;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.walkvoid.wvframework.utils.JsonNodeUtils;
+import com.github.walkvoid.wvframework.utils.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,13 +29,11 @@ public class BeeCloudAuthService {
     private static final Pattern TOKEN_COOKIE_PATTERN = Pattern.compile("(?i)(?:^|;\\s*)token=([^;\\s]+)");
 
     private final BeeCloudProperties properties;
-    private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
     private volatile String discoveredAuthBaseUrl = "";
 
-    public BeeCloudAuthService(BeeCloudProperties properties, ObjectMapper objectMapper) {
+    public BeeCloudAuthService(BeeCloudProperties properties) {
         this.properties = properties;
-        this.objectMapper = objectMapper;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(properties.requestTimeoutSeconds()))
                 .followRedirects(HttpClient.Redirect.NEVER)
@@ -125,11 +124,11 @@ public class BeeCloudAuthService {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         JsonNode body = parseJson(response.body(), "fetch public key");
 
-        if (body.path("code").asInt(-1) != 0) {
+        if (JsonNodeUtils.asInt(body, -1, "code") != 0) {
             throw new IllegalStateException("Failed to fetch public key: " + response.body());
         }
 
-        String publicKey = body.path("data").path("key").asText("");
+        String publicKey = JsonNodeUtils.asText(body, "data", "key");
         if (!StringUtils.hasText(publicKey)) {
             throw new IllegalStateException("Public key missing in captcha response");
         }
@@ -159,14 +158,14 @@ public class BeeCloudAuthService {
                 .header("Origin", authBaseUrl())
                 .header("Referer", authBaseUrl() + "/sso/login")
                 .header("User-Agent", defaultUserAgent())
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(loginBody)))
+                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.getObjectMapper().writeValueAsString(loginBody)))
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         JsonNode body = parseJson(response.body(), "login");
 
-        if (body.path("code").asInt(-1) != 0) {
-            String message = body.path("message").asText(body.path("msg").asText("unknown error"));
+        if (JsonNodeUtils.asInt(body, -1, "code") != 0) {
+            String message = JsonNodeUtils.firstText(body, "unknown error", "message", "msg");
             throw new IllegalStateException("Login failed: " + message);
         }
         log.info("BeeCloud SSO login succeeded for user {}", properties.username());
@@ -303,7 +302,7 @@ public class BeeCloudAuthService {
         if (!StringUtils.hasText(body)) {
             throw new IllegalStateException("Empty response while trying to " + step);
         }
-        return objectMapper.readTree(body);
+        return JsonUtils.getObjectMapper().readTree(body);
     }
 
     private String defaultUserAgent() {

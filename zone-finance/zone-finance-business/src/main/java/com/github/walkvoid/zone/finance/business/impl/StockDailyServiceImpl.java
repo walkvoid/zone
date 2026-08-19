@@ -1,7 +1,7 @@
 package com.github.walkvoid.zone.finance.business.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.finance.api.service.StockDailyService;
 import com.github.walkvoid.zone.finance.business.db.dao.StockDailyDAO;
 import com.github.walkvoid.zone.finance.model.entity.StockDaily;
@@ -24,7 +24,6 @@ import java.util.Map;
 public class StockDailyServiceImpl implements StockDailyService {
 
     private static final Logger log = LoggerFactory.getLogger(StockDailyServiceImpl.class);
-    private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Autowired
@@ -96,7 +95,7 @@ public class StockDailyServiceImpl implements StockDailyService {
             }
             json = json.trim();
 
-            Map<String, Object> root = objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {});
+            Map<String, Object> root = JsonUtils.getObjectMapper().readValue(json, new TypeReference<Map<String, Object>>() {});
             List<Map<String, Object>> dataList = (List<Map<String, Object>>) root.get("data");
             if (dataList == null) return list;
 

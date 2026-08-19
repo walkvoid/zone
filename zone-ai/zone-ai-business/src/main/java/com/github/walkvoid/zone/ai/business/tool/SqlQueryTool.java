@@ -1,9 +1,10 @@
 package com.github.walkvoid.zone.ai.business.tool;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.walkvoid.wvframework.utils.JsonNodeUtils;
+import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.ai.business.tool.sql.NamedSqlBinder;
 import com.github.walkvoid.zone.ai.business.tool.sql.NamedSqlQuery;
 import com.github.walkvoid.zone.ai.business.tool.sql.NamedSqlQueryCatalog;
@@ -42,8 +43,6 @@ public class SqlQueryTool {
 
     private final SqlQuerySupport support;
     private final NamedSqlQueryCatalog catalog;
-    private final ObjectMapper mapper = new ObjectMapper();
-
     public SqlQueryTool(SqlQuerySupport support, NamedSqlQueryCatalog catalog) {
         this.support = support;
         this.catalog = catalog;
@@ -51,18 +50,18 @@ public class SqlQueryTool {
 
     @Tool(description = "列出常用命名查询目录。查用户/合同/客户/凭证/兑付/网关日志等优先用本目录的 queryCode，再调用 runNamedQuery。")
     public JsonNode listNamedQueries() {
-        ArrayNode queries = mapper.createArrayNode();
+        ArrayNode queries = JsonUtils.getObjectMapper().createArrayNode();
         for (NamedSqlQuery q : catalog.all()) {
-            ObjectNode item = mapper.createObjectNode();
+            ObjectNode item = JsonUtils.getObjectMapper().createObjectNode();
             item.put("code", q.code());
             item.put("category", q.category());
             item.put("description", q.description());
-            ArrayNode by = mapper.createArrayNode();
+            ArrayNode by = JsonUtils.getObjectMapper().createArrayNode();
             q.byOptions().forEach(by::add);
             item.set("by", by);
             queries.add(item);
         }
-        ObjectNode result = mapper.createObjectNode();
+        ObjectNode result = JsonUtils.getObjectMapper().createObjectNode();
         result.put("success", true);
         result.set("queries", queries);
         return result;
@@ -104,7 +103,7 @@ public class SqlQueryTool {
             }
             SqlQueryToolProperties props = support.properties();
             Set<String> allowed = props.allowedTableSet();
-            ArrayNode tables = mapper.createArrayNode();
+            ArrayNode tables = JsonUtils.getObjectMapper().createArrayNode();
             if (allowed.isEmpty()) {
                 return okTables(tables);
             }
@@ -123,7 +122,7 @@ public class SqlQueryTool {
                         + "WHERE CONCAT(TABLE_SCHEMA, '.', TABLE_NAME) IN (" + placeholders + ") "
                         + "ORDER BY TABLE_SCHEMA, TABLE_NAME";
                 support.jdbc().query(sql, (rs, rowNum) -> {
-                    ObjectNode row = mapper.createObjectNode();
+                    ObjectNode row = JsonUtils.getObjectMapper().createObjectNode();
                     row.put("table", rs.getString("TABLE_SCHEMA") + "." + rs.getString("TABLE_NAME"));
                     row.put("comment", rs.getString("TABLE_COMMENT"));
                     return row;
@@ -135,17 +134,17 @@ public class SqlQueryTool {
                         + "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN (" + placeholders + ") "
                         + "ORDER BY TABLE_NAME";
                 support.jdbc().query(sql, (rs, rowNum) -> {
-                    ObjectNode row = mapper.createObjectNode();
+                    ObjectNode row = JsonUtils.getObjectMapper().createObjectNode();
                     row.put("table", rs.getString("TABLE_NAME"));
                     row.put("comment", rs.getString("TABLE_COMMENT"));
                     return row;
                 }, simple.toArray()).forEach(tables::add);
             }
             Set<String> found = new java.util.HashSet<>();
-            tables.forEach(n -> found.add(n.path("table").asText().toLowerCase(Locale.ROOT)));
+            tables.forEach(n -> found.add(JsonNodeUtils.asText(n, "table").toLowerCase(Locale.ROOT)));
             for (String name : allowed) {
                 if (!found.contains(name)) {
-                    ObjectNode row = mapper.createObjectNode();
+                    ObjectNode row = JsonUtils.getObjectMapper().createObjectNode();
                     row.put("table", name);
                     row.put("comment", "configured but not found in current database");
                     tables.add(row);
@@ -172,7 +171,7 @@ public class SqlQueryTool {
                 schema = tableName.substring(0, dot);
                 plain = tableName.substring(dot + 1);
             }
-            ArrayNode columns = mapper.createArrayNode();
+            ArrayNode columns = JsonUtils.getObjectMapper().createArrayNode();
             List<ObjectNode> foundCols;
             if (schema != null) {
                 String sql = "SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_KEY, COLUMN_COMMENT "
@@ -191,7 +190,7 @@ public class SqlQueryTool {
             if (columns.isEmpty()) {
                 return error("table not found in current database: " + tableName);
             }
-            ObjectNode result = mapper.createObjectNode();
+            ObjectNode result = JsonUtils.getObjectMapper().createObjectNode();
             result.put("success", true);
             result.put("table", tableName);
             result.set("columns", columns);
@@ -262,11 +261,11 @@ public class SqlQueryTool {
             return list;
         }, args);
 
-        ArrayNode array = mapper.createArrayNode();
+        ArrayNode array = JsonUtils.getObjectMapper().createArrayNode();
         if (rows != null) {
             rows.forEach(array::add);
         }
-        ObjectNode result = mapper.createObjectNode();
+        ObjectNode result = JsonUtils.getObjectMapper().createObjectNode();
         result.put("success", true);
         result.put("returned", array.size());
         result.put("truncated", array.size() >= limit);
@@ -275,7 +274,7 @@ public class SqlQueryTool {
     }
 
     private ObjectNode toRow(ResultSet rs, ResultSetMetaData meta, int colCount) throws java.sql.SQLException {
-        ObjectNode row = mapper.createObjectNode();
+        ObjectNode row = JsonUtils.getObjectMapper().createObjectNode();
         Set<String> sensitive = support.properties().sensitiveColumnSet();
         int maxChars = Math.max(32, support.properties().getMaxCellChars());
         for (int i = 1; i <= colCount; i++) {
@@ -355,14 +354,14 @@ public class SqlQueryTool {
     }
 
     private ObjectNode okTables(ArrayNode tables) {
-        ObjectNode result = mapper.createObjectNode();
+        ObjectNode result = JsonUtils.getObjectMapper().createObjectNode();
         result.put("success", true);
         result.set("tables", tables);
         return result;
     }
 
     private ObjectNode toColumn(ResultSet rs) throws java.sql.SQLException {
-        ObjectNode col = mapper.createObjectNode();
+        ObjectNode col = JsonUtils.getObjectMapper().createObjectNode();
         col.put("name", rs.getString("COLUMN_NAME"));
         col.put("type", rs.getString("DATA_TYPE"));
         col.put("nullable", "YES".equalsIgnoreCase(rs.getString("IS_NULLABLE")));
@@ -373,9 +372,9 @@ public class SqlQueryTool {
 
     private JsonNode parseParams(String paramsJson) throws Exception {
         if (!StringUtils.hasText(paramsJson) || "{}".equals(paramsJson.trim())) {
-            return mapper.createObjectNode();
+            return JsonUtils.getObjectMapper().createObjectNode();
         }
-        return mapper.readTree(paramsJson);
+        return JsonUtils.getObjectMapper().readTree(paramsJson);
     }
 
     private JsonNode fail(String action, Exception e) {
@@ -384,7 +383,7 @@ public class SqlQueryTool {
     }
 
     private ObjectNode error(String msg) {
-        ObjectNode err = mapper.createObjectNode();
+        ObjectNode err = JsonUtils.getObjectMapper().createObjectNode();
         err.put("success", false);
         err.put("error", msg);
         return err;

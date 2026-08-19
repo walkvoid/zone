@@ -15,6 +15,7 @@ import com.github.walkvoid.zone.ai.business.tool.RepoReadTool;
 import com.github.walkvoid.zone.ai.business.tool.SqlQueryTool;
 import com.github.walkvoid.zone.ai.business.tool.sql.SqlQuerySupport;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.walkvoid.wvframework.utils.JsonNodeUtils;
 import java.util.List;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -201,31 +202,31 @@ public class BaseTest {
     void testRepoReadTool() {
         JsonNode repos = repoReadTool.listRepos();
         System.out.println("listRepos=" + repos);
-        org.junit.jupiter.api.Assertions.assertTrue(repos.path("success").asBoolean(),
+        org.junit.jupiter.api.Assertions.assertTrue(JsonNodeUtils.asBoolean(repos, false, "success"),
                 "listRepos should succeed");
-        JsonNode repo = repos.path("repos").get(0);
-        org.junit.jupiter.api.Assertions.assertTrue(repo.path("exists").asBoolean(),
-                "Sandbox should exist at zone.ai.tool.repo.root=" + repo.path("root").asText());
+        JsonNode repo = JsonNodeUtils.path(repos, "repos").get(0);
+        org.junit.jupiter.api.Assertions.assertTrue(JsonNodeUtils.asBoolean(repo, false, "exists"),
+                "Sandbox should exist at zone.ai.tool.repo.root=" + JsonNodeUtils.asText(repo, "root"));
 
         JsonNode hits = repoReadTool.searchCode("PayTradeController", "jinkoscf-transaction", 20);
         System.out.println("searchCode=" + hits);
-        org.junit.jupiter.api.Assertions.assertTrue(hits.path("success").asBoolean(),
-                "searchCode failed: " + hits.path("error").asText());
-        org.junit.jupiter.api.Assertions.assertTrue(hits.path("returned").asInt() >= 1,
+        org.junit.jupiter.api.Assertions.assertTrue(JsonNodeUtils.asBoolean(hits, false, "success"),
+                "searchCode failed: " + JsonNodeUtils.asText(hits, "error"));
+        org.junit.jupiter.api.Assertions.assertTrue(JsonNodeUtils.asInt(hits, 0, "returned") >= 1,
                 "Should find PayTradeController under jinkoscf-transaction");
 
-        String path = hits.path("hits").get(0).path("path").asText();
+        String path = JsonNodeUtils.asText(JsonNodeUtils.path(hits, "hits").get(0), "path");
         JsonNode slice = repoReadTool.readSourceFile(path, 1, 80);
         System.out.println("readSourceFile path=" + path + " result=" + slice);
-        org.junit.jupiter.api.Assertions.assertTrue(slice.path("success").asBoolean(),
-                "readSourceFile failed: " + slice.path("error").asText());
+        org.junit.jupiter.api.Assertions.assertTrue(JsonNodeUtils.asBoolean(slice, false, "success"),
+                "readSourceFile failed: " + JsonNodeUtils.asText(slice, "error"));
         org.junit.jupiter.api.Assertions.assertTrue(
-                slice.path("content").asText().contains("PayTrade"),
+                JsonNodeUtils.asText(slice, "content").contains("PayTrade"),
                 "File content should contain PayTrade");
 
         JsonNode denied = repoReadTool.readSourceFile("application-lls.properties", 1, 10);
         System.out.println("denied read=" + denied);
-        org.junit.jupiter.api.Assertions.assertFalse(denied.path("success").asBoolean(),
+        org.junit.jupiter.api.Assertions.assertFalse(JsonNodeUtils.asBoolean(denied, false, "success"),
                 "application-lls.properties must be blocked");
 
         String userPrompt = "请帮忙分析一下司库推送开立凭证的代码，帮忙解答如果司库的合同文件是压缩文件，我们会怎么处理";

@@ -1,9 +1,10 @@
 package com.github.walkvoid.zone.ai.business.tool;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.walkvoid.wvframework.utils.JsonNodeUtils;
+import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.ai.business.tool.repo.RepoReadSupport;
 import com.github.walkvoid.zone.ai.business.tool.repo.RepoToolProperties;
 import org.slf4j.Logger;
@@ -21,8 +22,6 @@ public class RepoReadTool {
     private static final Logger log = LoggerFactory.getLogger(RepoReadTool.class);
 
     private final RepoReadSupport support;
-    private final ObjectMapper mapper = new ObjectMapper();
-
     public RepoReadTool(RepoReadSupport support) {
         this.support = support;
     }
@@ -32,20 +31,20 @@ public class RepoReadTool {
         log.info("listRepos invoked, enabled={}, sandboxExists={}, root={}",
                 support.properties().isEnabled(), support.sandboxExists(), support.properties().rootPath());
         RepoToolProperties properties = support.properties();
-        ObjectNode repo = mapper.createObjectNode();
+        ObjectNode repo = JsonUtils.getObjectMapper().createObjectNode();
         repo.put("name", properties.displayName());
         repo.put("root", properties.rootPath().toString());
         repo.put("exists", support.sandboxExists());
-        ArrayNode allow = mapper.createArrayNode();
+        ArrayNode allow = JsonUtils.getObjectMapper().createArrayNode();
         properties.normalizedAllowPaths().forEach(allow::add);
         repo.set("allowPaths", allow);
         repo.put("maxReadLines", properties.getMaxReadLines());
         repo.put("maxSearchResults", properties.getMaxSearchResults());
 
-        ObjectNode result = mapper.createObjectNode();
+        ObjectNode result = JsonUtils.getObjectMapper().createObjectNode();
         result.put("success", true);
         result.put("enabled", properties.isEnabled());
-        ArrayNode repos = mapper.createArrayNode();
+        ArrayNode repos = JsonUtils.getObjectMapper().createArrayNode();
         repos.add(repo);
         result.set("repos", repos);
         if (!properties.isEnabled()) {
@@ -67,21 +66,21 @@ public class RepoReadTool {
         try {
             JsonNode notReady = notReady();
             if (notReady != null) {
-                log.warn("searchCode skipped, not ready: {}", notReady.path("error").asText());
+                log.warn("searchCode skipped, not ready: {}", JsonNodeUtils.asText(notReady, "error"));
                 return notReady;
             }
             int limit = maxResults == null ? support.properties().getMaxSearchResults() : maxResults;
             var hits = support.search(keyword, pathPrefix, limit);
             log.info("searchCode done, keyword={}, returned={}", keyword, hits.size());
-            ArrayNode rows = mapper.createArrayNode();
+            ArrayNode rows = JsonUtils.getObjectMapper().createArrayNode();
             for (RepoReadSupport.SearchHit hit : hits) {
-                ObjectNode row = mapper.createObjectNode();
+                ObjectNode row = JsonUtils.getObjectMapper().createObjectNode();
                 row.put("path", hit.path());
                 row.put("line", hit.line());
                 row.put("text", hit.text());
                 rows.add(row);
             }
-            ObjectNode result = mapper.createObjectNode();
+            ObjectNode result = JsonUtils.getObjectMapper().createObjectNode();
             result.put("success", true);
             result.put("keyword", keyword);
             result.put("returned", hits.size());
@@ -104,13 +103,13 @@ public class RepoReadTool {
         try {
             JsonNode notReady = notReady();
             if (notReady != null) {
-                log.warn("readSourceFile skipped, not ready: {}", notReady.path("error").asText());
+                log.warn("readSourceFile skipped, not ready: {}", JsonNodeUtils.asText(notReady, "error"));
                 return notReady;
             }
             RepoReadSupport.FileSlice slice = support.read(path, startLine, endLine);
             log.info("readSourceFile done, path={}, lines={}~{}/{}",
                     slice.path(), slice.startLine(), slice.endLine(), slice.totalLines());
-            ObjectNode result = mapper.createObjectNode();
+            ObjectNode result = JsonUtils.getObjectMapper().createObjectNode();
             result.put("success", true);
             result.put("path", slice.path());
             result.put("startLine", slice.startLine());
@@ -136,7 +135,7 @@ public class RepoReadTool {
     }
 
     private JsonNode errorResult(String msg) {
-        ObjectNode err = mapper.createObjectNode();
+        ObjectNode err = JsonUtils.getObjectMapper().createObjectNode();
         err.put("success", false);
         err.put("error", msg);
         return err;

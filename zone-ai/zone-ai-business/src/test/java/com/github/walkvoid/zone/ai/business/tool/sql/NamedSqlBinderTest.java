@@ -1,7 +1,7 @@
 package com.github.walkvoid.zone.ai.business.tool.sql;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.walkvoid.wvframework.utils.JsonUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
@@ -15,12 +15,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class NamedSqlBinderTest {
 
     private final NamedSqlQueryCatalog catalog = new NamedSqlQueryCatalog();
-    private final ObjectMapper mapper = new ObjectMapper();
     private final Set<String> allowed = new HashSet<>(NamedSqlQueryCatalog.DEFAULT_ALLOWED_TABLES);
 
     @Test
     void bindsLikeAndLimit() throws Exception {
-        ObjectNode params = mapper.createObjectNode();
+        ObjectNode params = JsonUtils.getObjectMapper().createObjectNode();
         params.put("by", "real_name");
         params.put("value", "青");
         NamedSqlBinder.BoundQuery bound = NamedSqlBinder.bind(catalog.get("user_info"), params, 50, allowed);
@@ -32,7 +31,7 @@ class NamedSqlBinderTest {
 
     @Test
     void expandsInList() throws Exception {
-        ObjectNode params = mapper.createObjectNode();
+        ObjectNode params = JsonUtils.getObjectMapper().createObjectNode();
         params.put("value", "YSZC2024114403,YSZC2024114402");
         NamedSqlBinder.BoundQuery bound = NamedSqlBinder.bind(catalog.get("asset_info"), params, 20, allowed);
         assertTrue(bound.sql().contains("IN (?,?)"));
@@ -43,7 +42,7 @@ class NamedSqlBinderTest {
 
     @Test
     void recentCustomerNeedsNoValue() {
-        ObjectNode params = mapper.createObjectNode();
+        ObjectNode params = JsonUtils.getObjectMapper().createObjectNode();
         params.put("by", "recent");
         NamedSqlBinder.BoundQuery bound = NamedSqlBinder.bind(catalog.get("cust_company"), params, 100, allowed);
         assertTrue(bound.sql().toUpperCase().contains("ORDER BY ID DESC"));
@@ -53,7 +52,7 @@ class NamedSqlBinderTest {
 
     @Test
     void requiresByWhenVariantsExist() {
-        ObjectNode params = mapper.createObjectNode();
+        ObjectNode params = JsonUtils.getObjectMapper().createObjectNode();
         params.put("value", "1");
         assertThrows(IllegalArgumentException.class,
                 () -> NamedSqlBinder.bind(catalog.get("user_info"), params, 10, allowed));
@@ -61,7 +60,7 @@ class NamedSqlBinderTest {
 
     @Test
     void tradeRelByNameUsesJoin() {
-        ObjectNode params = mapper.createObjectNode();
+        ObjectNode params = JsonUtils.getObjectMapper().createObjectNode();
         params.put("by", "contract_name");
         params.put("value", "5030-卓然");
         NamedSqlBinder.BoundQuery bound = NamedSqlBinder.bind(catalog.get("trade_contract_rel"), params, 10, allowed);
@@ -71,7 +70,7 @@ class NamedSqlBinderTest {
 
     @Test
     void httpRequestLogByChannel() {
-        ObjectNode params = mapper.createObjectNode();
+        ObjectNode params = JsonUtils.getObjectMapper().createObjectNode();
         params.put("by", "channel");
         params.put("interfaceCode", "creditLoanApply");
         params.put("channel", "icbc-eloan");
@@ -87,7 +86,7 @@ class NamedSqlBinderTest {
         for (NamedSqlQuery query : catalog.all()) {
             assertTrue(codes.add(query.code()), "duplicate code " + query.code());
             query.variants().forEach((by, variant) -> {
-                ObjectNode params = mapper.createObjectNode();
+                ObjectNode params = JsonUtils.getObjectMapper().createObjectNode();
                 if (!"default".equals(by)) {
                     params.put("by", by);
                 }

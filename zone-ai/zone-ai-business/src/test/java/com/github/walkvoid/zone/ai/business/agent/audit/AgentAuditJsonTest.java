@@ -1,14 +1,12 @@
 package com.github.walkvoid.zone.ai.business.agent.audit;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.walkvoid.wvframework.utils.JsonUtils;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AgentAuditJsonTest {
-
-    private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     void truncateKeepsShortText() {
@@ -35,7 +33,7 @@ class AgentAuditJsonTest {
 
     @Test
     void summarizeReadsRowCountAndPath() throws Exception {
-        var node = mapper.readTree("{\"success\":true,\"rowCount\":3,\"path\":\"PayListener.java\"}");
+        var node = JsonUtils.getObjectMapper().readTree("{\"success\":true,\"rowCount\":3,\"path\":\"PayListener.java\"}");
         String summary = AgentAuditJson.summarize(node, "query", true, null);
         assertTrue(summary.contains("成功"));
         assertTrue(summary.contains("rowCount=3"));

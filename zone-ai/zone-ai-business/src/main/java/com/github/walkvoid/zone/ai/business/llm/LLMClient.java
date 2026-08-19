@@ -1,7 +1,8 @@
 package com.github.walkvoid.zone.ai.business.llm;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.walkvoid.wvframework.utils.JsonNodeUtils;
+import com.github.walkvoid.wvframework.utils.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
@@ -22,8 +23,6 @@ public class LLMClient {
 
     private static final Logger log = LoggerFactory.getLogger(LLMClient.class);
     private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     /**
      * 发送Chat请求到LLM服务并返回响应内容
      *
@@ -55,8 +54,8 @@ public class LLMClient {
         try {
             log.info("LLM request -> {} model={}", url, model);
             ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-            JsonNode root = objectMapper.readTree(response.getBody());
-            String content = root.path("choices").get(0).path("message").path("content").asText();
+            JsonNode root = JsonUtils.getObjectMapper().readTree(response.getBody());
+            String content = JsonNodeUtils.asText(JsonNodeUtils.path(root, "choices").path(0), "message", "content");
             log.info("LLM response length={}", content.length());
             return content;
         } catch (Exception e) {

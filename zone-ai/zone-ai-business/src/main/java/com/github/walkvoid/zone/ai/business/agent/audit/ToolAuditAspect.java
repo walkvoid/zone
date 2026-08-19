@@ -1,7 +1,7 @@
 package com.github.walkvoid.zone.ai.business.agent.audit;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.ai.business.agent.AgentAuditProperties;
 import com.github.walkvoid.zone.ai.business.agent.AgentTurnContext;
 import com.github.walkvoid.zone.ai.business.agent.CodeChangeTurnContext;
@@ -30,14 +30,11 @@ public class ToolAuditAspect {
 
     private final AgentAuditQueue queue;
     private final AgentAuditProperties properties;
-    private final ObjectMapper mapper;
 
     public ToolAuditAspect(AgentAuditQueue queue,
-                           AgentAuditProperties properties,
-                           ObjectMapper mapper) {
+                           AgentAuditProperties properties) {
         this.queue = queue;
         this.properties = properties;
-        this.mapper = mapper;
     }
 
     @Around("@annotation(tool)")
@@ -106,7 +103,7 @@ public class ToolAuditAspect {
                     }
                 }
             }
-            return AgentAuditJson.truncate(mapper.writeValueAsString(body), properties.normalizedMaxJsonBytes());
+            return AgentAuditJson.truncate(JsonUtils.getObjectMapper().writeValueAsString(body), properties.normalizedMaxJsonBytes());
         } catch (Exception e) {
             return "{}";
         }
@@ -120,7 +117,7 @@ public class ToolAuditAspect {
             return null;
         }
         try {
-            return mapper.valueToTree(result);
+            return JsonUtils.getObjectMapper().valueToTree(result);
         } catch (Exception e) {
             return null;
         }
@@ -134,7 +131,7 @@ public class ToolAuditAspect {
             return result.toString();
         }
         try {
-            return mapper.writeValueAsString(result);
+            return JsonUtils.getObjectMapper().writeValueAsString(result);
         } catch (Exception e) {
             return String.valueOf(result);
         }

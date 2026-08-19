@@ -1,6 +1,7 @@
 package com.github.walkvoid.zone.ai.business.agent.audit;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.walkvoid.wvframework.utils.JsonNodeUtils;
 import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -33,13 +34,13 @@ final class AgentAuditJson {
         if (!success && StringUtils.hasText(error)) {
             return truncate(("失败 " + toolName + ": " + error).replace('\n', ' '), SUMMARY_MAX);
         }
-        if (node == null || node.isMissingNode() || node.isNull()) {
+        if (JsonNodeUtils.isAbsent(node)) {
             return success ? toolName + " 完成" : toolName + " 失败";
         }
         StringBuilder sb = new StringBuilder();
         sb.append(toolName == null ? "tool" : toolName);
-        if (node.has("success")) {
-            sb.append(node.path("success").asBoolean(true) ? " 成功" : " 失败");
+        if (JsonNodeUtils.has(node, "success")) {
+            sb.append(JsonNodeUtils.asBoolean(node, true, "success") ? " 成功" : " 失败");
         } else {
             sb.append(success ? " 成功" : " 失败");
         }
@@ -47,21 +48,21 @@ final class AgentAuditJson {
         appendIfPresent(sb, node, "hits", null);
         appendIfPresent(sb, node, "rowCount", "行");
         appendIfPresent(sb, node, "rows", null);
-        if (node.has("error") && StringUtils.hasText(node.path("error").asText())) {
-            sb.append("：").append(node.path("error").asText());
+        if (JsonNodeUtils.has(node, "error") && StringUtils.hasText(JsonNodeUtils.asText(node, "error"))) {
+            sb.append("：").append(JsonNodeUtils.asText(node, "error"));
         }
-        if (node.has("queryCode")) {
-            sb.append(" query=").append(node.path("queryCode").asText());
+        if (JsonNodeUtils.has(node, "queryCode")) {
+            sb.append(" query=").append(JsonNodeUtils.asText(node, "queryCode"));
         }
-        if (node.has("path")) {
-            sb.append(" ").append(node.path("path").asText());
+        if (JsonNodeUtils.has(node, "path")) {
+            sb.append(" ").append(JsonNodeUtils.asText(node, "path"));
         }
         return truncate(sb.toString(), SUMMARY_MAX);
     }
 
     private static void appendIfPresent(StringBuilder sb, JsonNode node, String field, String suffix) {
-        JsonNode value = node.get(field);
-        if (value == null || value.isMissingNode() || value.isNull()) {
+        JsonNode value = JsonNodeUtils.path(node, field);
+        if (JsonNodeUtils.isAbsent(value)) {
             return;
         }
         if (value.isArray()) {
@@ -69,7 +70,7 @@ final class AgentAuditJson {
             return;
         }
         if (value.isNumber() || value.isTextual()) {
-            sb.append(' ').append(field).append('=').append(value.asText());
+            sb.append(' ').append(field).append('=').append(JsonNodeUtils.asText(value));
             if (StringUtils.hasText(suffix)) {
                 sb.append(suffix);
             }

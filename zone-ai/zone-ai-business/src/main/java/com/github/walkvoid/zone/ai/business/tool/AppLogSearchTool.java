@@ -1,9 +1,10 @@
 package com.github.walkvoid.zone.ai.business.tool;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.walkvoid.wvframework.utils.JsonNodeUtils;
+import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.ai.business.tool.log.BeeCloudProperties;
 import com.github.walkvoid.zone.ai.business.tool.log.TokenStore;
 import org.slf4j.Logger;
@@ -43,7 +44,6 @@ public class AppLogSearchTool {
     private static final DateTimeFormatter ISO_FMT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"));
 
-    private final ObjectMapper mapper = new ObjectMapper();
     private final BeeCloudProperties properties;
     private final TokenStore tokenStore;
     private final RestTemplate restTemplate;
@@ -95,18 +95,18 @@ public class AppLogSearchTool {
 
             String queryString = searchStr.startsWith("\"") ? searchStr : "\"" + searchStr + "\"";
 
-            ObjectNode timeRange = mapper.createObjectNode();
+            ObjectNode timeRange = JsonUtils.getObjectMapper().createObjectNode();
             timeRange.put("format", "strict_date_optional_time");
             timeRange.put("gte", gte);
             timeRange.put("lte", lte);
 
-            ObjectNode dateHistogram = mapper.createObjectNode();
+            ObjectNode dateHistogram = JsonUtils.getObjectMapper().createObjectNode();
             dateHistogram.put("fixed_interval", "15s");
             dateHistogram.put("field", "@timestamp");
             dateHistogram.put("min_doc_count", 1);
             dateHistogram.put("time_zone", "Asia/Shanghai");
 
-            ObjectNode requestBody = mapper.createObjectNode();
+            ObjectNode requestBody = JsonUtils.getObjectMapper().createObjectNode();
             requestBody.put("search_type", searchType);
             requestBody.set("time_range", timeRange);
             requestBody.put("query_string", queryString);
@@ -117,7 +117,7 @@ public class AppLogSearchTool {
             requestBody.put("env_instance", properties.getProject());
             requestBody.put("cluster", cluster);
 
-            String jsonBody = mapper.writeValueAsString(requestBody);
+            String jsonBody = JsonUtils.getObjectMapper().writeValueAsString(requestBody);
             log.info("beecloudSearchLogs: url={}, searchStr={}, env={}, gte={}, lte={}",
                     properties.searchUrl(), searchStr, env, gte, lte);
 
@@ -217,9 +217,9 @@ public class AppLogSearchTool {
             return false;
         }
         try {
-            JsonNode node = mapper.readTree(trimmed);
-            int code = node.path("code").asInt(0);
-            String message = node.path("message").asText("") + " " + node.path("msg").asText("");
+            JsonNode node = JsonUtils.getObjectMapper().readTree(trimmed);
+            int code = JsonNodeUtils.asInt(node, 0, "code");
+            String message = JsonNodeUtils.asText(node, "message") + " " + JsonNodeUtils.asText(node, "msg");
             return code == 401 || code == 403
                     || message.contains("未登录")
                     || message.contains("登录过期")
@@ -236,35 +236,35 @@ public class AppLogSearchTool {
      */
     private JsonNode slimResult(String rawJson, int maxResults) {
         try {
-            JsonNode root = mapper.readTree(rawJson);
+            JsonNode root = JsonUtils.getObjectMapper().readTree(rawJson);
 
-            int code = root.path("code").asInt(-1);
+            int code = JsonNodeUtils.asInt(root, -1, "code");
             if (code != 0) {
-                ObjectNode err = mapper.createObjectNode();
+                ObjectNode err = JsonUtils.getObjectMapper().createObjectNode();
                 err.put("success", false);
-                err.put("error", root.path("message").asText("unknown"));
+                err.put("error", JsonNodeUtils.asTextOr(root, "unknown", "message"));
                 return err;
             }
 
-            JsonNode hits = root.path("data").path("hits").path("hits");
-            long total = root.path("data").path("hits").path("total").path("value").asLong();
+            JsonNode hits = JsonNodeUtils.path(root, "data", "hits", "hits");
+            long total = JsonNodeUtils.asLong(root, 0L, "data", "hits", "total", "value");
 
-            ArrayNode rows = mapper.createArrayNode();
+            ArrayNode rows = JsonUtils.getObjectMapper().createArrayNode();
             int count = 0;
             for (JsonNode hit : hits) {
                 if (count >= maxResults) break;
 
-                JsonNode src = hit.path("_source");
-                ObjectNode row = mapper.createObjectNode();
-                row.put("timestamp", src.path("@timestamp").asText());
-                row.put("service", src.path("service").asText());
-                row.put("hostname", src.path("hostname").asText());
-                row.put("message", src.path("message").asText());
+                JsonNode src = JsonNodeUtils.path(hit, "_source");
+                ObjectNode row = JsonUtils.getObjectMapper().createObjectNode();
+                row.put("timestamp", JsonNodeUtils.asText(src, "@timestamp"));
+                row.put("service", JsonNodeUtils.asText(src, "service"));
+                row.put("hostname", JsonNodeUtils.asText(src, "hostname"));
+                row.put("message", JsonNodeUtils.asText(src, "message"));
                 rows.add(row);
                 count++;
             }
 
-            ObjectNode result = mapper.createObjectNode();
+            ObjectNode result = JsonUtils.getObjectMapper().createObjectNode();
             result.put("success", true);
             result.put("total", total);
             result.put("returned", count);
@@ -278,7 +278,7 @@ public class AppLogSearchTool {
     }
 
     private JsonNode errorResult(String msg) {
-        ObjectNode err = mapper.createObjectNode();
+        ObjectNode err = JsonUtils.getObjectMapper().createObjectNode();
         err.put("success", false);
         err.put("error", msg);
         return err;

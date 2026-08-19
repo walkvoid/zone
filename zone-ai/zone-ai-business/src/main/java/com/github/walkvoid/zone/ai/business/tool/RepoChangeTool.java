@@ -1,9 +1,9 @@
 package com.github.walkvoid.zone.ai.business.tool;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.ai.business.tool.repo.RepoToolProperties;
 import com.github.walkvoid.zone.ai.business.tool.repo.RepoWriteMode;
 import com.github.walkvoid.zone.ai.business.tool.repo.RepoWriteSupport;
@@ -27,8 +27,6 @@ public class RepoChangeTool {
 
     private final RepoWriteSupport support;
     private final CodeChangeHistoryService history;
-    private final ObjectMapper mapper = new ObjectMapper();
-
     public RepoChangeTool(RepoWriteSupport support) {
         this(support, (CodeChangeHistoryService) null);
     }
@@ -47,7 +45,7 @@ public class RepoChangeTool {
             + "可写路径白名单、单次 patch 行数/字节上限。改代码前应先 readSourceFile，再直接 applyPatch 或 applyReplace。")
     public JsonNode describeWritePolicy() {
         RepoToolProperties properties = support.properties();
-        ObjectNode result = mapper.createObjectNode();
+        ObjectNode result = JsonUtils.getObjectMapper().createObjectNode();
         result.put("success", true);
         result.put("writeEnabled", properties.isWriteEnabled());
         result.put("writeMode", properties.getWriteMode().name());
@@ -55,7 +53,7 @@ public class RepoChangeTool {
         result.put("root", properties.rootPath().toString());
         result.put("maxPatchLines", properties.getMaxPatchLines());
         result.put("maxPatchBytes", properties.getMaxPatchBytes());
-        ArrayNode allow = mapper.createArrayNode();
+        ArrayNode allow = JsonUtils.getObjectMapper().createArrayNode();
         properties.normalizedWriteAllowPaths().forEach(allow::add);
         result.set("writeAllowPaths", allow);
         if (!properties.isEnabled()) {
@@ -120,7 +118,7 @@ public class RepoChangeTool {
     }
 
     private JsonNode applyResult(RepoWriteSupport.ApplyResult applied) {
-        ObjectNode result = mapper.createObjectNode();
+        ObjectNode result = JsonUtils.getObjectMapper().createObjectNode();
         result.put("success", true);
         result.put("path", applied.path());
         result.put("newFile", applied.newFile());
@@ -136,7 +134,7 @@ public class RepoChangeTool {
     }
 
     private JsonNode errorResult(String msg) {
-        ObjectNode err = mapper.createObjectNode();
+        ObjectNode err = JsonUtils.getObjectMapper().createObjectNode();
         err.put("success", false);
         err.put("error", msg);
         return err;

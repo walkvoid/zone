@@ -1,7 +1,7 @@
 package com.github.walkvoid.zone.ai.business.channel.weixin;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelImage;
 import org.junit.jupiter.api.Test;
 
@@ -17,8 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WeiXinImageInboundTest {
-
-    private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     void decryptsAes256CbcWithHexKey() throws Exception {
@@ -36,7 +34,7 @@ class WeiXinImageInboundTest {
 
     @Test
     void extractImagesFromImageMessage() throws Exception {
-        JsonNode body = mapper.readTree("""
+        JsonNode body = JsonUtils.getObjectMapper().readTree("""
                 {
                   "msgtype": "image",
                   "image": {
@@ -53,7 +51,7 @@ class WeiXinImageInboundTest {
 
     @Test
     void extractImagesFromMixedMessage() throws Exception {
-        JsonNode body = mapper.readTree("""
+        JsonNode body = JsonUtils.getObjectMapper().readTree("""
                 {
                   "msgtype": "mixed",
                   "mixed": {

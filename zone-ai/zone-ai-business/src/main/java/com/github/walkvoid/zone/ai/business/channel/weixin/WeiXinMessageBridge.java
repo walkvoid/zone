@@ -1,8 +1,9 @@
 package com.github.walkvoid.zone.ai.business.channel.weixin;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.walkvoid.wvframework.utils.JsonNodeUtils;
+import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelInboundMessage;
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelImage;
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelMessageHandler;
@@ -26,18 +27,15 @@ public class WeiXinMessageBridge {
 
     private static final Logger log = LoggerFactory.getLogger(WeiXinMessageBridge.class);
 
-    private final ObjectMapper mapper;
     private final ChannelMessageHandler messageHandler;
     private final String welcomeText;
     private final Consumer<String> frameSender;
     private final String configuredBotId;
 
-    public WeiXinMessageBridge(ObjectMapper mapper,
-                               ChannelMessageHandler messageHandler,
+    public WeiXinMessageBridge(ChannelMessageHandler messageHandler,
                                String welcomeText,
                                Consumer<String> frameSender,
                                String configuredBotId) {
-        this.mapper = mapper;
         this.messageHandler = messageHandler;
         this.welcomeText = welcomeText;
         this.frameSender = frameSender;
@@ -46,14 +44,14 @@ public class WeiXinMessageBridge {
 
     public void onFrame(String text) {
         try {
-            JsonNode root = mapper.readTree(text);
-            String cmd = root.path("cmd").asText(null);
+            JsonNode root = JsonUtils.getObjectMapper().readTree(text);
+            String cmd = JsonNodeUtils.asTextOr(root, null, "cmd");
             if (cmd == null || cmd.isBlank()) {
                 // 订阅/心跳响应通常只有 headers + errcode
-                int errcode = root.path("errcode").asInt(Integer.MIN_VALUE);
+                int errcode = JsonNodeUtils.asInt(root, Integer.MIN_VALUE, "errcode");
                 if (errcode != Integer.MIN_VALUE) {
                     log.info("WeiXin response without cmd, errcode={}, errmsg={}",
-                            errcode, root.path("errmsg").asText());
+                            errcode, JsonNodeUtils.asText(root, "errmsg"));
                 } else {
                     log.info("WeiXin frame has no cmd, keys={}", fieldNames(root));
                 }
@@ -65,7 +63,7 @@ public class WeiXinMessageBridge {
                 case WeiXinCmd.MSG_CALLBACK -> handleMsgCallback(root);
                 case WeiXinCmd.EVENT_CALLBACK -> handleEventCallback(root);
                 case WeiXinCmd.PING -> log.info("WeiXin ping echo ignored");
-                default -> log.info("WeiXin unhandled cmd={}, bodyKeys={}", cmd, fieldNames(root.path("body")));
+                default -> log.info("WeiXin unhandled cmd={}, bodyKeys={}", cmd, fieldNames(JsonNodeUtils.path(root, "body")));
             }
         } catch (Exception e) {
             log.error("WeiXin frame handle failed: {}", e.getMessage(), e);
@@ -73,24 +71,24 @@ public class WeiXinMessageBridge {
     }
 
     private void handleMsgCallback(JsonNode root) {
-        String reqId = root.path("headers").path("req_id").asText();
-        JsonNode body = root.path("body");
+        String reqId = JsonNodeUtils.asText(root, "headers", "req_id");
+        JsonNode body = JsonNodeUtils.path(root, "body");
         log.info("WeiXin msg_callback reqId={}, aibotid={}, chatid={}, chattype={}, userid={}, msgtype={}",
                 reqId,
                 resolveBotId(body),
-                body.path("chatid").asText(),
-                body.path("chattype").asText(),
-                body.path("from").path("userid").asText(),
-                body.path("msgtype").asText());
+                JsonNodeUtils.asText(body, "chatid"),
+                JsonNodeUtils.asText(body, "chattype"),
+                JsonNodeUtils.asText(body, "from", "userid"),
+                JsonNodeUtils.asText(body, "msgtype"));
         ChannelInboundMessage message = ChannelInboundMessage.builder()
                 .channelType(ChannelType.WEIXIN)
                 .requestId(reqId)
-                .messageId(body.path("msgid").asText(null))
-                .chatId(body.path("chatid").asText(null))
-                .chatType(body.path("chattype").asText(null))
+                .messageId(JsonNodeUtils.asTextOr(body, null, "msgid"))
+                .chatId(JsonNodeUtils.asTextOr(body, null, "chatid"))
+                .chatType(JsonNodeUtils.asTextOr(body, null, "chattype"))
                 .botId(resolveBotId(body))
-                .userId(body.path("from").path("userid").asText(null))
-                .msgType(body.path("msgtype").asText(null))
+                .userId(JsonNodeUtils.asTextOr(body, null, "from", "userid"))
+                .msgType(JsonNodeUtils.asTextOr(body, null, "msgtype"))
                 .textContent(extractText(body))
                 .images(extractImages(body))
                 .rawBody(toMap(body))
@@ -112,7 +110,7 @@ public class WeiXinMessageBridge {
     }
 
     private String resolveBotId(JsonNode body) {
-        String inbound = body.path("aibotid").asText(body.path("botid").asText(""));
+        String inbound = JsonNodeUtils.firstText(body, "", "aibotid", "botid");
         if (inbound != null && !inbound.isBlank()) {
             return inbound.trim();
         }
@@ -142,9 +140,9 @@ public class WeiXinMessageBridge {
     }
 
     private void handleEventCallback(JsonNode root) {
-        String reqId = root.path("headers").path("req_id").asText();
-        JsonNode body = root.path("body");
-        String eventType = body.path("eventtype").asText(body.path("event_type").asText("unknown"));
+        String reqId = JsonNodeUtils.asText(root, "headers", "req_id");
+        JsonNode body = JsonNodeUtils.path(root, "body");
+        String eventType = JsonNodeUtils.firstText(body, "unknown", "eventtype", "event_type");
         ChannelReplySink sink = new WeiXinReplySink(reqId);
         try {
             messageHandler.onEvent(ChannelType.WEIXIN, eventType, reqId, sink);
@@ -157,18 +155,18 @@ public class WeiXinMessageBridge {
     }
 
     private String extractText(JsonNode body) {
-        String msgType = body.path("msgtype").asText("");
+        String msgType = JsonNodeUtils.asText(body, "msgtype");
         if ("text".equals(msgType)) {
-            return body.path("text").path("content").asText("");
+            return JsonNodeUtils.asText(body, "text", "content");
         }
         if ("mixed".equals(msgType)) {
             StringBuilder sb = new StringBuilder();
-            for (JsonNode item : body.path("mixed").path("msg_item")) {
-                if ("text".equals(item.path("msgtype").asText())) {
+            for (JsonNode item : JsonNodeUtils.path(body, "mixed", "msg_item")) {
+                if ("text".equals(JsonNodeUtils.asText(item, "msgtype"))) {
                     if (!sb.isEmpty()) {
                         sb.append('\n');
                     }
-                    sb.append(item.path("text").path("content").asText(""));
+                    sb.append(JsonNodeUtils.asText(item, "text", "content"));
                 }
             }
             return sb.toString();
@@ -178,18 +176,18 @@ public class WeiXinMessageBridge {
 
     static List<ChannelImage> extractImages(JsonNode body) {
         List<ChannelImage> images = new ArrayList<>();
-        if (body == null || body.isMissingNode()) {
+        if (JsonNodeUtils.isAbsent(body)) {
             return images;
         }
-        String msgType = body.path("msgtype").asText("");
+        String msgType = JsonNodeUtils.asText(body, "msgtype");
         if ("image".equals(msgType)) {
-            addImage(images, body.path("image"));
+            addImage(images, JsonNodeUtils.path(body, "image"));
             return images;
         }
         if ("mixed".equals(msgType)) {
-            for (JsonNode item : body.path("mixed").path("msg_item")) {
-                if ("image".equals(item.path("msgtype").asText())) {
-                    addImage(images, item.path("image"));
+            for (JsonNode item : JsonNodeUtils.path(body, "mixed", "msg_item")) {
+                if ("image".equals(JsonNodeUtils.asText(item, "msgtype"))) {
+                    addImage(images, JsonNodeUtils.path(item, "image"));
                 }
             }
         }
@@ -197,11 +195,11 @@ public class WeiXinMessageBridge {
     }
 
     private static void addImage(List<ChannelImage> images, JsonNode image) {
-        if (image == null || image.isMissingNode() || image.isNull()) {
+        if (JsonNodeUtils.isAbsent(image)) {
             return;
         }
-        String url = image.path("url").asText(image.path("pic_url").asText(""));
-        String aesKey = image.path("aeskey").asText(image.path("aes_key").asText(""));
+        String url = JsonNodeUtils.firstText(image, "", "url", "pic_url");
+        String aesKey = JsonNodeUtils.firstText(image, "", "aeskey", "aes_key");
         if (url == null || url.isBlank()) {
             return;
         }
@@ -236,7 +234,7 @@ public class WeiXinMessageBridge {
 
         @Override
         public void replyStream(String streamId, String content, boolean finish) {
-            ObjectNode root = mapper.createObjectNode();
+            ObjectNode root = JsonUtils.getObjectMapper().createObjectNode();
             root.put("cmd", WeiXinCmd.RESPOND_MSG);
             ObjectNode headers = root.putObject("headers");
             headers.put("req_id", reqId);
@@ -251,7 +249,7 @@ public class WeiXinMessageBridge {
 
         @Override
         public void replyWelcome(String content) {
-            ObjectNode root = mapper.createObjectNode();
+            ObjectNode root = JsonUtils.getObjectMapper().createObjectNode();
             root.put("cmd", WeiXinCmd.RESPOND_WELCOME_MSG);
             ObjectNode headers = root.putObject("headers");
             headers.put("req_id", reqId);
@@ -265,7 +263,7 @@ public class WeiXinMessageBridge {
 
         private void send(ObjectNode root) {
             try {
-                frameSender.accept(mapper.writeValueAsString(root));
+                frameSender.accept(JsonUtils.getObjectMapper().writeValueAsString(root));
             } catch (Exception e) {
                 throw new IllegalStateException("serialize WeiXin reply failed", e);
             }

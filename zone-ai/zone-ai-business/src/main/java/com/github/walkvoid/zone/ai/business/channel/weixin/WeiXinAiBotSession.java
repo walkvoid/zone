@@ -1,7 +1,8 @@
 package com.github.walkvoid.zone.ai.business.channel.weixin;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.walkvoid.wvframework.utils.JsonNodeUtils;
+import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelConnectionState;
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelMessageHandler;
 import org.slf4j.Logger;
@@ -40,7 +41,6 @@ final class WeiXinAiBotSession {
     private final long reconnectInitialMs;
     private final long reconnectMaxMs;
     private final ChannelMessageHandler messageHandler;
-    private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
     private final BooleanSupplier keepRunning;
     private final Runnable onReady;
@@ -62,7 +62,6 @@ final class WeiXinAiBotSession {
                        String welcomeText,
                        WeiXinAiBotProperties transport,
                        ChannelMessageHandler messageHandler,
-                       ObjectMapper objectMapper,
                        HttpClient httpClient,
                        BooleanSupplier keepRunning,
                        Runnable onReady) {
@@ -74,7 +73,6 @@ final class WeiXinAiBotSession {
         this.reconnectInitialMs = transport.getReconnectInitialMs();
         this.reconnectMaxMs = transport.getReconnectMaxMs();
         this.messageHandler = messageHandler;
-        this.objectMapper = objectMapper;
         this.httpClient = httpClient;
         this.keepRunning = keepRunning;
         this.onReady = onReady;
@@ -100,7 +98,6 @@ final class WeiXinAiBotSession {
         });
         this.reconnectDelayMs.set(reconnectInitialMs);
         this.bridge = new WeiXinMessageBridge(
-                objectMapper,
                 messageHandler,
                 welcomeText,
                 this::sendTextSafe,
@@ -151,13 +148,13 @@ final class WeiXinAiBotSession {
 
     private void sendSubscribe() {
         try {
-            ObjectNode root = objectMapper.createObjectNode();
+            ObjectNode root = JsonUtils.getObjectMapper().createObjectNode();
             root.put("cmd", WeiXinCmd.SUBSCRIBE);
             root.putObject("headers").put("req_id", newReqId());
             ObjectNode body = root.putObject("body");
             body.put("bot_id", botId);
             body.put("secret", secret);
-            sendTextSafe(objectMapper.writeValueAsString(root));
+            sendTextSafe(JsonUtils.getObjectMapper().writeValueAsString(root));
             log.info("WeiXin[{}] aibot_subscribe sent", botId);
         } catch (Exception e) {
             log.error("WeiXin[{}] subscribe send failed", botId, e);
@@ -183,10 +180,10 @@ final class WeiXinAiBotSession {
                 return;
             }
             try {
-                ObjectNode root = objectMapper.createObjectNode();
+                ObjectNode root = JsonUtils.getObjectMapper().createObjectNode();
                 root.put("cmd", WeiXinCmd.PING);
                 root.putObject("headers").put("req_id", newReqId());
-                sendTextSafe(objectMapper.writeValueAsString(root));
+                sendTextSafe(JsonUtils.getObjectMapper().writeValueAsString(root));
             } catch (Exception e) {
                 log.warn("WeiXin[{}] ping failed: {}", botId, e.getMessage());
             }
@@ -327,15 +324,15 @@ final class WeiXinAiBotSession {
             preview = preview.replaceAll("(?i)\"secret\"\\s*:\\s*\"[^\"]*\"", "\"secret\":\"***\"");
             log.info("WeiXin[{}] inbound: {}", botId, preview);
             try {
-                var root = objectMapper.readTree(payload);
-                String cmd = root.path("cmd").asText("");
+                var root = JsonUtils.getObjectMapper().readTree(payload);
+                String cmd = JsonNodeUtils.asText(root, "cmd");
                 log.info("WeiXin[{}] inbound cmd='{}', errcode={}, subscribed={}",
-                        botId, cmd, root.path("errcode").asInt(Integer.MIN_VALUE), subscribed.get());
-                if (!root.has("cmd") && root.path("errcode").asInt(-1) == 0 && !subscribed.get()) {
+                        botId, cmd, JsonNodeUtils.asInt(root, Integer.MIN_VALUE, "errcode"), subscribed.get());
+                if (!JsonNodeUtils.has(root, "cmd") && JsonNodeUtils.asInt(root, -1, "errcode") == 0 && !subscribed.get()) {
                     onSubscribed();
                     return;
                 }
-                if (!root.has("cmd") && root.path("errcode").asInt(0) != 0 && !subscribed.get()) {
+                if (!JsonNodeUtils.has(root, "cmd") && JsonNodeUtils.asInt(root, 0, "errcode") != 0 && !subscribed.get()) {
                     log.error("WeiXin[{}] subscribe failed: {}", botId, payload);
                     scheduleReconnect();
                     return;

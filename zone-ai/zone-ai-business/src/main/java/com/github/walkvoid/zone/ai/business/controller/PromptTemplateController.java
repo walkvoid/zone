@@ -1,9 +1,9 @@
 package com.github.walkvoid.zone.ai.business.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.walkvoid.wvframework.models.ApiResult;
 import com.github.walkvoid.wvframework.models.PageRequest;
+import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.ai.business.db.dao.AiModelDAO;
 import com.github.walkvoid.zone.ai.business.db.dao.PromptTemplateDAO;
 import com.github.walkvoid.zone.ai.business.db.dao.PromptTemplateRunRecordDAO;
@@ -44,9 +44,6 @@ public class PromptTemplateController {
 
     @Autowired
     private AiModelDAO aiModelDAO;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Operation(summary = "分页查询模板列表")
     @GetMapping("/page")
@@ -146,7 +143,7 @@ public class PromptTemplateController {
         record.setModelName(modelName);
         record.setRunStartTime(LocalDateTime.now());
         try {
-            record.setInputParams(variables != null ? objectMapper.writeValueAsString(variables) : null);
+            record.setInputParams(variables != null ? JsonUtils.getObjectMapper().writeValueAsString(variables) : null);
         } catch (Exception e) {
             record.setInputParams(variables != null ? variables.toString() : null);
         }

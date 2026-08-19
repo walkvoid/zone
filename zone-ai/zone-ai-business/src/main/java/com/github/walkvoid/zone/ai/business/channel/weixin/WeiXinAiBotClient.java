@@ -1,6 +1,5 @@
 package com.github.walkvoid.zone.ai.business.channel.weixin;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.walkvoid.zone.ai.business.agent.AiBotConfigService;
 import com.github.walkvoid.zone.ai.business.channel.core.AbstractChannelBotLifecycle;
 import com.github.walkvoid.zone.ai.business.channel.core.ChannelConnectionState;
@@ -23,18 +22,15 @@ public class WeiXinAiBotClient extends AbstractChannelBotLifecycle {
 
     private final ChannelProperties channelProperties;
     private final ChannelMessageHandler messageHandler;
-    private final ObjectMapper objectMapper;
     private final AiBotConfigService aiBotConfigService;
     private final HttpClient httpClient;
     private final List<WeiXinAiBotSession> sessions = new ArrayList<>();
 
     public WeiXinAiBotClient(ChannelProperties channelProperties,
                              ChannelMessageHandler messageHandler,
-                             ObjectMapper objectMapper,
                              AiBotConfigService aiBotConfigService) {
         this.channelProperties = channelProperties;
         this.messageHandler = messageHandler;
-        this.objectMapper = objectMapper;
         this.aiBotConfigService = aiBotConfigService;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(15))
@@ -102,7 +98,6 @@ public class WeiXinAiBotClient extends AbstractChannelBotLifecycle {
                     bot.getWelcomeText(),
                     transport,
                     messageHandler,
-                    objectMapper,
                     httpClient,
                     this::shouldKeepRunning,
                     () -> updateState(ChannelConnectionState.READY));

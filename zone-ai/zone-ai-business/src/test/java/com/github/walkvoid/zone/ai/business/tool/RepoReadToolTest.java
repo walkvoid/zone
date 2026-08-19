@@ -1,6 +1,7 @@
 package com.github.walkvoid.zone.ai.business.tool;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.walkvoid.wvframework.utils.JsonNodeUtils;
 import com.github.walkvoid.zone.ai.business.tool.repo.RepoReadSupport;
 import com.github.walkvoid.zone.ai.business.tool.repo.RepoToolProperties;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,38 +59,38 @@ class RepoReadToolTest {
     @Test
     void listReposReportsSandbox() {
         JsonNode json = tool.listRepos();
-        assertTrue(json.path("success").asBoolean());
-        assertTrue(json.path("repos").get(0).path("exists").asBoolean());
-        assertEquals("zone-finance/**", json.path("repos").get(0).path("allowPaths").get(0).asText());
+        assertTrue(JsonNodeUtils.asBoolean(json, false, "success"));
+        assertTrue(JsonNodeUtils.asBoolean(JsonNodeUtils.path(json, "repos").get(0), false, "exists"));
+        assertEquals("zone-finance/**", JsonNodeUtils.asText(JsonNodeUtils.path(json, "repos").get(0).path("allowPaths").get(0)));
     }
 
     @Test
     void searchFindsAllowedFileAndSkipsOthers() {
         JsonNode json = tool.searchCode("放款成功写回", null, 20);
-        assertTrue(json.path("success").asBoolean());
-        assertTrue(json.path("returned").asInt() >= 1);
-        assertTrue(json.path("hits").get(0).path("path").asText().contains("PayListener.java"));
+        assertTrue(JsonNodeUtils.asBoolean(json, false, "success"));
+        assertTrue(JsonNodeUtils.asInt(json, 0, "returned") >= 1);
+        assertTrue(JsonNodeUtils.asText(JsonNodeUtils.path(json, "hits").get(0), "path").contains("PayListener.java"));
 
         JsonNode hidden = tool.searchCode("class Hidden", null, 20);
-        assertTrue(hidden.path("success").asBoolean());
-        assertEquals(0, hidden.path("returned").asInt());
+        assertTrue(JsonNodeUtils.asBoolean(hidden, false, "success"));
+        assertEquals(0, JsonNodeUtils.asInt(hidden, -1, "returned"));
 
         JsonNode env = tool.searchCode("TOKEN=abc", null, 20);
-        assertEquals(0, env.path("returned").asInt());
+        assertEquals(0, JsonNodeUtils.asInt(env, -1, "returned"));
     }
 
     @Test
     void readCapsAtMaxLinesAndRejectsDenied() {
         JsonNode slice = tool.readSourceFile("zone-finance/src/Long.java", 1, null);
-        assertTrue(slice.path("success").asBoolean());
-        assertEquals(1, slice.path("startLine").asInt());
-        assertEquals(400, slice.path("endLine").asInt());
-        assertEquals(500, slice.path("totalLines").asInt());
+        assertTrue(JsonNodeUtils.asBoolean(slice, false, "success"));
+        assertEquals(1, JsonNodeUtils.asInt(slice, 0, "startLine"));
+        assertEquals(400, JsonNodeUtils.asInt(slice, 0, "endLine"));
+        assertEquals(500, JsonNodeUtils.asInt(slice, 0, "totalLines"));
 
         JsonNode denied = tool.readSourceFile("zone-finance/.env", 1, 10);
-        assertFalse(denied.path("success").asBoolean());
+        assertFalse(JsonNodeUtils.asBoolean(denied, false, "success"));
 
         JsonNode escape = tool.readSourceFile("../zone-ai/src/Hidden.java", 1, 10);
-        assertFalse(escape.path("success").asBoolean());
+        assertFalse(JsonNodeUtils.asBoolean(escape, false, "success"));
     }
 }

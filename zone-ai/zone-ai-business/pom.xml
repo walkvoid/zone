@@ -50,6 +50,10 @@
         </dependency>
         <dependency>
             <groupId>com.github.walkvoid.wvframework</groupId>
+            <artifactId>wvframework-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.walkvoid.wvframework</groupId>
             <artifactId>wvframework-models</artifactId>
         </dependency>
         <dependency>

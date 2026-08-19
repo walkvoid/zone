@@ -1,6 +1,7 @@
 package com.github.walkvoid.zone.ai.business.tool;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.walkvoid.wvframework.utils.JsonNodeUtils;
 import com.github.walkvoid.zone.ai.business.tool.repo.RepoToolProperties;
 import com.github.walkvoid.zone.ai.business.tool.repo.RepoWriteMode;
 import com.github.walkvoid.zone.ai.business.tool.repo.RepoWriteSupport;
@@ -42,10 +43,10 @@ class RepoChangeToolTest {
     void describeWritePolicyWhenEnabled() {
         RepoChangeTool tool = tool(RepoWriteMode.DIFF_FILE);
         JsonNode json = tool.describeWritePolicy();
-        assertTrue(json.path("success").asBoolean());
-        assertTrue(json.path("writeEnabled").asBoolean());
-        assertEquals("DIFF_FILE", json.path("writeMode").asText());
-        assertTrue(json.path("sandboxExists").asBoolean());
+        assertTrue(JsonNodeUtils.asBoolean(json, false, "success"));
+        assertTrue(JsonNodeUtils.asBoolean(json, false, "writeEnabled"));
+        assertEquals("DIFF_FILE", JsonNodeUtils.asText(json, "writeMode"));
+        assertTrue(JsonNodeUtils.asBoolean(json, false, "sandboxExists"));
     }
 
     @Test
@@ -56,11 +57,11 @@ class RepoChangeToolTest {
                 "放款成功写回",
                 "放款成功写回（已改）",
                 false);
-        assertTrue(applied.path("success").asBoolean());
-        assertTrue(applied.path("written").asBoolean());
-        assertTrue(applied.path("sourceWritten").asBoolean());
-        assertEquals("DIRECT", applied.path("writeMode").asText());
-        assertTrue(applied.path("addedLines").asInt() >= 1);
+        assertTrue(JsonNodeUtils.asBoolean(applied, false, "success"));
+        assertTrue(JsonNodeUtils.asBoolean(applied, false, "written"));
+        assertTrue(JsonNodeUtils.asBoolean(applied, false, "sourceWritten"));
+        assertEquals("DIRECT", JsonNodeUtils.asText(applied, "writeMode"));
+        assertTrue(JsonNodeUtils.asInt(applied, 0, "addedLines") >= 1);
         assertTrue(Files.readString(javaFile).contains("放款成功写回（已改）"));
     }
 
@@ -73,11 +74,11 @@ class RepoChangeToolTest {
                 "放款成功写回",
                 "放款成功写回（已改）",
                 false);
-        assertTrue(applied.path("success").asBoolean());
-        assertTrue(applied.path("written").asBoolean());
-        assertFalse(applied.path("sourceWritten").asBoolean());
-        assertEquals("DIFF_FILE", applied.path("writeMode").asText());
-        String patchFile = applied.path("patchFile").asText();
+        assertTrue(JsonNodeUtils.asBoolean(applied, false, "success"));
+        assertTrue(JsonNodeUtils.asBoolean(applied, false, "written"));
+        assertFalse(JsonNodeUtils.asBoolean(applied, false, "sourceWritten"));
+        assertEquals("DIFF_FILE", JsonNodeUtils.asText(applied, "writeMode"));
+        String patchFile = JsonNodeUtils.asText(applied, "patchFile");
         assertTrue(patchFile.contains("fix_"));
         assertTrue(patchFile.endsWith("_PayListener.patch"));
         assertEquals(original, Files.readString(javaFile));
@@ -99,9 +100,9 @@ class RepoChangeToolTest {
         String path = "zone-finance/src/NewHelper.java";
         String content = "public class NewHelper { }\n";
         JsonNode applied = tool.applyPatch(path, content);
-        assertTrue(applied.path("success").asBoolean());
-        assertTrue(applied.path("newFile").asBoolean());
-        assertTrue(applied.path("sourceWritten").asBoolean());
+        assertTrue(JsonNodeUtils.asBoolean(applied, false, "success"));
+        assertTrue(JsonNodeUtils.asBoolean(applied, false, "newFile"));
+        assertTrue(JsonNodeUtils.asBoolean(applied, false, "sourceWritten"));
         assertTrue(Files.exists(temp.resolve(path)));
     }
 
@@ -109,10 +110,10 @@ class RepoChangeToolTest {
     void rejectsConfigAndOutsideAllowList() {
         RepoChangeTool tool = tool(RepoWriteMode.DIFF_FILE);
         JsonNode denied = tool.applyPatch("zone-finance/application.properties", "x=1\n");
-        assertFalse(denied.path("success").asBoolean());
+        assertFalse(JsonNodeUtils.asBoolean(denied, false, "success"));
 
         JsonNode outside = tool.applyPatch("zone-ai/src/Hidden.java", "class Hidden {}\n");
-        assertFalse(outside.path("success").asBoolean());
+        assertFalse(JsonNodeUtils.asBoolean(outside, false, "success"));
     }
 
     private RepoChangeTool tool(RepoWriteMode mode) {
