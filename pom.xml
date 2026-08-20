@@ -39,6 +39,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>2023.0.1.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- Zone internal modules -->
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-system-api</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-system-model</artifactId><version>${project.version}</version></dependency>
@@ -55,6 +62,9 @@
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-tools-api</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-tools-model</artifactId><version>${project.version}</version></dependency>
             <dependency><groupId>${project.groupId}</groupId><artifactId>zone-tools-business</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-auth-api</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-auth-model</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-auth-business</artifactId><version>${project.version}</version></dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -108,6 +118,9 @@
         <module>zone-tools/zone-tools-api</module>
         <module>zone-tools/zone-tools-model</module>
         <module>zone-tools/zone-tools-business</module>
+        <module>zone-auth/zone-auth-api</module>
+        <module>zone-auth/zone-auth-model</module>
+        <module>zone-auth/zone-auth-business</module>
         <module>zone-gateway</module>
     </modules>
 </project>

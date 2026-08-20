@@ -9,10 +9,14 @@ import com.github.walkvoid.zone.user.model.dto.PasswordParam;
 import com.github.walkvoid.zone.user.business.db.dao.UserInfoDAO;
 import com.github.walkvoid.zone.user.model.dto.UserInfoDTO;
 import com.github.walkvoid.zone.user.model.entity.UserInfo;
+import com.github.walkvoid.zone.auth.api.client.UserCredentialFeignClient;
+import com.github.walkvoid.zone.auth.api.client.UserIdentityFeignClient;
+import com.github.walkvoid.zone.auth.model.enums.IdentityTypeEnum;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,13 +36,27 @@ public class UserInfoController {
     @Autowired
     private UserInfoDAO userInfoDAO;
 
+    @Autowired
+    private UserCredentialFeignClient userCredentialService;
+    @Autowired
+    private UserIdentityFeignClient userIdentityService;
+
     @Operation(summary = "新增用户")
     @PostMapping
     public ApiResult<UserInfoDTO> add(@RequestBody UserInfoDTO dto) {
         if (Objects.isNull(dto)) return ApiResult.ok(null);
+        String rawPassword = dto.getPassword();
         UserInfo entity = BeanCopyUtils.copyBean(dto, UserInfo.class);
         userInfoDAO.insert(entity);
-        return ApiResult.ok(BeanCopyUtils.copyBean(entity, UserInfoDTO.class));
+        if (StringUtils.hasText(entity.getUsername())) {
+            userIdentityService.createIdentity(entity.getId(), IdentityTypeEnum.USERNAME, entity.getUsername(), true);
+        }
+        if (StringUtils.hasText(rawPassword)) {
+            userCredentialService.createPassword(entity.getId(), rawPassword);
+        }
+        UserInfoDTO result = BeanCopyUtils.copyBean(entity, UserInfoDTO.class);
+        result.setPassword(null);
+        return ApiResult.ok(result);
     }
 
     @Operation(summary = "删除用户")
@@ -102,11 +120,11 @@ public class UserInfoController {
     @PutMapping("/{id}/reset-password")
     public ApiResult<Boolean> resetPassword(@Parameter(description = "用户ID") @PathVariable("id") Long id,
                                   @RequestBody PasswordParam param) {
-        if (Objects.isNull(id) || Objects.isNull(param)) return ApiResult.ok(false);
-        UserInfo entity = new UserInfo();
-        entity.setId(id);
-        entity.setPassword(param.getPassword());
-        return ApiResult.ok(userInfoDAO.updateById(entity) > 0);
+        if (Objects.isNull(id) || Objects.isNull(param) || !StringUtils.hasText(param.getPassword())) {
+            return ApiResult.ok(false);
+        }
+        userCredentialService.updatePassword(id, param.getPassword());
+        return ApiResult.ok(true);
     }
 
     @Operation(summary = "根据用户名查询")

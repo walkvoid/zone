@@ -11,17 +11,18 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>zone-user-api</artifactId>
+    <artifactId>zone-auth-model</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>com.github.walkvoid</groupId>
-            <artifactId>zone-user-model</artifactId>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-annotation</artifactId>
         </dependency>
     </dependencies>
 

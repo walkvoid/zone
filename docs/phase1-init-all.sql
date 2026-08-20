@@ -9,7 +9,6 @@
 CREATE TABLE IF NOT EXISTS `user_info` (
     `id`             BIGINT       NOT NULL AUTO_INCREMENT COMMENT '用户ID',
     `username`       VARCHAR(64)  NOT NULL                COMMENT '用户名',
-    `password`       VARCHAR(128) NOT NULL                COMMENT '密码（BCrypt 加密）',
     `phone`          VARCHAR(20)  DEFAULT NULL            COMMENT '手机号',
     `email`          VARCHAR(128) DEFAULT NULL            COMMENT '邮箱',
     `nickname`       VARCHAR(64)  DEFAULT NULL            COMMENT '昵称',
@@ -76,10 +75,10 @@ INSERT INTO `role` (`role_code`, `role_name`, `description`, `is_system`) VALUES
 ON DUPLICATE KEY UPDATE `role_name` = VALUES(`role_name`);
 
 -- ============================================
--- 6. 初始用户数据（密码 BCrypt 在 Java 端生成后更新）
+-- 6. 初始用户数据（密码写入 user_credential，见 init-auth-tables.sql）
 -- ============================================
-INSERT INTO `user_info` (`username`, `password`, `nickname`, `email`, `is_admin`, `status`) VALUES
-('admin', 'CHANGE_ME_TO_BCRYPT', '管理员', 'admin@zone.com', 1, 1)
+INSERT INTO `user_info` (`username`, `nickname`, `email`, `is_admin`, `status`) VALUES
+('admin', '管理员', 'admin@zone.com', 1, 1)
 ON DUPLICATE KEY UPDATE `nickname` = VALUES(`nickname`);
 
 -- ============================================
@@ -103,3 +102,8 @@ AND NOT EXISTS (
     SELECT 1 FROM `role_menu_rel` rmr
     WHERE rmr.role_id = r.id AND rmr.menu_id = m.id
 );
+
+-- ============================================
+-- 9. 认证域表（详见 init-auth-tables.sql）
+-- ============================================
+-- 新环境请继续执行 docs/init-auth-tables.sql，并通过应用注册或管理端为 admin 设置密码
