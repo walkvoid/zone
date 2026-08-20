@@ -1,11 +1,10 @@
-package com.github.walkvoid.zone.system.business.service.impl;
+﻿package com.github.walkvoid.zone.system.business.service.impl;
 
 import com.github.walkvoid.zone.system.api.service.MenuTreeService;
 import com.github.walkvoid.zone.system.business.db.dao.MenuDAO;
 import com.github.walkvoid.zone.system.model.dto.MenuTreeQueryDTO;
 import com.github.walkvoid.zone.system.model.entity.Menu;
 import com.github.walkvoid.zone.system.model.vo.MenuTreeNode;
-import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -13,7 +12,6 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@DubboService
 @Service
 public class MenuTreeServiceImpl implements MenuTreeService {
 

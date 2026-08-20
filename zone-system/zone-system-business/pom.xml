@@ -44,7 +44,7 @@
             <artifactId>wvframework-models</artifactId>
             <version>4.0.0-SNAPSHOT</version>
         </dependency>
-        <!-- User API (Dubbo 接口) -->
+        <!-- User API (Feign 客户端) -->
         <dependency>
             <groupId>com.github.walkvoid</groupId>
             <artifactId>zone-user-api</artifactId>
@@ -87,10 +87,17 @@
             <version>0.12.6</version>
             <scope>runtime</scope>
         </dependency>
-        <!-- Apache Dubbo -->
         <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-spring-boot-starter</artifactId>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.walkvoid.wvframework</groupId>
+            <artifactId>wvframework-feign</artifactId>
         </dependency>
         <!-- API Doc -->
         <dependency>

@@ -1,16 +1,14 @@
-package com.github.walkvoid.zone.user.business.service.impl;
+﻿package com.github.walkvoid.zone.user.business.service.impl;
 
 import com.github.walkvoid.zone.user.api.service.UserInfoService;
 import com.github.walkvoid.zone.user.business.db.dao.UserInfoDAO;
 import com.github.walkvoid.zone.user.model.entity.UserInfo;
-import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@DubboService
 @Service
 public class UserInfoServiceImpl implements UserInfoService {
 

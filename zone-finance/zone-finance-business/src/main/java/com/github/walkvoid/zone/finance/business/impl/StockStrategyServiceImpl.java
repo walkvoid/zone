@@ -1,14 +1,12 @@
-package com.github.walkvoid.zone.finance.business.impl;
+﻿package com.github.walkvoid.zone.finance.business.impl;
 
 import com.github.walkvoid.zone.finance.api.service.StockStrategyService;
 import com.github.walkvoid.zone.finance.business.db.dao.StockStrategyDAO;
 import com.github.walkvoid.zone.finance.model.entity.StockStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
-@DubboService
 @Service
 public class StockStrategyServiceImpl implements StockStrategyService {
 

@@ -1,15 +1,13 @@
-package com.github.walkvoid.zone.user.business.service.impl;
+﻿package com.github.walkvoid.zone.user.business.service.impl;
 
 import com.github.walkvoid.zone.user.api.service.RoleMenuRelService;
 import com.github.walkvoid.zone.user.business.db.dao.RoleMenuRelDAO;
 import com.github.walkvoid.zone.user.model.entity.RoleMenuRel;
-import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@DubboService
 @Service
 public class RoleMenuRelServiceImpl implements RoleMenuRelService {
 

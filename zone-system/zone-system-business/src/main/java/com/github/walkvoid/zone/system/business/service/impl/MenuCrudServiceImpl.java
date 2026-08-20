@@ -9,8 +9,7 @@ import com.github.walkvoid.zone.system.api.service.MenuCrudService;
 import com.github.walkvoid.zone.system.business.db.dao.MenuDAO;
 import com.github.walkvoid.zone.system.model.dto.MenuDTO;
 import com.github.walkvoid.zone.system.model.entity.Menu;
-import org.apache.dubbo.config.annotation.DubboReference;
-import org.apache.dubbo.config.annotation.DubboService;
+import com.github.walkvoid.zone.user.api.client.RoleMenuRelFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -25,15 +24,14 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @date 2025/11/30
  */
-@DubboService
 @Service
 public class MenuCrudServiceImpl implements MenuCrudService {
 
     @Autowired
     private MenuDAO menuDAO;
 
-    @DubboReference
-    private com.github.walkvoid.zone.user.api.service.RoleMenuRelService roleMenuRelService;
+    @Autowired
+    private RoleMenuRelFeignClient roleMenuRelService;
 
     @Override
     public List<MenuDTO> getMenuList() {

@@ -1,14 +1,12 @@
-package com.github.walkvoid.zone.system.business.service.impl;
+﻿package com.github.walkvoid.zone.system.business.service.impl;
 
 import com.github.walkvoid.zone.system.api.service.StockEventService;
 import com.github.walkvoid.zone.system.business.db.dao.StockEventDAO;
 import com.github.walkvoid.zone.system.model.entity.StockEvent;
-import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
-@DubboService
 @Service
 public class StockEventServiceImpl implements StockEventService {
 

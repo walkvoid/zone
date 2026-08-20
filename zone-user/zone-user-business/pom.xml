@@ -20,6 +20,10 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
         </dependency>
@@ -29,11 +33,37 @@
         </dependency>
         <dependency>
             <groupId>com.github.walkvoid</groupId>
+            <artifactId>zone-auth-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.walkvoid</groupId>
             <artifactId>zone-user-model</artifactId>
         </dependency>
         <dependency>
             <groupId>com.github.walkvoid.wvframework</groupId>
             <artifactId>wvframework-utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.walkvoid.wvframework</groupId>
+            <artifactId>wvframework-models</artifactId>
+            <version>4.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.12.6</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.12.6</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.github.walkvoid.wvframework</groupId>
@@ -53,10 +83,18 @@
             <groupId>com.github.walkvoid.wvframework</groupId>
             <artifactId>wvframework-dao-starter</artifactId>
         </dependency>
-        <!-- Apache Dubbo -->
+        <!-- Nacos + OpenFeign -->
         <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-spring-boot-starter</artifactId>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.walkvoid.wvframework</groupId>
+            <artifactId>wvframework-feign</artifactId>
         </dependency>
         <!-- API Doc -->
         <dependency>

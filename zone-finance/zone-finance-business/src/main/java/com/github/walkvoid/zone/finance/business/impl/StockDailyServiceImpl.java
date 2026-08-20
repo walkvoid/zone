@@ -1,4 +1,4 @@
-package com.github.walkvoid.zone.finance.business.impl;
+﻿package com.github.walkvoid.zone.finance.business.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.walkvoid.wvframework.utils.JsonUtils;
@@ -8,7 +8,6 @@ import com.github.walkvoid.zone.finance.model.entity.StockDaily;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@DubboService
 @Service
 public class StockDailyServiceImpl implements StockDailyService {
 
