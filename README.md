@@ -50,62 +50,45 @@ zone-workspace/
 
 ## 模块结构
 
-### 三层模块架构
+### 单模块扁平结构
 
-每个业务模块均采用 **api / model / business** 三层分包设计，职责分离清晰：
+每个业务域对应 **一个 Maven 模块**（不再拆分 api / model / business 三级子模块），源码按包分层：
 
-| 子模块 | 职责 | 说明 |
-|--------|------|------|
-| `*-api` | 接口定义层 | 定义 Service 接口，供跨模块调用 |
-| `*-model` | 数据模型层 | 定义 Entity、DTO、VO 等数据对象 |
-| `*-business` | 业务逻辑层 | 实现 Service、Controller、DAO、Mapper |
+| 包 | 职责 |
+|------|------|
+| `controller` / `client` | HTTP 接口；跨服务 Feign 客户端 |
+| `service` | 业务接口与实现 |
+| `db`（entity / dao / mapper） | 持久化 |
+| `model`（dto / enums / vo） | 传输与枚举模型 |
+| `config` | 安全、JWT 等配置 |
+
+可执行模块通过 `spring-boot-maven-plugin` 的 `exec` classifier 打出启动包，主 artifact 仍为普通 jar，便于被其他模块依赖（如 `zone-auth` → `zone-user`）。
 
 ### 目录结构
 
 ```
 zone/
-├── zone-system/          # 系统模块（菜单管理、股票事件等）
-│   ├── zone-system-api       # 系统接口定义
-│   ├── zone-system-business  # 系统业务逻辑（AuthController、MenuController）
-│   └── zone-system-model     # 系统数据模型（Menu、StockEvent）
-├── zone-user/            # 用户模块
-│   ├── zone-user-api
-│   ├── zone-user-business
-│   └── zone-user-model
-├── zone-ai/              # AI 相关模块
-│   ├── zone-ai-api
-│   ├── zone-ai-business
-│   └── zone-ai-model
-├── zone-finance/         # 金融相关模块
-│   ├── zone-finance-api
-│   ├── zone-finance-business
-│   └── zone-finance-model
-├── zone-tools/           # 工具模块
-│   ├── zone-tools-api
-│   ├── zone-tools-business
-│   └── zone-tools-model
-├── zone-gateway/         # Spring Boot 可执行网关（统一入口）
-│   ├── src/main/java/
-│   │   └── com/github/walkvoid/zone/gateway/
-│   │       ├── config/    # 配置类（JWT、Security、MyBatis等）
-│   │       └── ZoneGatewayApplication.java
-│   └── src/main/resources/
-│       ├── certs/        # SSL 证书
-│       ├── template/     # 前端模板
-│       └── application.properties
-├── docs/                 # 文档与SQL脚本
-└── pom.xml               # 根 pom
+├── zone-user/            # 用户资料、角色
+├── zone-auth/            # 登录 / Token / 凭证 / 会话
+├── zone-system/          # 菜单、权限码、系统管理
+├── zone-ai/              # AI 能力
+├── zone-finance/         # 金融业务
+├── zone-tools/           # 工具模块（占位）
+├── zone-gateway/         # API 网关
+├── docs/                 # 文档与 SQL
+└── pom.xml
 ```
 
 **模块职责说明：**
 
 | 模块 | 职责 |
 |------|------|
-| zone-system | 系统管理（菜单管理、股票事件、认证控制器等） |
-| zone-user | 用户管理与认证 |
-| zone-ai | AI 能力封装与调用（Prompt 模板管理等） |
-| zone-finance | 金融业务处理（指标、菜单等） |
-| zone-tools | 通用工具服务 |
+| zone-user | 用户资料与角色 |
+| zone-auth | 认证、凭证、会话 |
+| zone-system | 菜单与权限码等系统管理 |
+| zone-ai | AI 能力封装与调用 |
+| zone-finance | 金融业务处理 |
+| zone-tools | 通用工具服务（占位） |
 | zone-gateway | API 网关，路由转发，统一认证入口 |
 
 ## 开发环境要求
@@ -145,8 +128,8 @@ export SPRING_DATASOURCE_PASSWORD=your_password
 # 开发模式运行
 mvn -pl zone-gateway spring-boot:run
 
-# 或运行打包后的 Jar
-java -jar zone-gateway/target/zone-gateway-*.jar
+# 或运行打包后的 Jar（可执行包为 *-exec.jar）
+java -jar zone-gateway/target/zone-gateway-*-exec.jar
 ```
 
 ### 5. 打包部署
@@ -159,7 +142,7 @@ mvn clean package -DskipTests
 mvn -pl zone-gateway package -DskipTests
 ```
 
-产物：`zone-gateway/target/zone-gateway-*.jar`
+产物：`zone-gateway/target/zone-gateway-*-exec.jar`
 
 ## 配置说明
 
@@ -278,14 +261,14 @@ chore: 构建/工具变动
 
 ### 模块开发流程
 
-新增业务模块时，需创建三个子模块（api / model / business）并在根 `pom.xml` 中注册：
+新增业务模块时，创建单模块目录并在根 `pom.xml` 中注册：
 
 ```xml
-<module>zone-xxx/zone-xxx-api</module>
-<module>zone-xxx/zone-xxx-model</module>
-<module>zone-xxx/zone-xxx-business</module>
+<module>zone-xxx</module>
 ```
 
+包结构建议对齐现有模块：`controller` / `service` / `db` / `model` / `config` / `client`。
+可执行服务在 `pom.xml` 中配置 `spring-boot-maven-plugin`，并使用 `classifier=exec`。
 ## 安全说明
 
 1. **JWT 密钥**: 生产环境务必更换默认密钥，可通过环境变量 `JWT_SECRET` 设置

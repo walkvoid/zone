@@ -23,7 +23,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- Import wv-framework BOM for unified version management -->
             <dependency>
                 <groupId>com.github.walkvoid.wvframework</groupId>
                 <artifactId>wvframework-dependencies</artifactId>
@@ -31,7 +30,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- Import LangChain4j BOM for unified version management -->
             <dependency>
                 <groupId>dev.langchain4j</groupId>
                 <artifactId>langchain4j-bom</artifactId>
@@ -46,25 +44,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- Zone internal modules -->
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-system-api</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-system-model</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-system-business</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-user-api</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-user-model</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-user-business</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-ai-api</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-ai-model</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-ai-business</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-finance-api</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-finance-model</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-finance-business</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-tools-api</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-tools-model</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-tools-business</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-auth-api</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-auth-model</artifactId><version>${project.version}</version></dependency>
-            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-auth-business</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-system</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-user</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-ai</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-finance</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-tools</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-auth</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>${project.groupId}</groupId><artifactId>zone-gateway</artifactId><version>${project.version}</version></dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -103,24 +89,12 @@
     </build>
 
     <modules>
-        <module>zone-system/zone-system-api</module>
-        <module>zone-system/zone-system-model</module>
-        <module>zone-system/zone-system-business</module>
-        <module>zone-user/zone-user-api</module>
-        <module>zone-user/zone-user-model</module>
-        <module>zone-user/zone-user-business</module>
-        <module>zone-ai/zone-ai-api</module>
-        <module>zone-ai/zone-ai-model</module>
-        <module>zone-ai/zone-ai-business</module>
-        <module>zone-finance/zone-finance-api</module>
-        <module>zone-finance/zone-finance-model</module>
-        <module>zone-finance/zone-finance-business</module>
-        <module>zone-tools/zone-tools-api</module>
-        <module>zone-tools/zone-tools-model</module>
-        <module>zone-tools/zone-tools-business</module>
-        <module>zone-auth/zone-auth-api</module>
-        <module>zone-auth/zone-auth-model</module>
-        <module>zone-auth/zone-auth-business</module>
+        <module>zone-user</module>
+        <module>zone-auth</module>
+        <module>zone-system</module>
+        <module>zone-ai</module>
+        <module>zone-finance</module>
+        <module>zone-tools</module>
         <module>zone-gateway</module>
     </modules>
 </project>

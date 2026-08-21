@@ -1,0 +1,30 @@
+package com.github.walkvoid.zone.ai.service;
+
+import com.github.walkvoid.zone.ai.model.dto.PromptTemplateDTO;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+/**
+ * Prompt模板 API——供其他模块跨模块调用
+ *
+ * @author walkvoid
+ */
+public interface PromptTemplateApi {
+
+    /**
+     * 根据编码查询模板
+     *
+     * @param templateCode 模板编码
+     * @return 模板DTO，未找到返回null
+     */
+    PromptTemplateDTO getByCode(String templateCode);
+
+    /**
+     * 执行prompt模板，调用大模型并返回响应文本
+     *
+     * @param templateCode 模板编码
+     * @param variables    变量替换Map（key→value）
+     * @return 大模型响应文本
+     */
+    String executePrompt(String templateCode, java.util.Map<String, String> variables);
+}
