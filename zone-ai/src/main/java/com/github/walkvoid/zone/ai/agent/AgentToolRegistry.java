@@ -1,6 +1,7 @@
 package com.github.walkvoid.zone.ai.agent;
 
 import com.github.walkvoid.zone.ai.tool.AppLogSearchTool;
+import com.github.walkvoid.zone.ai.tool.KnowledgeSearchTool;
 import com.github.walkvoid.zone.ai.tool.RepoChangeTool;
 import com.github.walkvoid.zone.ai.tool.RepoReadTool;
 import com.github.walkvoid.zone.ai.tool.SqlQueryTool;
@@ -22,11 +23,13 @@ public class AgentToolRegistry {
     public AgentToolRegistry(AppLogSearchTool appLogSearchTool,
                              SqlQueryTool sqlQueryTool,
                              RepoReadTool repoReadTool,
-                             RepoChangeTool repoChangeTool) {
+                             RepoChangeTool repoChangeTool,
+                             KnowledgeSearchTool knowledgeSearchTool) {
         tools.put(AgentToolCode.LOG, appLogSearchTool);
         tools.put(AgentToolCode.SQL, sqlQueryTool);
         tools.put(AgentToolCode.REPO_READ, repoReadTool);
         tools.put(AgentToolCode.REPO_CHANGE, repoChangeTool);
+        tools.put(AgentToolCode.KNOWLEDGE, knowledgeSearchTool);
     }
 
     public Object[] resolve(List<AgentToolCode> codes) {

@@ -15,7 +15,8 @@ public enum AgentToolCode {
     LOG("log"),
     SQL("sql"),
     REPO_READ("repo_read"),
-    REPO_CHANGE("repo_change");
+    REPO_CHANGE("repo_change"),
+    KNOWLEDGE("knowledge");
 
     private final String code;
 
@@ -41,11 +42,11 @@ public enum AgentToolCode {
     }
 
     /**
-     * 解析逗号分隔编码。空配置时返回只读默认集（不含改代码）。
+     * 解析逗号分隔编码。空配置时返回只读默认集（含 knowledge，不含改代码）。
      */
     public static List<AgentToolCode> parse(String csv) {
         if (!StringUtils.hasText(csv)) {
-            return List.of(LOG, SQL, REPO_READ);
+            return List.of(LOG, SQL, REPO_READ, KNOWLEDGE);
         }
         Set<AgentToolCode> result = new LinkedHashSet<>();
         for (String part : csv.split("[,;\\s]+")) {
@@ -55,7 +56,7 @@ public enum AgentToolCode {
             }
         }
         if (result.isEmpty()) {
-            return List.of(LOG, SQL, REPO_READ);
+            return List.of(LOG, SQL, REPO_READ, KNOWLEDGE);
         }
         return new ArrayList<>(result);
     }

@@ -70,6 +70,11 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-openai</artifactId>
         </dependency>
+        <!-- 仅用文档切割；Embedding / Qdrant 仍走 Spring AI -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.github.walkvoid.wvframework</groupId>
             <artifactId>wvframework-dao-starter</artifactId>

@@ -1,5 +1,6 @@
 package com.github.walkvoid.zone.ai.db.vec;
 
+import com.github.walkvoid.zone.ai.knowledge.KnowledgeIngestService;
 import com.github.walkvoid.zone.ai.model.enums.FinancingStatusEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,19 @@ public class QdrantRagDAO {
 
     @Autowired
     private VectorStore vectorStore;
+
+    @Autowired
+    private KnowledgeIngestService knowledgeIngestService;
+
+    /**
+     * 全量灌库：清空旧 knowledge 文档后，把 classpath knowledge 下全部 Markdown 切割写入 Qdrant。
+     */
+    public KnowledgeIngestService.IngestResult rebuildKnowledgeBase() {
+        KnowledgeIngestService.IngestResult result = knowledgeIngestService.rebuildAll();
+        log.info("rebuild knowledge base done enabled={}, files={}, chunks={}, failed={}",
+                result.enabled(), result.fileCount(), result.chunkCount(), result.failedFiles().size());
+        return result;
+    }
 
     /**
      * Store all financing status enum values into the Qdrant vector database.

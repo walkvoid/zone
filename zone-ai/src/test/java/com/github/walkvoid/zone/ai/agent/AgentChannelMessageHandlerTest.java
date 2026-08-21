@@ -6,6 +6,7 @@ import com.github.walkvoid.zone.ai.channel.core.ChannelReplySink;
 import com.github.walkvoid.zone.ai.channel.core.ChannelType;
 import com.github.walkvoid.zone.ai.channel.weixin.WeiXinMediaDownloader;
 import com.github.walkvoid.zone.ai.tool.AppLogSearchTool;
+import com.github.walkvoid.zone.ai.tool.KnowledgeSearchTool;
 import com.github.walkvoid.zone.ai.tool.RepoChangeTool;
 import com.github.walkvoid.zone.ai.tool.RepoReadTool;
 import com.github.walkvoid.zone.ai.tool.SqlQueryTool;
@@ -41,7 +42,8 @@ class AgentChannelMessageHandlerTest {
                 mock(AppLogSearchTool.class),
                 mock(SqlQueryTool.class),
                 mock(RepoReadTool.class),
-                mock(RepoChangeTool.class));
+                mock(RepoChangeTool.class),
+                mock(KnowledgeSearchTool.class));
         AgentChannelMessageHandler handler = new AgentChannelMessageHandler(
                 chatModel,
                 memory,

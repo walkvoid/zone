@@ -146,6 +146,9 @@ public class ToolAuditAspect {
             simple = simple.substring(0, simple.indexOf("$$"));
         }
         String lower = simple.toLowerCase(Locale.ROOT);
+        if (lower.contains("knowledge")) {
+            return "knowledge";
+        }
         if (lower.contains("log")) {
             return "log";
         }

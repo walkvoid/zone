@@ -1,6 +1,7 @@
 package com.github.walkvoid.zone.ai.agent;
 
 import com.github.walkvoid.zone.ai.tool.AppLogSearchTool;
+import com.github.walkvoid.zone.ai.tool.KnowledgeSearchTool;
 import com.github.walkvoid.zone.ai.tool.RepoChangeTool;
 import com.github.walkvoid.zone.ai.tool.RepoReadTool;
 import com.github.walkvoid.zone.ai.tool.SqlQueryTool;
@@ -16,9 +17,9 @@ class AgentToolCodeTest {
 
     @Test
     void parseDefaultWhenBlank() {
-        assertEquals(List.of(AgentToolCode.LOG, AgentToolCode.SQL, AgentToolCode.REPO_READ),
+        assertEquals(List.of(AgentToolCode.LOG, AgentToolCode.SQL, AgentToolCode.REPO_READ, AgentToolCode.KNOWLEDGE),
                 AgentToolCode.parse(""));
-        assertEquals(List.of(AgentToolCode.LOG, AgentToolCode.SQL, AgentToolCode.REPO_READ),
+        assertEquals(List.of(AgentToolCode.LOG, AgentToolCode.SQL, AgentToolCode.REPO_READ, AgentToolCode.KNOWLEDGE),
                 AgentToolCode.parse(null));
     }
 
@@ -35,10 +36,12 @@ class AgentToolCodeTest {
         SqlQueryTool sql = mock(SqlQueryTool.class);
         RepoReadTool read = mock(RepoReadTool.class);
         RepoChangeTool change = mock(RepoChangeTool.class);
-        AgentToolRegistry registry = new AgentToolRegistry(log, sql, read, change);
-        Object[] tools = registry.resolve(List.of(AgentToolCode.SQL, AgentToolCode.LOG));
-        assertEquals(2, tools.length);
+        KnowledgeSearchTool knowledge = mock(KnowledgeSearchTool.class);
+        AgentToolRegistry registry = new AgentToolRegistry(log, sql, read, change, knowledge);
+        Object[] tools = registry.resolve(List.of(AgentToolCode.SQL, AgentToolCode.LOG, AgentToolCode.KNOWLEDGE));
+        assertEquals(3, tools.length);
         assertSame(sql, tools[0]);
         assertSame(log, tools[1]);
+        assertSame(knowledge, tools[2]);
     }
 }

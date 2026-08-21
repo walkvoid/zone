@@ -10,6 +10,7 @@ import com.github.walkvoid.zone.ai.db.mapper.McpServerConfigMapper;
 import com.github.walkvoid.zone.ai.db.mapper.PromptTemplateMapper;
 import com.github.walkvoid.zone.ai.db.mapper.PromptTemplateRunRecordMapper;
 import com.github.walkvoid.zone.ai.db.vec.QdrantRagDAO;
+import com.github.walkvoid.zone.ai.knowledge.KnowledgeIngestService;
 import com.github.walkvoid.zone.ai.tool.AppLogSearchTool;
 import com.github.walkvoid.zone.ai.tool.RepoReadTool;
 import com.github.walkvoid.zone.ai.tool.SqlQueryTool;
@@ -114,7 +115,7 @@ public class BaseTest {
         List<Document> results = vectorStore.similaritySearch(
                 org.springframework.ai.vectorstore.SearchRequest.builder()
                         .query("融资交易已经成功状态是什么")
-                        .topK(24)
+                        .topK(5)
                         .build());
 
         assertNotNull(results);
@@ -239,5 +240,14 @@ public class BaseTest {
                 .call()
                 .content();
         System.out.println("AI返回结果：" + resp);
+    }
+
+    @Autowired
+    private KnowledgeIngestService knowledgeIngestService;
+
+
+    @Test
+    void knowledgeRebuildAll() {
+        knowledgeIngestService.rebuildAll();
     }
 }
