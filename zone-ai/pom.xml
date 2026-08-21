@@ -77,6 +77,16 @@
         </dependency>
         <dependency>
             <groupId>com.github.walkvoid.wvframework</groupId>
+            <artifactId>wvframework-fileservice</artifactId>
+        </dependency>
+        <!-- DOCX 文本/表格抽取（Prompt 运行材料） -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.walkvoid.wvframework</groupId>
             <artifactId>wvframework-dao-starter</artifactId>
         </dependency>
         <dependency>

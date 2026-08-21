@@ -26,6 +26,9 @@ public class PromptTemplateRunRecordDTO implements Serializable {
 
     private String runResult;
 
+    /** 关联文档 id 列表 JSON */
+    private String fileIds;
+
     private Integer status;
 
     private String errorMessage;

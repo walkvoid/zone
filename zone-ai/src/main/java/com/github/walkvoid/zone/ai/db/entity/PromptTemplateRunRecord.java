@@ -32,6 +32,9 @@ public class PromptTemplateRunRecord implements Serializable {
     /** 运行结果 */
     private String runResult;
 
+    /** 关联文档 file_info.id 列表 JSON，如 [1,2,3] */
+    private String fileIds;
+
     /** 运行状态：0=失败，1=成功，2=执行中 */
     private Integer status;
 

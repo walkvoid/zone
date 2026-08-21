@@ -52,10 +52,19 @@ public class PromptTemplateApiImpl implements PromptTemplateApi {
             throw new RuntimeException("Prompt模板 " + templateCode + " 不存在");
         }
 
-        // 2. 填充变量
-        String userPrompt = template.getTemplateContent();
-        for (Map.Entry<String, String> entry : variables.entrySet()) {
-            userPrompt = userPrompt.replace("{" + entry.getKey() + "}", entry.getValue());
+        // 2. 填充变量；关联文档无 {document} 占位时追加到末尾
+        String templateContent = template.getTemplateContent() == null ? "" : template.getTemplateContent();
+        String userPrompt = templateContent;
+        if (variables != null) {
+            for (Map.Entry<String, String> entry : variables.entrySet()) {
+                if (entry.getKey() == null || entry.getValue() == null) {
+                    continue;
+                }
+                userPrompt = userPrompt.replace("{" + entry.getKey() + "}", entry.getValue());
+            }
+            if (variables.containsKey("document") && !templateContent.contains("{document}")) {
+                userPrompt = userPrompt + "\n\n---\n【关联文档】\n" + variables.get("document");
+            }
         }
 
         // 3. 获取启用的模型

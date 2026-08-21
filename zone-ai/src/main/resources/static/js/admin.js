@@ -121,12 +121,13 @@
     qs("drawer-body").innerHTML = html;
     qs("drawer").classList.toggle("drawer-wide", Boolean(options.wide));
     qs("drawer-save").classList.toggle("is-hidden", Boolean(options.hideSave) || !onSave);
+    qs("drawer-save").textContent = options.saveLabel || "确定";
     qs("drawer-extra").classList.toggle("is-hidden", !options.onExtra);
     qs("drawer-extra").textContent = options.extraLabel || "应用这次修改";
     qs("drawer").classList.add("is-open");
     qs("drawer").setAttribute("aria-hidden", "false");
     qs("drawer-mask").classList.remove("is-hidden");
-    state.drawer = { onSave, onExtra: options.onExtra };
+    state.drawer = { onSave, onExtra: options.onExtra, keepOpen: Boolean(options.keepOpen) };
   }
 
   function closeDrawer() {
@@ -135,6 +136,7 @@
     qs("drawer-mask").classList.add("is-hidden");
     qs("drawer-extra").classList.add("is-hidden");
     qs("drawer").classList.remove("drawer-wide");
+    qs("drawer-save").textContent = "确定";
     state.drawer = null;
   }
 
@@ -187,12 +189,18 @@
               <td>${escapeHtml(row.variables || "—")}</td>
               <td>${tagEnabled(Number(row.status) === 1)}</td>
               <td class="col-op">
+                <button class="btn-link" data-run="${id}">运行</button>
                 <button class="btn-link" data-edit="${id}">编辑</button>
                 <button class="btn-link danger" data-del="${id}" data-name="${escapeHtml(row.templateName || row.templateCode)}">删除</button>
               </td>
             </tr>`;
           })
           .join("");
+        tbody.querySelectorAll("[data-run]").forEach((btn) => {
+          btn.addEventListener("click", () =>
+            openPromptRun(records.find((r) => String(r.id) === btn.dataset.run)),
+          );
+        });
         tbody.querySelectorAll("[data-edit]").forEach((btn) => {
           btn.addEventListener("click", () => openPromptForm(records.find((r) => String(r.id) === btn.dataset.edit)));
         });
@@ -210,6 +218,204 @@
     } catch (error) {
       tbody.innerHTML = emptyRow(6, error.message);
     }
+  }
+
+  function buildDefaultVariablesJson(variables) {
+    if (!variables || !String(variables).trim()) {
+      return "{}";
+    }
+    const obj = {};
+    String(variables)
+      .split(/[,;，]/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .filter((k) => k !== "document")
+      .forEach((k) => {
+        obj[k] = "";
+      });
+    return JSON.stringify(obj, null, 2);
+  }
+
+  async function uploadAiFile(file, bizCode) {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("bizCode", bizCode || "prompt_run");
+    const response = await fetch("/ai/file/upload", { method: "POST", body: form });
+    let json = null;
+    try {
+      json = await response.json();
+    } catch {
+      json = null;
+    }
+    if (!response.ok || !isOk(json)) {
+      throw new Error(errorMessage(json, `上传失败 HTTP ${response.status}`));
+    }
+    return unwrap(json);
+  }
+
+  function openPromptRun(row) {
+    if (!row?.templateCode) {
+      toast("缺少模板编码", true);
+      return;
+    }
+    let fileIds = [];
+    let vectorsCleaned = false;
+    openDrawer(
+      `运行 · ${row.templateName || row.templateCode}`,
+      `
+      <div class="form-item" style="margin-bottom:14px">
+        <label>变量 JSON</label>
+        <div class="hint">可用 task / question 作为长文档 RAG 检索词；文档注入 {document}</div>
+        <textarea id="f-run-variables" class="textarea" style="min-height:140px">${escapeHtml(buildDefaultVariablesJson(row.variables))}</textarea>
+      </div>
+      <div class="form-item" style="margin-bottom:14px">
+        <label>关联文档（可多选，最多 5 个，保留 7 天）</label>
+        <div class="hint">支持 md/txt/json/csv/docx；docx 与长文会临时入向量再检索</div>
+        <input id="f-run-file" class="input" type="file" multiple />
+        <div id="f-run-file-meta" class="hint" style="margin-top:6px">未选择文件</div>
+        <label class="check-line" style="margin-top:10px">
+          <input id="f-run-cleanup" type="checkbox" />
+          跑完后自动清理这些附件的向量
+        </label>
+      </div>
+      <div class="form-item">
+        <label>运行结果 <span id="f-run-meta" class="hint"></span></label>
+        <textarea id="f-run-result" class="textarea" style="min-height:180px" readonly placeholder="点击下方「运行」后显示"></textarea>
+      </div>
+    `,
+      async () => {
+        let variables = {};
+        try {
+          variables = JSON.parse(qs("f-run-variables").value || "{}");
+          if (!variables || typeof variables !== "object" || Array.isArray(variables)) {
+            throw new Error("变量须为 JSON 对象");
+          }
+        } catch (e) {
+          throw new Error(e.message || "变量 JSON 格式不正确");
+        }
+        const saveBtn = qs("drawer-save");
+        const oldLabel = saveBtn.textContent;
+        saveBtn.disabled = true;
+        saveBtn.textContent = "运行中…";
+        try {
+          const data = await request("/ai/prompt-template/run", {
+            method: "POST",
+            body: JSON.stringify({
+              templateCode: row.templateCode,
+              variables,
+              fileIds,
+              cleanupVectors: Boolean(qs("f-run-cleanup")?.checked),
+            }),
+          });
+          const result = data?.result ?? (typeof data === "string" ? data : JSON.stringify(data, null, 2));
+          qs("f-run-result").value = result;
+          if (Array.isArray(data?.fileIds)) {
+            fileIds = data.fileIds;
+          }
+          vectorsCleaned = Boolean(data?.vectorsCleaned);
+          const bits = [];
+          if (data?.vectorMode) {
+            bits.push(`RAG · ${data.chunkCount || 0} chunks`);
+          }
+          if (vectorsCleaned) {
+            bits.push("已清理向量");
+          }
+          qs("f-run-meta").textContent = bits.length ? `（${bits.join(" · ")}）` : "";
+          qs("drawer-extra").classList.toggle(
+            "is-hidden",
+            !data?.vectorMode || vectorsCleaned || !fileIds.length,
+          );
+          toast("运行成功");
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.textContent = oldLabel;
+        }
+      },
+      {
+        wide: true,
+        keepOpen: true,
+        saveLabel: "运行",
+        extraLabel: "清理向量",
+        onExtra: async () => {
+          if (!fileIds.length) {
+            throw new Error("没有可清理的 fileIds");
+          }
+          await request("/ai/prompt-template/run-material", {
+            method: "DELETE",
+            body: JSON.stringify({ fileIds }),
+          });
+          vectorsCleaned = true;
+          qs("drawer-extra").classList.add("is-hidden");
+          qs("f-run-meta").textContent = `${qs("f-run-meta").textContent || ""} · 已清理向量`.replace(/^ · /, "");
+          toast("向量已清理");
+        },
+      },
+    );
+
+    qs("f-run-file")?.addEventListener("change", async (event) => {
+      const files = Array.from(event.target.files || []);
+      event.target.value = "";
+      if (!files.length) {
+        return;
+      }
+      const remain = 5 - fileIds.length;
+      if (remain <= 0) {
+        toast("最多上传 5 个附件", true);
+        return;
+      }
+      const batch = files.slice(0, remain);
+      if (files.length > remain) {
+        toast(`最多再传 ${remain} 个，已截取前 ${remain} 个`, true);
+      }
+      const meta = qs("f-run-file-meta");
+      meta.textContent = `上传中（${batch.length}）…`;
+      try {
+        const uploaded = [];
+        for (const file of batch) {
+          const info = await uploadAiFile(file, "prompt_run");
+          if (info?.id != null) {
+            uploaded.push({ id: info.id, name: info.originalName || file.name });
+            fileIds.push(info.id);
+          }
+        }
+        renderRunFileList(meta, fileIds, uploaded);
+        toast(`已上传 ${uploaded.length} 个文件，当前共 ${fileIds.length} 个`);
+      } catch (error) {
+        renderRunFileList(meta, fileIds, []);
+        toast(error.message, true);
+      }
+    });
+  }
+
+  function renderRunFileList(metaEl, ids, justUploaded) {
+    if (!ids.length) {
+      metaEl._nameMap = {};
+      metaEl.textContent = "未选择文件";
+      return;
+    }
+    const nameMap = metaEl._nameMap || {};
+    (justUploaded || []).forEach((x) => {
+      nameMap[String(x.id)] = x.name;
+    });
+    metaEl._nameMap = nameMap;
+    metaEl.innerHTML = `<ul class="file-list">${ids
+      .map((id) => {
+        const name = nameMap[String(id)] || `#${id}`;
+        return `<li>${escapeHtml(name)} <span class="muted">(id=${escapeHtml(id)})</span>
+          <button type="button" class="btn-link danger" data-rm="${escapeHtml(id)}">移除</button></li>`;
+      })
+      .join("")}</ul>`;
+    metaEl.querySelectorAll("[data-rm]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const rid = btn.getAttribute("data-rm");
+        const idx = ids.findIndex((x) => String(x) === String(rid));
+        if (idx >= 0) {
+          ids.splice(idx, 1);
+        }
+        delete nameMap[String(rid)];
+        renderRunFileList(metaEl, ids, []);
+      });
+    });
   }
 
   function openPromptForm(row) {
@@ -800,7 +1006,9 @@
     }
     try {
       await state.drawer.onSave();
-      closeDrawer();
+      if (!state.drawer?.keepOpen) {
+        closeDrawer();
+      }
     } catch (error) {
       toast(error.message, true);
     }

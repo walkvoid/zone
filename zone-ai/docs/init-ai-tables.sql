@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS `prompt_template_run_record` (
     `input_params`     TEXT          DEFAULT NULL            COMMENT '本次运行入参 JSON',
     `rendered_prompt`  MEDIUMTEXT    DEFAULT NULL            COMMENT '变量替换后的最终提示词',
     `run_result`       MEDIUMTEXT    DEFAULT NULL            COMMENT '运行结果',
+    `file_ids`         TEXT          DEFAULT NULL            COMMENT '关联文档 file_info.id 列表 JSON',
     `status`           TINYINT       NOT NULL DEFAULT 2      COMMENT '运行状态：0=失败，1=成功，2=执行中',
     `error_message`    VARCHAR(1024) DEFAULT NULL            COMMENT '错误信息',
     `model_name`       VARCHAR(128)  DEFAULT NULL            COMMENT '调用模型名称',
@@ -86,6 +87,33 @@ CREATE TABLE IF NOT EXISTS `prompt_template_run_record` (
     KEY `idx_template_id` (`template_id`),
     KEY `idx_status_create_time` (`status`, `create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Prompt模板运行记录表';
+
+-- 关联多文档 file_ids JSON；已有库见 alter-prompt-run-file.sql
+-- ALTER TABLE `prompt_template_run_record` ADD COLUMN `file_ids` TEXT ...
+
+-- ============================================
+-- 3b. 文件元数据 (file_info) — wvframework-fileservice
+-- ============================================
+CREATE TABLE IF NOT EXISTS `file_info` (
+    `id`            BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `file_key`      VARCHAR(64)  NOT NULL                COMMENT '文件Key',
+    `original_name` VARCHAR(256) NOT NULL                COMMENT '原始文件名',
+    `object_name`   VARCHAR(512) NOT NULL                COMMENT '存储对象名称',
+    `biz_code`      VARCHAR(64)  NOT NULL DEFAULT 'common' COMMENT '业务编码',
+    `content_type`  VARCHAR(128) DEFAULT NULL            COMMENT '文件类型',
+    `file_size`     BIGINT       DEFAULT 0               COMMENT '文件大小 (字节)',
+    `file_ext`      VARCHAR(32)  DEFAULT NULL            COMMENT '文件扩展名',
+    `access_url`    VARCHAR(1024) DEFAULT NULL           COMMENT '访问链接',
+    `expire_time`   DATETIME     DEFAULT NULL            COMMENT '过期时间（默认上传后 7 天）',
+    `create_time`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`   DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `deleted`       TINYINT      NOT NULL DEFAULT 0      COMMENT '逻辑删除: 0=未删, 1=已删',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_file_key` (`file_key`),
+    KEY `idx_biz_code` (`biz_code`),
+    KEY `idx_create_time` (`create_time`),
+    KEY `idx_expire_time` (`expire_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文件信息表';
 
 -- ============================================
 -- 4. MCP Server 配置 (mcp_server_config)
