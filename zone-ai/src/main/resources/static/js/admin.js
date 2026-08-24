@@ -282,6 +282,26 @@
         <label>运行结果 <span id="f-run-meta" class="hint"></span></label>
         <textarea id="f-run-result" class="textarea" style="min-height:180px" readonly placeholder="点击下方「运行」后显示"></textarea>
       </div>
+      <div id="f-run-post" class="post-process is-hidden">
+        <div class="form-item" style="margin-bottom:10px">
+          <label>结果处理</label>
+          <div class="hint">选择系统工具并填写自然语言指令；模型会带着运行结果调用该工具（如上传 MinIO、写入归档表）</div>
+        </div>
+        <div class="form-item" style="margin-bottom:10px">
+          <label>处理工具</label>
+          <select id="f-run-tool" class="select"></select>
+          <div id="f-run-tool-desc" class="hint" style="margin-top:6px"></div>
+        </div>
+        <div class="form-item" style="margin-bottom:10px">
+          <label>处理指令</label>
+          <textarea id="f-run-instruction" class="textarea" style="min-height:80px" placeholder="例如：请将结果文件上传到 minio 文件管理器"></textarea>
+        </div>
+        <button id="f-run-post-btn" class="btn btn-primary" type="button">执行处理</button>
+        <div id="f-run-post-out-wrap" class="form-item is-hidden" style="margin-top:12px">
+          <label>处理结果</label>
+          <textarea id="f-run-post-out" class="textarea" style="min-height:120px" readonly></textarea>
+        </div>
+      </div>
     `,
       async () => {
         let variables = {};
@@ -325,6 +345,9 @@
             "is-hidden",
             !data?.vectorMode || vectorsCleaned || !fileIds.length,
           );
+          qs("f-run-post")?.classList.remove("is-hidden");
+          qs("f-run-post-out").value = "";
+          qs("f-run-post-out-wrap")?.classList.add("is-hidden");
           toast("运行成功");
         } finally {
           saveBtn.disabled = false;
@@ -351,6 +374,54 @@
         },
       },
     );
+
+    void fillRunToolSelect();
+
+    qs("f-run-tool")?.addEventListener("change", () => {
+      updateRunToolDesc();
+    });
+
+    qs("f-run-post-btn")?.addEventListener("click", async () => {
+      const result = qs("f-run-result")?.value?.trim() || "";
+      const toolCode = qs("f-run-tool")?.value || "";
+      const instruction = qs("f-run-instruction")?.value?.trim() || "";
+      const selected = (qs("f-run-tool")?.selectedOptions || [])[0];
+      const available = selected?.dataset?.available === "1";
+      if (!result) {
+        toast("请先运行模板得到结果", true);
+        return;
+      }
+      if (!toolCode) {
+        toast("请选择处理工具", true);
+        return;
+      }
+      if (!available) {
+        toast("该工具尚未实现，请选择其它工具", true);
+        return;
+      }
+      if (!instruction) {
+        toast("请填写处理指令", true);
+        return;
+      }
+      const btn = qs("f-run-post-btn");
+      const old = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "处理中…";
+      try {
+        const data = await request("/ai/prompt-template/run-post-process", {
+          method: "POST",
+          body: JSON.stringify({ toolCode, instruction, result }),
+        });
+        qs("f-run-post-out").value = data?.output ?? "";
+        qs("f-run-post-out-wrap")?.classList.remove("is-hidden");
+        toast("结果处理完成");
+      } catch (error) {
+        toast(error.message || "结果处理失败", true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = old;
+      }
+    });
 
     qs("f-run-file")?.addEventListener("change", async (event) => {
       const files = Array.from(event.target.files || []);
@@ -385,6 +456,47 @@
         toast(error.message, true);
       }
     });
+  }
+
+  async function fillRunToolSelect() {
+    const select = qs("f-run-tool");
+    if (!select) {
+      return;
+    }
+    select.innerHTML = `<option value="">请选择工具</option>`;
+    try {
+      const list = (await request("/ai/tools")) || [];
+      const items = Array.isArray(list) ? list : [];
+      select.innerHTML =
+        `<option value="">请选择工具</option>` +
+        items
+          .map((t) => {
+            const avail = t.available === true || t.available === 1 || t.available === "true";
+            const label = avail
+              ? `${t.label || t.code} (${t.code})`
+              : `${t.label || t.code} (${t.code}) · 开发中`;
+            const availFlag = avail ? "1" : "0";
+            const disabledAttr = avail ? "" : " disabled";
+            const desc = escapeHtml(t.description || "");
+            return (
+              `<option value="${escapeHtml(t.code)}" data-available="${availFlag}" data-desc="${desc}"${disabledAttr}>` +
+              `${escapeHtml(label)}</option>`
+            );
+          })
+          .join("");
+    } catch {
+      select.innerHTML = `<option value="">加载工具失败</option>`;
+    }
+    updateRunToolDesc();
+  }
+
+  function updateRunToolDesc() {
+    const descEl = qs("f-run-tool-desc");
+    const selected = (qs("f-run-tool")?.selectedOptions || [])[0];
+    if (!descEl) {
+      return;
+    }
+    descEl.textContent = selected?.dataset?.desc || "";
   }
 
   function renderRunFileList(metaEl, ids, justUploaded) {

@@ -13,6 +13,7 @@ import com.github.walkvoid.zone.ai.db.entity.AiModel;
 import com.github.walkvoid.zone.ai.db.entity.PromptTemplate;
 import com.github.walkvoid.zone.ai.db.entity.PromptTemplateRunRecord;
 import com.github.walkvoid.zone.ai.prompt.PromptRunMaterialService;
+import com.github.walkvoid.zone.ai.prompt.PromptRunPostProcessService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.BeanUtils;
@@ -52,6 +53,9 @@ public class PromptTemplateController {
 
     @Autowired
     private PromptRunMaterialService materialService;
+
+    @Autowired
+    private PromptRunPostProcessService postProcessService;
 
     @Value("${zone.ai.prompt.max-document-chars:30000}")
     private int maxDocumentChars;
@@ -237,6 +241,35 @@ public class PromptTemplateController {
         result.put("fileIds", fileIds);
         result.put("deleted", true);
         return ApiResult.ok(result);
+    }
+
+    @Operation(summary = "对运行结果做后处理：选择系统工具 + 自然语言指令，由模型调用该工具")
+    @PostMapping("/run-post-process")
+    public ApiResult<Map<String, Object>> runPostProcess(@RequestBody Map<String, Object> body) {
+        String toolCode = body == null ? null : String.valueOf(body.getOrDefault("toolCode", "")).trim();
+        String instruction = body == null ? null : String.valueOf(body.getOrDefault("instruction", "")).trim();
+        String resultText = body == null ? null : String.valueOf(body.getOrDefault("result", ""));
+        if (toolCode.isEmpty() || "null".equals(toolCode)) {
+            return ApiResult.error(400, "请选择处理工具");
+        }
+        if (instruction.isEmpty() || "null".equals(instruction)) {
+            return ApiResult.error(400, "请填写处理指令");
+        }
+        if (resultText == null || resultText.isBlank() || "null".equals(resultText)) {
+            return ApiResult.error(400, "运行结果为空");
+        }
+        try {
+            String output = postProcessService.process(toolCode, instruction, resultText);
+            Map<String, Object> resp = new LinkedHashMap<>();
+            resp.put("toolCode", toolCode);
+            resp.put("instruction", instruction);
+            resp.put("output", output);
+            return ApiResult.ok(resp);
+        } catch (IllegalArgumentException e) {
+            return ApiResult.error(400, e.getMessage());
+        } catch (Exception e) {
+            return ApiResult.error(500, "结果处理失败: " + e.getMessage());
+        }
     }
 
     static String renderPrompt(String templateContent, Map<String, String> variables) {

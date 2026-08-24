@@ -543,6 +543,12 @@ pre.diff {
   margin-top: 4px;
 }
 
+.post-process {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid hsl(var(--border));
+}
+
 .check-line {
   display: flex;
   align-items: center;

@@ -1,6 +1,8 @@
 package com.github.walkvoid.zone.ai.agent;
 
 import com.github.walkvoid.zone.ai.tool.AppLogSearchTool;
+import com.github.walkvoid.zone.ai.tool.DbInsertTool;
+import com.github.walkvoid.zone.ai.tool.FileUploadTool;
 import com.github.walkvoid.zone.ai.tool.KnowledgeSearchTool;
 import com.github.walkvoid.zone.ai.tool.RepoChangeTool;
 import com.github.walkvoid.zone.ai.tool.RepoReadTool;
@@ -24,12 +26,16 @@ public class AgentToolRegistry {
                              SqlQueryTool sqlQueryTool,
                              RepoReadTool repoReadTool,
                              RepoChangeTool repoChangeTool,
-                             KnowledgeSearchTool knowledgeSearchTool) {
+                             KnowledgeSearchTool knowledgeSearchTool,
+                             DbInsertTool dbInsertTool,
+                             FileUploadTool fileUploadTool) {
         tools.put(AgentToolCode.LOG, appLogSearchTool);
         tools.put(AgentToolCode.SQL, sqlQueryTool);
         tools.put(AgentToolCode.REPO_READ, repoReadTool);
         tools.put(AgentToolCode.REPO_CHANGE, repoChangeTool);
         tools.put(AgentToolCode.KNOWLEDGE, knowledgeSearchTool);
+        tools.put(AgentToolCode.DB_INSERT, dbInsertTool);
+        tools.put(AgentToolCode.FILE_UPLOAD, fileUploadTool);
     }
 
     public Object[] resolve(List<AgentToolCode> codes) {
@@ -44,5 +50,10 @@ public class AgentToolRegistry {
             }
         }
         return selected.toArray();
+    }
+
+    /** 工具 Bean 是否已注册 */
+    public boolean isRegistered(AgentToolCode code) {
+        return code != null && tools.containsKey(code);
     }
 }

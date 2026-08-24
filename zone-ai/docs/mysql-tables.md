@@ -14,6 +14,7 @@
 | `prompt_template` | `PromptTemplate` | Prompt 模板（内容、变量、分类、启用状态） |
 | `prompt_template_run_record` | `PromptTemplateRunRecord` | 模板运行记录（入参、渲染结果、关联文档 fileIds、耗时、成功/失败） |
 | `file_info` | `FileInfo`（wvframework-fileservice） | MinIO 文件元数据（Prompt 运行附件 biz_code=prompt_run） |
+| `prompt_result_archive` | — | Prompt 运行结果归档（DbInsertTool 默认写入） |
 | `mcp_server_config` | `McpServerConfig` | 外部 MCP 连接配置（stdio / sse / streamable-http） |
 | `ai_bot_config` | `AiBotConfig` | 企微/飞书机器人（prompt、工具集、密钥） |
 | `ai_code_change` | `AiCodeChange` | 一次对话轮次的代码改动（一个小功能点） |

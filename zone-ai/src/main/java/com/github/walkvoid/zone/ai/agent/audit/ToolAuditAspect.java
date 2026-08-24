@@ -149,6 +149,12 @@ public class ToolAuditAspect {
         if (lower.contains("knowledge")) {
             return "knowledge";
         }
+        if (lower.contains("dbinsert") || lower.contains("db_insert")) {
+            return "db_insert";
+        }
+        if (lower.contains("fileupload") || lower.contains("file_upload")) {
+            return "file_upload";
+        }
         if (lower.contains("log")) {
             return "log";
         }
