@@ -151,3 +151,6 @@ coverage/
 .settings/
 *.sublime-workspace
 /.idea/
+
+# Knowledge RAG 本地文档（不入库；Java knowledge 包仍跟踪）
+zone-ai/src/main/resources/knowledge/
