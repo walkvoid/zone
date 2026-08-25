@@ -1,12 +1,11 @@
 package com.github.walkvoid.zone.auth.service.impl;
 
-import com.github.walkvoid.wvframework.utils.JwtUtils;
-import com.github.walkvoid.zone.auth.config.JwtProperties;
+import com.github.walkvoid.wvframework.core.jwt.JwtSupport;
 import com.github.walkvoid.zone.auth.db.dao.AuthRefreshTokenDAO;
-import com.github.walkvoid.zone.auth.service.AuthSessionService;
-import com.github.walkvoid.zone.auth.util.TokenHashUtils;
 import com.github.walkvoid.zone.auth.db.entity.AuthRefreshToken;
 import com.github.walkvoid.zone.auth.model.enums.SessionStatusEnum;
+import com.github.walkvoid.zone.auth.service.AuthSessionService;
+import com.github.walkvoid.zone.auth.util.TokenHashUtils;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,11 +19,11 @@ public class AuthSessionServiceImpl implements AuthSessionService {
     @Autowired
     private AuthRefreshTokenDAO authRefreshTokenDAO;
     @Autowired
-    private JwtProperties jwtProperties;
+    private JwtSupport jwtSupport;
 
     @Override
     public String issueRefreshToken(Long userId, String username, String clientIp, String userAgent) {
-        String refreshToken = JwtUtils.generateRefreshToken(userId, username);
+        String refreshToken = jwtSupport.generateRefreshToken(userId, username);
         persistSession(userId, refreshToken, clientIp, userAgent);
         return refreshToken;
     }
@@ -32,14 +31,14 @@ public class AuthSessionServiceImpl implements AuthSessionService {
     @Override
     public TokenPair issueTokenPair(Long userId, String username, List<String> roleCodes,
                                     String clientIp, String userAgent) {
-        String accessToken = JwtUtils.generateAccessToken(userId, username, roleCodes);
+        String accessToken = jwtSupport.generateAccessToken(userId, username, roleCodes);
         String refreshToken = issueRefreshToken(userId, username, clientIp, userAgent);
         return new TokenPair(accessToken, refreshToken);
     }
 
     @Override
     public TokenPair rotateRefreshToken(String refreshToken, String clientIp, String userAgent) {
-        Claims claims = JwtUtils.parseRefreshToken(refreshToken);
+        Claims claims = jwtSupport.parseRefreshToken(refreshToken);
         if (claims == null) {
             return null;
         }
@@ -50,15 +49,15 @@ public class AuthSessionServiceImpl implements AuthSessionService {
             return null;
         }
 
-        Long userId = JwtUtils.getUserId(claims);
-        String username = JwtUtils.getUsername(claims);
+        Long userId = jwtSupport.getUserId(claims);
+        String username = jwtSupport.getUsername(claims);
         if (userId == null || !userId.equals(session.getUserId())) {
             return null;
         }
 
         authRefreshTokenDAO.updateStatus(session.getId(), SessionStatusEnum.ROTATED);
 
-        String newRefreshToken = JwtUtils.generateRefreshToken(userId, username);
+        String newRefreshToken = jwtSupport.generateRefreshToken(userId, username);
         persistSession(userId, newRefreshToken, clientIp, userAgent);
 
         return new TokenPair(null, newRefreshToken);
@@ -84,7 +83,7 @@ public class AuthSessionServiceImpl implements AuthSessionService {
         session.setUserId(userId);
         session.setTokenHash(TokenHashUtils.sha256(refreshToken));
         session.setStatus(SessionStatusEnum.ACTIVE);
-        session.setExpiresAt(LocalDateTime.now().plusSeconds(jwtProperties.getRefreshTokenExpiration() / 1000));
+        session.setExpiresAt(LocalDateTime.now().plusSeconds(jwtSupport.getRefreshTokenExpiration() / 1000));
         session.setClientIp(clientIp);
         session.setUserAgent(truncateUserAgent(userAgent));
         session.setCreateTime(LocalDateTime.now());

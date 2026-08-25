@@ -2,7 +2,7 @@ package com.github.walkvoid.zone.auth.controller;
 
 import com.github.walkvoid.wvframework.models.ApiResult;
 import com.github.walkvoid.wvframework.models.BooleanEnum;
-import com.github.walkvoid.wvframework.utils.JwtUtils;
+import com.github.walkvoid.wvframework.core.jwt.JwtSupport;
 import com.github.walkvoid.zone.auth.service.UserCredentialService;
 import com.github.walkvoid.zone.auth.service.UserIdentityService;
 import com.github.walkvoid.zone.auth.service.AuthLoginLogService;
@@ -47,6 +47,8 @@ public class AuthController {
     private AuthSessionService authSessionService;
     @Autowired
     private AuthLoginLogService authLoginLogService;
+    @Autowired
+    private JwtSupport jwtSupport;
 
     @Operation(summary = "用户注册")
     @PostMapping("/auth/register")
@@ -138,7 +140,7 @@ public class AuthController {
         String clientIp = RequestUtils.getClientIp(request);
         String userAgent = RequestUtils.getUserAgent(request);
 
-        var claims = JwtUtils.parseRefreshToken(refreshToken);
+        var claims = jwtSupport.parseRefreshToken(refreshToken);
         if (claims == null) {
             clearCookie(response);
             return ApiResult.error(401, "登录已过期");
@@ -150,10 +152,10 @@ public class AuthController {
             return ApiResult.error(401, "登录已过期");
         }
 
-        Long userId = JwtUtils.getUserId(claims);
-        String username = JwtUtils.getUsername(claims);
+        Long userId = jwtSupport.getUserId(claims);
+        String username = jwtSupport.getUsername(claims);
         List<String> roleCodes = roleService.getRoleCodesByUserId(userId);
-        String newAccessToken = JwtUtils.generateAccessToken(userId, username, roleCodes);
+        String newAccessToken = jwtSupport.generateAccessToken(userId, username, roleCodes);
 
         addRefreshCookie(response, rotated.refreshToken());
 

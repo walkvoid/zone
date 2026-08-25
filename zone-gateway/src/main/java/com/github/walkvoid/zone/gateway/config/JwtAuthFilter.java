@@ -1,6 +1,6 @@
 package com.github.walkvoid.zone.gateway.config;
 
-import com.github.walkvoid.wvframework.utils.JwtUtils;
+import com.github.walkvoid.wvframework.core.jwt.JwtSupport;
 import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -26,15 +26,21 @@ public class JwtAuthFilter implements WebFilter {
 
     private static final String BEARER_PREFIX = "Bearer ";
 
+    private final JwtSupport jwtSupport;
+
+    public JwtAuthFilter(JwtSupport jwtSupport) {
+        this.jwtSupport = jwtSupport;
+    }
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String token = extractToken(exchange.getRequest());
 
         if (token != null) {
-            Claims claims = JwtUtils.parseAccessToken(token);
+            Claims claims = jwtSupport.parseAccessToken(token);
             if (claims != null) {
-                String username = JwtUtils.getUsername(claims);
-                List<String> roles = JwtUtils.getRoles(claims);
+                String username = jwtSupport.getUsername(claims);
+                List<String> roles = jwtSupport.getRoles(claims);
 
                 List<SimpleGrantedAuthority> authorities = roles.stream()
                         .map(r -> new SimpleGrantedAuthority("ROLE_" + r))

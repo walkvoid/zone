@@ -1,6 +1,6 @@
 package com.github.walkvoid.zone.user.config;
 
-import com.github.walkvoid.wvframework.utils.JwtUtils;
+import com.github.walkvoid.wvframework.core.jwt.JwtSupport;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -25,16 +25,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final String BEARER_PREFIX = "Bearer ";
 
+    private final JwtSupport jwtSupport;
+
+    public JwtAuthFilter(JwtSupport jwtSupport) {
+        this.jwtSupport = jwtSupport;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String token = extractToken(request);
         if (token != null) {
-            Claims claims = JwtUtils.parseAccessToken(token);
+            Claims claims = jwtSupport.parseAccessToken(token);
             if (claims != null) {
-                String username = JwtUtils.getUsername(claims);
-                List<String> roles = JwtUtils.getRoles(claims);
+                String username = jwtSupport.getUsername(claims);
+                List<String> roles = jwtSupport.getRoles(claims);
                 List<SimpleGrantedAuthority> authorities = roles.stream()
                         .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
                         .toList();
