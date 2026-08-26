@@ -239,7 +239,7 @@ public class AuthController {
         Long userId = jwtSupport.getUserId(claims);
         String username = jwtSupport.getUsername(claims);
         List<String> roleCodes = roleService.getRoleCodesByUserId(userId);
-        String newAccessToken = jwtSupport.generateAccessToken(userId, username, roleCodes);
+        String newAccessToken = authSessionService.issueAccessToken(userId, username, roleCodes);
 
         addRefreshCookie(response, rotated.refreshToken());
 

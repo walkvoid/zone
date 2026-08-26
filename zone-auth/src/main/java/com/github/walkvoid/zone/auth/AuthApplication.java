@@ -11,7 +11,11 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients(clients = {UserInfoFeignClient.class, RoleFeignClient.class, SmsSendRecordFeignClient.class})
+@EnableFeignClients(clients = {
+        UserInfoFeignClient.class,
+        RoleFeignClient.class,
+        SmsSendRecordFeignClient.class
+})
 @MapperScan("com.github.walkvoid.zone.auth.db.mapper")
 public class AuthApplication {
 

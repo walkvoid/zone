@@ -35,4 +35,9 @@ public interface AuthSessionService {
      */
     TokenPair issueTokenPair(Long userId, String username, List<String> roleCodes,
                              String clientIp, String userAgent);
+
+    /**
+     * 仅签发 accessToken（含权限码），用于 refresh
+     */
+    String issueAccessToken(Long userId, String username, List<String> roleCodes);
 }

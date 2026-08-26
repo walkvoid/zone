@@ -1,11 +1,12 @@
 package com.github.walkvoid.zone.gateway.config;
 
+import com.github.walkvoid.wvframework.core.jwt.JwtAuthorityConverter;
 import com.github.walkvoid.wvframework.core.jwt.JwtSupport;
+import com.github.walkvoid.wvframework.core.security.PermissionResolver;
 import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -13,13 +14,10 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
+import reactor.core.scheduler.Schedulers;
 
 /**
- * JWT 认证过滤器 (WebFlux) — 从 Authorization Header 解析 Bearer Token
- *
- * @author walkvoid
+ * JWT 认证过滤器 (WebFlux) — 权限按 wv.security.permission-store 解析
  */
 @Component
 public class JwtAuthFilter implements WebFilter {
@@ -27,9 +25,11 @@ public class JwtAuthFilter implements WebFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtSupport jwtSupport;
+    private final PermissionResolver permissionResolver;
 
-    public JwtAuthFilter(JwtSupport jwtSupport) {
+    public JwtAuthFilter(JwtSupport jwtSupport, PermissionResolver permissionResolver) {
         this.jwtSupport = jwtSupport;
+        this.permissionResolver = permissionResolver;
     }
 
     @Override
@@ -40,17 +40,17 @@ public class JwtAuthFilter implements WebFilter {
             Claims claims = jwtSupport.parseAccessToken(token);
             if (claims != null) {
                 String username = jwtSupport.getUsername(claims);
-                List<String> roles = jwtSupport.getRoles(claims);
-
-                List<SimpleGrantedAuthority> authorities = roles.stream()
-                        .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
-                        .toList();
-
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(username, null, authorities);
-
-                return chain.filter(exchange)
-                        .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
+                Long userId = jwtSupport.getUserId(claims);
+                return Mono.fromCallable(() -> JwtAuthorityConverter.toAuthorities(
+                                jwtSupport.getRoles(claims),
+                                permissionResolver.resolve(userId, claims)))
+                        .subscribeOn(Schedulers.boundedElastic())
+                        .flatMap(authorities -> {
+                            UsernamePasswordAuthenticationToken authentication =
+                                    new UsernamePasswordAuthenticationToken(username, null, authorities);
+                            return chain.filter(exchange)
+                                    .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
+                        });
             }
         }
 

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -63,6 +64,7 @@ public class MenuController {
     }
 
     @Operation(summary = "创建菜单")
+    @PreAuthorize("hasAuthority('System:Menu:Create')")
     @PostMapping
     public ApiResult<String> createMenu(@RequestBody MenuDTO dto) {
         menuCrudService.createMenu(dto);
@@ -70,6 +72,7 @@ public class MenuController {
     }
 
     @Operation(summary = "更新菜单")
+    @PreAuthorize("hasAuthority('System:Menu:Edit')")
     @PutMapping("/{id}")
     public ApiResult<String> updateMenu(@Parameter(description = "菜单ID") @PathVariable("id") Long id,
                                          @RequestBody MenuDTO dto) {
@@ -78,6 +81,7 @@ public class MenuController {
     }
 
     @Operation(summary = "删除菜单")
+    @PreAuthorize("hasAuthority('System:Menu:Delete')")
     @DeleteMapping("/{id}")
     public ApiResult<String> deleteMenu(@Parameter(description = "菜单ID") @PathVariable("id") Long id) {
         menuCrudService.deleteMenu(id);

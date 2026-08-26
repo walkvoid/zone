@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +42,7 @@ public class UserInfoController {
     private UserIdentityFeignClient userIdentityService;
 
     @Operation(summary = "新增用户")
+    @PreAuthorize("hasAuthority('System:User:Create')")
     @PostMapping
     public ApiResult<UserInfoDTO> add(@RequestBody UserInfoDTO dto) {
         if (Objects.isNull(dto)) return ApiResult.ok(null);
@@ -59,12 +61,14 @@ public class UserInfoController {
     }
 
     @Operation(summary = "删除用户")
+    @PreAuthorize("hasAuthority('System:User:Delete')")
     @DeleteMapping("/{id}")
     public ApiResult<Boolean> delete(@Parameter(description = "用户ID") @PathVariable("id") Long id) {
         return ApiResult.ok(!Objects.isNull(id) && userInfoDAO.deleteById(id) > 0);
     }
 
     @Operation(summary = "批量删除用户")
+    @PreAuthorize("hasAuthority('System:User:Delete')")
     @DeleteMapping("/batch")
     public ApiResult<Boolean> deleteBatch(@RequestBody IdsParam param) {
         if (Objects.isNull(param) || Objects.isNull(param.getIds()) || param.getIds().isEmpty()) return ApiResult.ok(false);
@@ -72,6 +76,7 @@ public class UserInfoController {
     }
 
     @Operation(summary = "更新用户")
+    @PreAuthorize("hasAuthority('System:User:Edit')")
     @PutMapping
     public ApiResult<UserInfoDTO> update(@RequestBody UserInfoDTO dto) {
         if (Objects.isNull(dto) || Objects.isNull(dto.getId())) return ApiResult.ok(null);
