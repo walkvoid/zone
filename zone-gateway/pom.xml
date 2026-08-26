@@ -50,25 +50,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.walkvoid.wvframework</groupId>
-            <artifactId>wvframework-core</artifactId>
-        </dependency>
-        <!-- JWT runtime deps -->
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-api</artifactId>
-            <version>0.12.6</version>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-impl</artifactId>
-            <version>0.12.6</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt-jackson</artifactId>
-            <version>0.12.6</version>
-            <scope>runtime</scope>
+            <artifactId>wvframework-core-starter</artifactId>
         </dependency>
     </dependencies>
 

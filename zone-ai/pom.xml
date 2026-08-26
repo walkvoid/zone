@@ -99,7 +99,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.walkvoid.wvframework</groupId>
-            <artifactId>wvframework-core</artifactId>
+            <artifactId>wvframework-core-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>com.github.walkvoid.wvframework</groupId>
