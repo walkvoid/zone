@@ -29,6 +29,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/login",
                                 "/auth/register",
+                                "/auth/sms/send",
+                                "/auth/sms/login",
                                 "/auth/refresh",
                                 "/auth/logout",
                                 "/internal/**",

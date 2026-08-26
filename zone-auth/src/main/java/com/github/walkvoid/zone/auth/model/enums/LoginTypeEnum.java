@@ -5,5 +5,6 @@ package com.github.walkvoid.zone.auth.model.enums;
  */
 public enum LoginTypeEnum {
     PASSWORD,
-    REGISTER
+    REGISTER,
+    SMS
 }

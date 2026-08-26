@@ -21,4 +21,7 @@ public interface UserIdentityFeignClient {
 
     @GetMapping("/username/{username}/user-id")
     Long findUserIdByUsername(@PathVariable("username") String username);
+
+    @GetMapping("/phone/{phone}/user-id")
+    Long findUserIdByPhone(@PathVariable("phone") String phone);
 }

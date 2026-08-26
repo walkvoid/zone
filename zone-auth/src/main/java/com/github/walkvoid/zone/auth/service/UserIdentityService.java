@@ -13,4 +13,9 @@ public interface UserIdentityService {
      * 按用户名查找 userId，不存在返回 null
      */
     Long findUserIdByUsername(String username);
+
+    /**
+     * 按手机号查找 userId，不存在返回 null
+     */
+    Long findUserIdByPhone(String phone);
 }

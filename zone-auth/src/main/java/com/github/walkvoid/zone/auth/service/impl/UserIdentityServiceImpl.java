@@ -42,4 +42,13 @@ public class UserIdentityServiceImpl implements UserIdentityService {
         UserIdentity identity = userIdentityDAO.selectByTypeAndIdentifier(IdentityTypeEnum.USERNAME, username.trim());
         return identity != null ? identity.getUserId() : null;
     }
+
+    @Override
+    public Long findUserIdByPhone(String phone) {
+        if (phone == null || phone.isBlank()) {
+            return null;
+        }
+        UserIdentity identity = userIdentityDAO.selectByTypeAndIdentifier(IdentityTypeEnum.PHONE, phone.trim());
+        return identity != null ? identity.getUserId() : null;
+    }
 }

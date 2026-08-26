@@ -24,4 +24,9 @@ public class UserIdentityInternalController {
     public Long findUserIdByUsername(@PathVariable String username) {
         return userIdentityService.findUserIdByUsername(username);
     }
+
+    @GetMapping("/phone/{phone}/user-id")
+    public Long findUserIdByPhone(@PathVariable String phone) {
+        return userIdentityService.findUserIdByPhone(phone);
+    }
 }
