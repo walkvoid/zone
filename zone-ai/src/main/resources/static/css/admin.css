@@ -621,3 +621,143 @@ pre.diff {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
 }
+
+/* AI 对话 */
+.page-chat {
+  height: calc(100vh - var(--header-height) - 32px);
+  padding: 0 !important;
+}
+
+.page-chat .chat-layout {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.chat-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  padding: 12px 14px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.chat-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+  min-width: 180px;
+}
+
+.chat-field-grow {
+  flex: 1;
+  min-width: 220px;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: hsl(var(--background-deep));
+}
+
+.chat-bubble {
+  max-width: min(720px, 92%);
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.chat-bubble.user {
+  align-self: flex-end;
+  background: hsl(var(--primary));
+  color: #fff;
+}
+
+.chat-bubble.assistant {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid hsl(var(--border));
+}
+
+.chat-role {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+.chat-composer {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  padding: 12px 14px;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.chat-input {
+  flex: 1;
+  min-height: 72px;
+  margin: 0;
+}
+
+.chat-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-error {
+  min-height: 18px;
+  padding: 0 14px 10px;
+  font-size: 12px;
+  color: hsl(var(--destructive));
+}
+
+.streaming-cursor::after {
+  content: "|";
+  margin-left: 2px;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* 上下文包明细 */
+.pack-details-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.pack-detail-card {
+  border: 1px solid hsl(var(--border));
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: hsl(var(--muted));
+}
+
+.pack-detail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: hsl(var(--muted-foreground));
+}

@@ -17,6 +17,14 @@
           </div>
         </div>
         <nav class="menu">
+          <a class="menu-item" href="#/chat" data-page="chat">
+            <span class="menu-ico">◈</span>
+            AI 对话
+          </a>
+          <a class="menu-item" href="#/pack" data-page="pack">
+            <span class="menu-ico">⧉</span>
+            上下文包
+          </a>
           <a class="menu-item is-active" href="#/prompt" data-page="prompt">
             <span class="menu-ico">⌘</span>
             Prompt 模板
@@ -41,6 +49,66 @@
           <div class="header-meta">仅 AI 模块 · 无登录 / 无系统菜单</div>
         </header>
         <main class="content">
+          <section id="page-chat" class="page page-chat is-hidden">
+            <div class="chat-layout">
+              <div class="chat-toolbar">
+                <label class="chat-field">
+                  <span>模型</span>
+                  <select id="chat-model" class="select"></select>
+                </label>
+                <label class="chat-field chat-field-grow">
+                  <span>System Prompt</span>
+                  <input id="chat-system" class="input" placeholder="可选系统提示" value="你是一个有帮助的助手。" />
+                </label>
+                <button class="btn" type="button" id="chat-clear">清空对话</button>
+              </div>
+              <div id="chat-messages" class="chat-messages">
+                <div class="empty">选择模型后开始对话（调用 /ai/chat/stream）</div>
+              </div>
+              <div class="chat-composer">
+                <textarea id="chat-input" class="textarea chat-input" rows="3" placeholder="输入消息，Enter 发送，Shift+Enter 换行"></textarea>
+                <div class="chat-actions">
+                  <button class="btn btn-primary" type="button" id="chat-send">发送</button>
+                  <button class="btn" type="button" id="chat-stop" disabled>停止</button>
+                </div>
+              </div>
+              <div id="chat-error" class="chat-error"></div>
+            </div>
+          </section>
+
+          <section id="page-pack" class="page is-hidden">
+            <div class="card">
+              <div class="toolbar">
+                <div class="toolbar-left">
+                  <input id="pack-keyword" class="input" placeholder="搜索名称 / 编码" />
+                  <button class="btn" type="button" id="pack-search">查询</button>
+                </div>
+                <button class="btn btn-primary" type="button" id="pack-create">新建上下文包</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>名称</th>
+                      <th>编码</th>
+                      <th>明细数</th>
+                      <th>描述</th>
+                      <th>启用</th>
+                      <th>更新时间</th>
+                      <th class="col-op">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pack-tbody">
+                    <tr>
+                      <td colspan="7" class="empty">加载中…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="pager" id="pack-pager"></div>
+            </div>
+          </section>
+
           <section id="page-prompt" class="page">
             <div class="card">
               <div class="toolbar">

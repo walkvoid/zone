@@ -10,8 +10,15 @@
     page: "prompt",
     prompt: { current: 1, size: 10, total: 0, keyword: "" },
     bot: { current: 1, size: 10, total: 0, keyword: "" },
+    pack: { current: 1, size: 10, total: 0, keyword: "" },
     change: { current: 1, size: 10, total: 0, keyword: "" },
     turn: { current: 1, size: 10, total: 0, keyword: "" },
+    chat: {
+      messages: [],
+      streaming: false,
+      abort: null,
+      modelsLoaded: false,
+    },
     drawer: null,
     confirm: null,
   };
@@ -1036,8 +1043,389 @@
     );
   }
 
+  // ---------- 上下文包 ----------
+  async function loadPack() {
+    const tbody = qs("pack-tbody");
+    tbody.innerHTML = emptyRow(7, "加载中…");
+    const params = new URLSearchParams({
+      current: String(state.pack.current),
+      size: String(state.pack.size),
+    });
+    if (state.pack.keyword) {
+      params.set("packName", state.pack.keyword);
+    }
+    try {
+      const { records, total } = pageRecords(await request(`/ai/ai-context-pack/page?${params}`));
+      state.pack.total = total;
+      if (!records.length) {
+        tbody.innerHTML = emptyRow(7, "暂无数据");
+      } else {
+        tbody.innerHTML = records
+          .map((row) => `<tr>
+              <td>${escapeHtml(row.packName)}</td>
+              <td>${escapeHtml(row.packCode)}</td>
+              <td>${escapeHtml(row.detailCount ?? 0)}</td>
+              <td>${escapeHtml(row.description || "—")}</td>
+              <td>${tagEnabled(Number(row.isEnabled) === 1)}</td>
+              <td>${escapeHtml(row.updateTime || "—")}</td>
+              <td class="col-op">
+                <button class="btn-link" data-edit="${row.id}">编辑</button>
+                <button class="btn-link danger" data-del="${row.id}" data-name="${escapeHtml(row.packName || row.packCode)}">删除</button>
+              </td>
+            </tr>`)
+          .join("");
+        tbody.querySelectorAll("[data-edit]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            try {
+              const detail = await request(`/ai/ai-context-pack/${btn.dataset.edit}`);
+              openPackForm(detail);
+            } catch (error) {
+              toast(error.message, true);
+            }
+          });
+        });
+        tbody.querySelectorAll("[data-del]").forEach((btn) => {
+          btn.addEventListener("click", () =>
+            confirmDelete(`确定删除上下文包「${btn.dataset.name}」？`, async () => {
+              await request(`/ai/ai-context-pack/${btn.dataset.del}`, { method: "DELETE" });
+              toast("已删除");
+              await loadPack();
+            }),
+          );
+        });
+      }
+      renderPager(qs("pack-pager"), state.pack, loadPack);
+    } catch (error) {
+      tbody.innerHTML = emptyRow(7, error.message);
+    }
+  }
+
+  function detailTypeOptions(selected) {
+    return ["FILE", "CODE", "OTHER"]
+      .map((t) => {
+        const label = t === "FILE" ? "FILE 文件" : t === "CODE" ? "CODE 代码" : "OTHER 其它";
+        return `<option value="${t}" ${selected === t ? "selected" : ""}>${label}</option>`;
+      })
+      .join("");
+  }
+
+  function renderPackDetailCards(details) {
+    const list = details || [];
+    if (!list.length) {
+      return '<p class="hint" id="pack-details-empty">暂无明细，可添加 FILE / CODE / OTHER</p><div id="pack-details"></div>';
+    }
+    return `<div id="pack-details">${list
+      .map(
+        (d, i) => `
+      <div class="pack-detail-card" data-index="${i}">
+        <div class="pack-detail-head">
+          <span>#${i + 1}</span>
+          <button type="button" class="btn-link danger" data-rm-detail="${i}">删除</button>
+        </div>
+        <div class="form-row">
+          <div class="form-item">
+            <label>类型</label>
+            <select class="select d-type">${detailTypeOptions(d.detailType || "FILE")}</select>
+          </div>
+          <div class="form-item">
+            <label>标题</label>
+            <input class="input d-title" value="${escapeHtml(d.title || "")}" />
+          </div>
+        </div>
+        <div class="form-item" style="margin-bottom:10px">
+          <label>内容</label>
+          <textarea class="textarea d-content" style="min-height:72px">${escapeHtml(d.content || "")}</textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-item">
+            <label>引用 ID</label>
+            <input class="input d-ref" value="${escapeHtml(d.refId || "")}" placeholder="file_info.id" />
+          </div>
+          <div class="form-item">
+            <label>扩展 JSON</label>
+            <input class="input d-config" value="${escapeHtml(d.configJson || "")}" placeholder='{"branch":"feature/a"}' />
+          </div>
+        </div>
+      </div>`,
+      )
+      .join("")}</div>`;
+  }
+
+  function collectPackDetails() {
+    const cards = [...document.querySelectorAll("#pack-details .pack-detail-card")];
+    return cards.map((card, i) => ({
+      detailType: card.querySelector(".d-type")?.value || "OTHER",
+      title: card.querySelector(".d-title")?.value?.trim() || "",
+      content: card.querySelector(".d-content")?.value || "",
+      refId: card.querySelector(".d-ref")?.value?.trim() || null,
+      configJson: card.querySelector(".d-config")?.value?.trim() || null,
+      sortOrder: i,
+    }));
+  }
+
+  function bindPackDetailActions() {
+    const rebindRemove = () => {
+      document.querySelectorAll("[data-rm-detail]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const list = collectPackDetails();
+          list.splice(Number(btn.dataset.rmDetail), 1);
+          qs("pack-details-block").innerHTML = renderPackDetailCards(list);
+          rebindRemove();
+        });
+      });
+    };
+    qs("pack-add-detail")?.addEventListener("click", () => {
+      const list = collectPackDetails();
+      list.push({
+        detailType: "FILE",
+        title: "",
+        content: "",
+        refId: "",
+        configJson: "",
+        sortOrder: list.length,
+      });
+      qs("pack-details-block").innerHTML = renderPackDetailCards(list);
+      rebindRemove();
+    });
+    rebindRemove();
+  }
+
+  function openPackForm(row) {
+    const isEdit = Boolean(row?.id);
+    const details = row?.details ? row.details.map((d) => ({ ...d })) : [];
+    openDrawer(
+      isEdit ? "编辑上下文包" : "新建上下文包",
+      `
+      <div class="form-row">
+        <div class="form-item">
+          <label class="req">编码</label>
+          <input id="f-packCode" class="input" ${isEdit ? "disabled" : ""} value="${escapeHtml(row?.packCode || "")}" placeholder="req-a" />
+        </div>
+        <div class="form-item">
+          <label class="req">名称</label>
+          <input id="f-packName" class="input" value="${escapeHtml(row?.packName || "")}" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-item">
+          <label>启用</label>
+          <select id="f-packEnabled" class="select">
+            <option value="1" ${Number(row?.isEnabled ?? 1) === 1 ? "selected" : ""}>启用</option>
+            <option value="0" ${Number(row?.isEnabled) === 0 ? "selected" : ""}>禁用</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label>描述</label>
+          <input id="f-packDesc" class="input" value="${escapeHtml(row?.description || "")}" />
+        </div>
+      </div>
+      <div class="form-item" style="margin-bottom:14px">
+        <label>系统提示摘要</label>
+        <textarea id="f-packHint" class="textarea" style="min-height:80px" placeholder="对话选中该包时注入的摘要">${escapeHtml(row?.systemHint || "")}</textarea>
+      </div>
+      <div class="pack-details-toolbar">
+        <strong>明细</strong>
+        <button type="button" class="btn" id="pack-add-detail">添加明细</button>
+      </div>
+      <div id="pack-details-block">${renderPackDetailCards(details)}</div>
+    `,
+      async () => {
+        const payload = {
+          id: row?.id,
+          packCode: formValue("f-packCode"),
+          packName: formValue("f-packName"),
+          description: formValue("f-packDesc") || null,
+          systemHint: qs("f-packHint")?.value || null,
+          isEnabled: Number(qs("f-packEnabled").value),
+          details: collectPackDetails(),
+        };
+        if (!payload.packCode || !payload.packName) {
+          throw new Error("请填写编码和名称");
+        }
+        for (const [i, d] of payload.details.entries()) {
+          if (!["FILE", "CODE", "OTHER"].includes(String(d.detailType || "").toUpperCase())) {
+            throw new Error(`第 ${i + 1} 条明细类型无效`);
+          }
+        }
+        await request("/ai/ai-context-pack", {
+          method: isEdit ? "PUT" : "POST",
+          body: JSON.stringify(payload),
+        });
+        toast(isEdit ? "已保存" : "已创建");
+        await loadPack();
+      },
+      { wide: true },
+    );
+    bindPackDetailActions();
+  }
+
+  // ---------- AI 对话 ----------
+  async function ensureChatModels() {
+    if (state.chat.modelsLoaded) {
+      return;
+    }
+    const select = qs("chat-model");
+    select.innerHTML = `<option value="">加载中…</option>`;
+    try {
+      const list = (await request("/ai/ai-model/enabled")) || [];
+      const models = Array.isArray(list) ? list : [];
+      if (!models.length) {
+        select.innerHTML = `<option value="">暂无启用模型</option>`;
+      } else {
+        select.innerHTML = models
+          .map(
+            (m) =>
+              `<option value="${escapeHtml(m.modelCode)}">${escapeHtml(m.modelName || m.modelCode)} (${escapeHtml(m.modelCode)})</option>`,
+          )
+          .join("");
+      }
+      state.chat.modelsLoaded = true;
+    } catch (error) {
+      select.innerHTML = `<option value="">加载失败</option>`;
+      toast(error.message, true);
+    }
+  }
+
+  function renderChatMessages() {
+    const box = qs("chat-messages");
+    const messages = state.chat.messages;
+    if (!messages.length) {
+      box.innerHTML = `<div class="empty">选择模型后开始对话（调用 /ai/chat/stream）</div>`;
+      return;
+    }
+    box.innerHTML = messages
+      .map((m, idx) => {
+        const isLast = idx === messages.length - 1;
+        const cursor =
+          state.chat.streaming && isLast && m.role === "assistant" ? " streaming-cursor" : "";
+        const role = m.role === "user" ? "你" : "助手";
+        const body = escapeHtml(m.content || (m.role === "assistant" ? "…" : "")).replaceAll(
+          "\n",
+          "<br />",
+        );
+        return `<div class="chat-bubble ${m.role}">
+          <div class="chat-role">${role}</div>
+          <div class="chat-text${cursor}">${body || "…"}</div>
+        </div>`;
+      })
+      .join("");
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function setChatStreaming(on) {
+    state.chat.streaming = on;
+    qs("chat-send").disabled = on;
+    qs("chat-stop").disabled = !on;
+    qs("chat-input").disabled = on;
+  }
+
+  async function sendChat() {
+    const text = qs("chat-input").value.trim();
+    if (!text || state.chat.streaming) {
+      return;
+    }
+    const modelCode = qs("chat-model").value;
+    if (!modelCode) {
+      toast("请先在「模型配置」启用模型，或刷新本页模型列表", true);
+      await ensureChatModels();
+      return;
+    }
+    qs("chat-error").textContent = "";
+    state.chat.messages.push({ role: "user", content: text });
+    state.chat.messages.push({ role: "assistant", content: "" });
+    qs("chat-input").value = "";
+    renderChatMessages();
+
+    const history = state.chat.messages.slice(0, -1);
+    const controller = new AbortController();
+    state.chat.abort = controller;
+    setChatStreaming(true);
+
+    try {
+      const response = await fetch("/ai/chat/stream", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          modelCode,
+          systemPrompt: qs("chat-system").value.trim() || undefined,
+          messages: history,
+        }),
+      });
+      if (!response.ok) {
+        const errText = await response.text().catch(() => "");
+        throw new Error(errText || `HTTP ${response.status}`);
+      }
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error("响应体为空");
+      }
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let streamError = null;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n");
+        buffer = parts.pop() ?? "";
+        for (const rawLine of parts) {
+          const line = rawLine.trim();
+          if (!line || !line.startsWith("data:")) {
+            continue;
+          }
+          const data = line.slice(5).trim();
+          if (!data || data === "[DONE]") {
+            continue;
+          }
+          try {
+            const json = JSON.parse(data);
+            if (json.error) {
+              streamError = json.error;
+              continue;
+            }
+            if (json.delta) {
+              const last = state.chat.messages[state.chat.messages.length - 1];
+              if (last?.role === "assistant") {
+                last.content += json.delta;
+                renderChatMessages();
+              }
+            }
+          } catch {
+            // ignore
+          }
+        }
+      }
+      if (streamError) {
+        throw new Error(streamError);
+      }
+    } catch (error) {
+      if (error.name === "AbortError") {
+        qs("chat-error").textContent = "已停止生成";
+      } else {
+        const last = state.chat.messages[state.chat.messages.length - 1];
+        if (last?.role === "assistant" && !last.content) {
+          last.content = `请求失败：${error.message}`;
+        }
+        qs("chat-error").textContent = error.message;
+        renderChatMessages();
+      }
+    } finally {
+      state.chat.abort = null;
+      setChatStreaming(false);
+      renderChatMessages();
+    }
+  }
+
   function showPage(name) {
     state.page = name;
+    qs("page-chat").classList.toggle("is-hidden", name !== "chat");
+    qs("page-pack").classList.toggle("is-hidden", name !== "pack");
     qs("page-prompt").classList.toggle("is-hidden", name !== "prompt");
     qs("page-bot").classList.toggle("is-hidden", name !== "bot");
     qs("page-change").classList.toggle("is-hidden", name !== "change");
@@ -1045,9 +1433,21 @@
     document.querySelectorAll(".menu-item").forEach((item) => {
       item.classList.toggle("is-active", item.dataset.page === name);
     });
-    const titles = { bot: "机器人配置", change: "改代码历史", prompt: "Prompt 模板", turn: "对话日志" };
+    const titles = {
+      chat: "AI 对话",
+      pack: "上下文包",
+      bot: "机器人配置",
+      change: "改代码历史",
+      prompt: "Prompt 模板",
+      turn: "对话日志",
+    };
     qs("header-title").textContent = titles[name] || "Prompt 模板";
-    if (name === "bot") {
+    if (name === "chat") {
+      ensureChatModels();
+      renderChatMessages();
+    } else if (name === "pack") {
+      loadPack();
+    } else if (name === "bot") {
       loadBot();
     } else if (name === "change") {
       loadChange();
@@ -1060,7 +1460,8 @@
 
   function route() {
     const hash = (location.hash || "#/prompt").replace("#/", "");
-    showPage(hash === "bot" || hash === "change" || hash === "turn" ? hash : "prompt");
+    const allowed = ["chat", "pack", "bot", "change", "turn", "prompt"];
+    showPage(allowed.includes(hash) ? hash : "prompt");
   }
 
   qs("prompt-search").addEventListener("click", () => {
@@ -1086,6 +1487,35 @@
     }
   });
   qs("bot-create").addEventListener("click", () => openBotForm(null));
+
+  qs("pack-search").addEventListener("click", () => {
+    state.pack.keyword = formValue("pack-keyword");
+    state.pack.current = 1;
+    loadPack();
+  });
+  qs("pack-keyword").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      qs("pack-search").click();
+    }
+  });
+  qs("pack-create").addEventListener("click", () => openPackForm(null));
+
+  qs("chat-send").addEventListener("click", () => void sendChat());
+  qs("chat-stop").addEventListener("click", () => state.chat.abort?.abort());
+  qs("chat-clear").addEventListener("click", () => {
+    if (state.chat.streaming) {
+      return;
+    }
+    state.chat.messages = [];
+    qs("chat-error").textContent = "";
+    renderChatMessages();
+  });
+  qs("chat-input").addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      void sendChat();
+    }
+  });
 
   qs("change-search").addEventListener("click", () => {
     state.change.keyword = formValue("change-keyword");
