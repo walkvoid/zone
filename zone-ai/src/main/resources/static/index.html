@@ -50,29 +50,46 @@
         </header>
         <main class="content">
           <section id="page-chat" class="page page-chat is-hidden">
-            <div class="chat-layout">
-              <div class="chat-toolbar">
-                <label class="chat-field">
-                  <span>模型</span>
-                  <select id="chat-model" class="select"></select>
-                </label>
-                <label class="chat-field chat-field-grow">
-                  <span>System Prompt</span>
-                  <input id="chat-system" class="input" placeholder="可选系统提示" value="你是一个有帮助的助手。" />
-                </label>
-                <button class="btn" type="button" id="chat-clear">清空对话</button>
-              </div>
-              <div id="chat-messages" class="chat-messages">
-                <div class="empty">选择模型后开始对话（调用 /ai/chat/stream）</div>
-              </div>
-              <div class="chat-composer">
-                <textarea id="chat-input" class="textarea chat-input" rows="3" placeholder="输入消息，Enter 发送，Shift+Enter 换行"></textarea>
-                <div class="chat-actions">
-                  <button class="btn btn-primary" type="button" id="chat-send">发送</button>
-                  <button class="btn" type="button" id="chat-stop" disabled>停止</button>
+            <div id="chat-shell" class="chat-shell">
+              <aside class="chat-history">
+                <button class="btn btn-primary chat-new-btn" type="button" id="chat-new">新对话</button>
+                <div id="chat-history-list" class="chat-history-list"></div>
+              </aside>
+              <div class="chat-stage">
+                <header class="chat-stage-bar">
+                  <button class="btn chat-history-toggle" type="button" id="chat-history-toggle">历史</button>
+                  <div class="chat-stage-heading">
+                    <div id="chat-title" class="chat-stage-title">新对话</div>
+                    <div id="chat-subtitle" class="chat-stage-sub">选择模型后开始对话</div>
+                  </div>
+                  <button class="btn" type="button" id="chat-delete">删除</button>
+                </header>
+                <div id="chat-messages" class="chat-messages"></div>
+                <div class="chat-dock">
+                  <div class="chat-composer">
+                    <textarea id="chat-input" class="textarea chat-input" rows="3" placeholder="输入消息，Enter 发送，Shift+Enter 换行"></textarea>
+                    <div class="chat-actions">
+                      <button class="btn btn-primary" type="button" id="chat-send">发送</button>
+                      <button class="btn" type="button" id="chat-stop" disabled>停止</button>
+                    </div>
+                  </div>
+                  <div class="chat-controls">
+                    <label class="chat-field">
+                      <span>模型</span>
+                      <select id="chat-model" class="select"></select>
+                    </label>
+                    <label class="chat-field chat-field-grow">
+                      <span>Prompt</span>
+                      <select id="chat-prompt" class="select"></select>
+                    </label>
+                    <label class="chat-field chat-field-grow">
+                      <span>上下文包</span>
+                      <select id="chat-pack" class="select"></select>
+                    </label>
+                  </div>
+                  <div id="chat-error" class="chat-error"></div>
                 </div>
               </div>
-              <div id="chat-error" class="chat-error"></div>
             </div>
           </section>
 

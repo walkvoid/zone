@@ -70,8 +70,17 @@ public class PromptTemplateController {
         return ApiResult.ok(dao.page(pageRequest));
     }
 
+    @Operation(summary = "查询启用的模板")
+    @GetMapping("/enabled")
+    public ApiResult<List<PromptTemplateDTO>> enabled() {
+        List<PromptTemplateDTO> list = dao.selectEnabled().stream()
+                .map(this::toDTO)
+                .toList();
+        return ApiResult.ok(list);
+    }
+
     @Operation(summary = "按ID查询")
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public ApiResult<PromptTemplateDTO> getById(@PathVariable("id") Long id) {
         PromptTemplate m = dao.selectById(id);
         return ApiResult.ok(m != null ? toDTO(m) : null);

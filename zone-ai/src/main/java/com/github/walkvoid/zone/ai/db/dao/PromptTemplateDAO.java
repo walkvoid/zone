@@ -45,6 +45,12 @@ public class PromptTemplateDAO {
                 .eq("template_code", templateCode));
     }
 
+    public List<PromptTemplate> selectEnabled() {
+        return mapper.selectList(new QueryWrapper<PromptTemplate>()
+                .eq("status", 1)
+                .orderByDesc("update_time"));
+    }
+
     public List<PromptTemplate> selectList(PromptTemplate condition) {
         QueryWrapper<PromptTemplate> qw = new QueryWrapper<>(condition);
         qw.orderByDesc("update_time");

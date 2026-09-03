@@ -14,10 +14,11 @@
     change: { current: 1, size: 10, total: 0, keyword: "" },
     turn: { current: 1, size: 10, total: 0, keyword: "" },
     chat: {
-      messages: [],
+      conversations: [],
+      activeId: null,
       streaming: false,
       abort: null,
-      modelsLoaded: false,
+      optionsLoaded: false,
     },
     drawer: null,
     confirm: null,
@@ -1260,37 +1261,252 @@
   }
 
   // ---------- AI 对话 ----------
-  async function ensureChatModels() {
-    if (state.chat.modelsLoaded) {
+  const CHAT_STORE_KEY = "zone-ai-demo-chat-v1";
+  const DEFAULT_SYSTEM_PROMPT = "你是一个有帮助的助手。";
+
+  function uid() {
+    return crypto.randomUUID ? crypto.randomUUID() : `c-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  }
+
+  function formatChatTime(ts) {
+    const d = new Date(ts);
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mi = String(d.getMinutes()).padStart(2, "0");
+    return `${mm}-${dd} ${hh}:${mi}`;
+  }
+
+  function renderMarkdown(source) {
+    const escaped = escapeHtml(source || "");
+    const withBlocks = escaped.replace(
+      /```([\s\S]*?)```/g,
+      (_m, code) => `<pre><code>${String(code).trim()}</code></pre>`,
+    );
+    return withBlocks
+      .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/\n/g, "<br />");
+  }
+
+  function createConversation() {
+    return {
+      id: uid(),
+      title: "新对话",
+      updatedAt: Date.now(),
+      modelCode: qs("chat-model")?.value || "",
+      promptTemplateId: "",
+      contextPackId: "",
+      messages: [],
+    };
+  }
+
+  function persistChat() {
+    localStorage.setItem(
+      CHAT_STORE_KEY,
+      JSON.stringify({
+        conversations: state.chat.conversations,
+        activeId: state.chat.activeId,
+      }),
+    );
+  }
+
+  function loadChatStore() {
+    try {
+      const raw = localStorage.getItem(CHAT_STORE_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      state.chat.conversations = Array.isArray(parsed?.conversations) ? parsed.conversations : [];
+      state.chat.activeId = parsed?.activeId || null;
+    } catch {
+      state.chat.conversations = [];
+      state.chat.activeId = null;
+    }
+    if (!state.chat.conversations.length) {
+      const first = createConversation();
+      state.chat.conversations = [first];
+      state.chat.activeId = first.id;
+      persistChat();
+    } else if (!state.chat.conversations.some((c) => c.id === state.chat.activeId)) {
+      state.chat.activeId = state.chat.conversations[0].id;
+    }
+  }
+
+  function activeConversation() {
+    return state.chat.conversations.find((c) => c.id === state.chat.activeId);
+  }
+
+  function sortedConversations() {
+    return [...state.chat.conversations].sort((a, b) => b.updatedAt - a.updatedAt);
+  }
+
+  function optionLabel(select, value, fallback) {
+    if (!value) {
+      return fallback;
+    }
+    const opt = [...(select?.options || [])].find((item) => item.value === String(value));
+    return opt?.textContent || fallback || value;
+  }
+
+  function chatSubtitle(conv) {
+    if (!conv) {
+      return "选择模型、Prompt 和上下文包后开始对话";
+    }
+    const parts = [
+      optionLabel(qs("chat-model"), conv.modelCode, "默认模型"),
+      optionLabel(qs("chat-prompt"), conv.promptTemplateId, "默认助手"),
+      optionLabel(qs("chat-pack"), conv.contextPackId, "无上下文包"),
+    ];
+    return parts.filter(Boolean).join(" · ");
+  }
+
+  function fillSelect(el, items, { value, label, placeholder, emptyLabel }) {
+    if (!items.length) {
+      el.innerHTML = `<option value="">${escapeHtml(emptyLabel || "暂无数据")}</option>`;
       return;
     }
-    const select = qs("chat-model");
-    select.innerHTML = `<option value="">加载中…</option>`;
+    const options = [];
+    if (placeholder !== undefined) {
+      options.push(`<option value="">${escapeHtml(placeholder)}</option>`);
+    }
+    items.forEach((item) => {
+      options.push(
+        `<option value="${escapeHtml(item[value] ?? "")}">${escapeHtml(label(item))}</option>`,
+      );
+    });
+    el.innerHTML = options.join("");
+  }
+
+  async function ensureChatOptions() {
+    if (state.chat.optionsLoaded) {
+      syncChatControls();
+      return;
+    }
+    qs("chat-model").innerHTML = `<option value="">加载中…</option>`;
+    qs("chat-prompt").innerHTML = `<option value="">加载中…</option>`;
+    qs("chat-pack").innerHTML = `<option value="">加载中…</option>`;
     try {
-      const list = (await request("/ai/ai-model/enabled")) || [];
-      const models = Array.isArray(list) ? list : [];
-      if (!models.length) {
-        select.innerHTML = `<option value="">暂无启用模型</option>`;
-      } else {
-        select.innerHTML = models
-          .map(
-            (m) =>
-              `<option value="${escapeHtml(m.modelCode)}">${escapeHtml(m.modelName || m.modelCode)} (${escapeHtml(m.modelCode)})</option>`,
-          )
-          .join("");
+      const [models, prompts, packs] = await Promise.all([
+        request("/ai/ai-model/enabled").catch(() => []),
+        request("/ai/prompt-template/enabled").catch(() => []),
+        request("/ai/ai-context-pack/enabled").catch(() => []),
+      ]);
+      fillSelect(qs("chat-model"), Array.isArray(models) ? models : [], {
+        value: "modelCode",
+        label: (m) => `${m.modelName || m.modelCode} (${m.modelCode})`,
+        placeholder: "默认模型",
+        emptyLabel: "暂无启用模型",
+      });
+      fillSelect(qs("chat-prompt"), Array.isArray(prompts) ? prompts : [], {
+        value: "id",
+        label: (p) => p.templateName || p.templateCode,
+        placeholder: "默认助手",
+        emptyLabel: "默认助手（暂无模板）",
+      });
+      fillSelect(qs("chat-pack"), Array.isArray(packs) ? packs : [], {
+        value: "id",
+        label: (p) => p.packName || p.packCode,
+        placeholder: "不使用上下文包",
+        emptyLabel: "不使用上下文包",
+      });
+      const conv = activeConversation();
+      if (conv && conv.modelCode && Array.isArray(models)
+          && !models.some((m) => m.modelCode === conv.modelCode)) {
+        conv.modelCode = "";
+        persistChat();
       }
-      state.chat.modelsLoaded = true;
+      state.chat.optionsLoaded = true;
     } catch (error) {
-      select.innerHTML = `<option value="">加载失败</option>`;
+      qs("chat-model").innerHTML = `<option value="">加载失败</option>`;
       toast(error.message, true);
     }
+    syncChatControls();
+  }
+
+  function syncChatControls() {
+    const conv = activeConversation();
+    if (!conv) {
+      return;
+    }
+    qs("chat-title").textContent = conv.title || "新对话";
+    if (!state.chat.optionsLoaded) {
+      qs("chat-subtitle").textContent = chatSubtitle(conv);
+      return;
+    }
+    const model = qs("chat-model");
+    const prompt = qs("chat-prompt");
+    const pack = qs("chat-pack");
+    if (conv.modelCode && [...model.options].some((o) => o.value === conv.modelCode)) {
+      model.value = conv.modelCode;
+    } else {
+      model.value = "";
+      if (conv.modelCode) {
+        conv.modelCode = "";
+      }
+    }
+    if (conv.promptTemplateId && [...prompt.options].some((o) => o.value === String(conv.promptTemplateId))) {
+      prompt.value = String(conv.promptTemplateId);
+    } else if (conv.promptTemplateId) {
+      prompt.value = "";
+      conv.promptTemplateId = "";
+    } else {
+      prompt.value = "";
+    }
+    if (conv.contextPackId && [...pack.options].some((o) => o.value === String(conv.contextPackId))) {
+      pack.value = String(conv.contextPackId);
+    } else if (conv.contextPackId) {
+      pack.value = "";
+      conv.contextPackId = "";
+    } else {
+      pack.value = "";
+    }
+    qs("chat-subtitle").textContent = chatSubtitle(conv);
+  }
+
+  function captureChatControls() {
+    const conv = activeConversation();
+    if (!conv) {
+      return;
+    }
+    conv.modelCode = qs("chat-model").value;
+    conv.promptTemplateId = qs("chat-prompt").value;
+    conv.contextPackId = qs("chat-pack").value;
+    conv.updatedAt = Date.now();
+    persistChat();
+    qs("chat-subtitle").textContent = chatSubtitle(conv);
+  }
+
+  function renderChatHistory() {
+    const box = qs("chat-history-list");
+    const list = sortedConversations();
+    if (!list.length) {
+      box.innerHTML = `<div class="empty">暂无对话</div>`;
+      return;
+    }
+    box.innerHTML = list
+      .map(
+        (item) => `
+        <button type="button" class="chat-history-item${item.id === state.chat.activeId ? " is-active" : ""}" data-id="${escapeHtml(item.id)}">
+          <span class="chat-history-title">${escapeHtml(item.title || "新对话")}</span>
+          <span class="chat-history-time">${escapeHtml(formatChatTime(item.updatedAt))}</span>
+        </button>`,
+      )
+      .join("");
+    box.querySelectorAll(".chat-history-item").forEach((btn) => {
+      btn.addEventListener("click", () => selectConversation(btn.dataset.id));
+    });
   }
 
   function renderChatMessages() {
     const box = qs("chat-messages");
-    const messages = state.chat.messages;
+    const conv = activeConversation();
+    const messages = conv?.messages || [];
     if (!messages.length) {
-      box.innerHTML = `<div class="empty">选择模型后开始对话（调用 /ai/chat/stream）</div>`;
+      box.innerHTML = `
+        <div class="chat-empty">
+          <div class="chat-empty-mark">AI</div>
+          <h2>有什么可以帮你？</h2>
+          <p>左侧查看历史对话，下方选择模型、Prompt 模板和上下文包后开始提问。</p>
+        </div>`;
       return;
     }
     box.innerHTML = messages
@@ -1299,17 +1515,63 @@
         const cursor =
           state.chat.streaming && isLast && m.role === "assistant" ? " streaming-cursor" : "";
         const role = m.role === "user" ? "你" : "助手";
-        const body = escapeHtml(m.content || (m.role === "assistant" ? "…" : "")).replaceAll(
-          "\n",
-          "<br />",
-        );
-        return `<div class="chat-bubble ${m.role}">
-          <div class="chat-role">${role}</div>
-          <div class="chat-text${cursor}">${body || "…"}</div>
+        const body = renderMarkdown(m.content || (m.role === "assistant" ? "…" : ""));
+        return `<div class="chat-row ${m.role}">
+          <div class="chat-bubble ${m.role}">
+            <div class="chat-role">${role}</div>
+            <div class="chat-text${cursor}">${body || "…"}</div>
+          </div>
         </div>`;
       })
       .join("");
     box.scrollTop = box.scrollHeight;
+  }
+
+  function refreshChatView() {
+    renderChatHistory();
+    syncChatControls();
+    renderChatMessages();
+  }
+
+  function selectConversation(id) {
+    if (!id || state.chat.activeId === id) {
+      qs("chat-shell")?.classList.remove("is-history-open");
+      return;
+    }
+    state.chat.activeId = id;
+    persistChat();
+    qs("chat-error").textContent = "";
+    qs("chat-shell")?.classList.remove("is-history-open");
+    refreshChatView();
+  }
+
+  function onNewChat() {
+    if (state.chat.streaming) {
+      return;
+    }
+    const next = createConversation();
+    state.chat.conversations.unshift(next);
+    state.chat.activeId = next.id;
+    persistChat();
+    qs("chat-error").textContent = "";
+    qs("chat-input").value = "";
+    refreshChatView();
+  }
+
+  function onDeleteChat() {
+    if (state.chat.streaming) {
+      return;
+    }
+    confirmDelete("确认删除当前对话？本地历史将无法恢复。", () => {
+      state.chat.conversations = state.chat.conversations.filter((c) => c.id !== state.chat.activeId);
+      if (!state.chat.conversations.length) {
+        state.chat.conversations = [createConversation()];
+      }
+      state.chat.activeId = state.chat.conversations[0].id;
+      persistChat();
+      qs("chat-error").textContent = "";
+      refreshChatView();
+    });
   }
 
   function setChatStreaming(on) {
@@ -1317,6 +1579,11 @@
     qs("chat-send").disabled = on;
     qs("chat-stop").disabled = !on;
     qs("chat-input").disabled = on;
+    qs("chat-model").disabled = on;
+    qs("chat-prompt").disabled = on;
+    qs("chat-pack").disabled = on;
+    qs("chat-new").disabled = on;
+    qs("chat-delete").disabled = on;
   }
 
   async function sendChat() {
@@ -1324,19 +1591,25 @@
     if (!text || state.chat.streaming) {
       return;
     }
-    const modelCode = qs("chat-model").value;
-    if (!modelCode) {
-      toast("请先在「模型配置」启用模型，或刷新本页模型列表", true);
-      await ensureChatModels();
+    await ensureChatOptions();
+    captureChatControls();
+    const conv = activeConversation();
+    if (!conv) {
       return;
     }
+    const modelCode = conv.modelCode || qs("chat-model").value || undefined;
     qs("chat-error").textContent = "";
-    state.chat.messages.push({ role: "user", content: text });
-    state.chat.messages.push({ role: "assistant", content: "" });
+    conv.messages.push({ role: "user", content: text });
+    conv.messages.push({ role: "assistant", content: "" });
+    if (conv.title === "新对话") {
+      conv.title = text.slice(0, 28) || "新对话";
+    }
+    conv.updatedAt = Date.now();
     qs("chat-input").value = "";
-    renderChatMessages();
+    persistChat();
+    refreshChatView();
 
-    const history = state.chat.messages.slice(0, -1);
+    const history = conv.messages.slice(0, -1);
     const controller = new AbortController();
     state.chat.abort = controller;
     setChatStreaming(true);
@@ -1351,7 +1624,9 @@
         signal: controller.signal,
         body: JSON.stringify({
           modelCode,
-          systemPrompt: qs("chat-system").value.trim() || undefined,
+          promptTemplateId: conv.promptTemplateId || undefined,
+          contextPackId: conv.contextPackId || undefined,
+          systemPrompt: conv.promptTemplateId ? undefined : DEFAULT_SYSTEM_PROMPT,
           messages: history,
         }),
       });
@@ -1390,9 +1665,11 @@
               continue;
             }
             if (json.delta) {
-              const last = state.chat.messages[state.chat.messages.length - 1];
+              const current = activeConversation();
+              const last = current?.messages[current.messages.length - 1];
               if (last?.role === "assistant") {
                 last.content += json.delta;
+                current.updatedAt = Date.now();
                 renderChatMessages();
               }
             }
@@ -1408,7 +1685,8 @@
       if (error.name === "AbortError") {
         qs("chat-error").textContent = "已停止生成";
       } else {
-        const last = state.chat.messages[state.chat.messages.length - 1];
+        const current = activeConversation();
+        const last = current?.messages[current.messages.length - 1];
         if (last?.role === "assistant" && !last.content) {
           last.content = `请求失败：${error.message}`;
         }
@@ -1418,7 +1696,8 @@
     } finally {
       state.chat.abort = null;
       setChatStreaming(false);
-      renderChatMessages();
+      persistChat();
+      refreshChatView();
     }
   }
 
@@ -1443,8 +1722,8 @@
     };
     qs("header-title").textContent = titles[name] || "Prompt 模板";
     if (name === "chat") {
-      ensureChatModels();
-      renderChatMessages();
+      void ensureChatOptions();
+      refreshChatView();
     } else if (name === "pack") {
       loadPack();
     } else if (name === "bot") {
@@ -1502,13 +1781,13 @@
 
   qs("chat-send").addEventListener("click", () => void sendChat());
   qs("chat-stop").addEventListener("click", () => state.chat.abort?.abort());
-  qs("chat-clear").addEventListener("click", () => {
-    if (state.chat.streaming) {
-      return;
-    }
-    state.chat.messages = [];
-    qs("chat-error").textContent = "";
-    renderChatMessages();
+  qs("chat-new").addEventListener("click", onNewChat);
+  qs("chat-delete").addEventListener("click", onDeleteChat);
+  qs("chat-history-toggle").addEventListener("click", () => {
+    qs("chat-shell").classList.toggle("is-history-open");
+  });
+  ["chat-model", "chat-prompt", "chat-pack"].forEach((id) => {
+    qs(id).addEventListener("change", captureChatControls);
   });
   qs("chat-input").addEventListener("keydown", (event) => {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -1581,5 +1860,6 @@
   });
 
   window.addEventListener("hashchange", route);
+  loadChatStore();
   route();
 })();

@@ -1,7 +1,13 @@
 package com.github.walkvoid.zone.ai.service;
 
+import com.github.walkvoid.zone.ai.db.dao.AiContextPackDAO;
+import com.github.walkvoid.zone.ai.db.dao.AiContextPackDetailDAO;
 import com.github.walkvoid.zone.ai.db.dao.AiModelDAO;
+import com.github.walkvoid.zone.ai.db.dao.PromptTemplateDAO;
+import com.github.walkvoid.zone.ai.db.entity.AiContextPack;
+import com.github.walkvoid.zone.ai.db.entity.AiContextPackDetail;
 import com.github.walkvoid.zone.ai.db.entity.AiModel;
+import com.github.walkvoid.zone.ai.db.entity.PromptTemplate;
 import com.github.walkvoid.zone.ai.llm.LLMClient;
 import com.github.walkvoid.zone.ai.model.dto.ChatMessageItem;
 import com.github.walkvoid.zone.ai.model.dto.ChatStreamRequest;
@@ -20,8 +26,19 @@ import java.util.function.Consumer;
 @Service
 public class ChatStreamService {
 
+    private static final int MAX_PACK_CHARS = 60_000;
+
     @Autowired
     private AiModelDAO aiModelDAO;
+
+    @Autowired
+    private PromptTemplateDAO promptTemplateDAO;
+
+    @Autowired
+    private AiContextPackDAO contextPackDAO;
+
+    @Autowired
+    private AiContextPackDetailDAO contextPackDetailDAO;
 
     @Autowired
     private LLMClient llmClient;
@@ -41,7 +58,7 @@ public class ChatStreamService {
 
         List<Map<String, String>> messages = toMaps(request.getMessages());
         List<Map<String, String>> finalMessages =
-                LLMClient.buildMessages(request.getSystemPrompt(), messages);
+                LLMClient.buildMessages(buildSystemPrompt(request), messages);
 
         llmClient.streamChat(
                 model.getBaseUrl(),
@@ -56,9 +73,67 @@ public class ChatStreamService {
         }
     }
 
+    private String buildSystemPrompt(ChatStreamRequest request) {
+        StringBuilder system = new StringBuilder();
+        if (StringUtils.hasText(request.getSystemPrompt())) {
+            system.append(request.getSystemPrompt().trim());
+        } else if (request.getPromptTemplateId() != null) {
+            PromptTemplate template = promptTemplateDAO.selectById(request.getPromptTemplateId());
+            if (template == null) {
+                throw new IllegalArgumentException("Prompt 模板不存在");
+            }
+            if (StringUtils.hasText(template.getTemplateContent())) {
+                system.append(template.getTemplateContent().trim());
+            }
+        }
+
+        if (request.getContextPackId() != null) {
+            String packText = buildContextPackText(request.getContextPackId());
+            if (StringUtils.hasText(packText)) {
+                if (system.length() > 0) {
+                    system.append("\n\n");
+                }
+                system.append(packText);
+            }
+        }
+        return system.length() == 0 ? null : system.toString();
+    }
+
+    private String buildContextPackText(Long packId) {
+        AiContextPack pack = contextPackDAO.selectById(packId);
+        if (pack == null) {
+            throw new IllegalArgumentException("上下文包不存在");
+        }
+        StringBuilder text = new StringBuilder();
+        text.append("【上下文包】").append(StringUtils.hasText(pack.getPackName())
+                ? pack.getPackName()
+                : pack.getPackCode());
+        if (StringUtils.hasText(pack.getSystemHint())) {
+            text.append("\n").append(pack.getSystemHint().trim());
+        }
+        List<AiContextPackDetail> details = contextPackDetailDAO.selectByPackId(packId);
+        for (AiContextPackDetail detail : details) {
+            if (detail == null || !StringUtils.hasText(detail.getContent())) {
+                continue;
+            }
+            text.append("\n\n");
+            String title = StringUtils.hasText(detail.getTitle()) ? detail.getTitle().trim() : "材料";
+            String type = StringUtils.hasText(detail.getDetailType()) ? detail.getDetailType().trim() : "OTHER";
+            text.append("### ").append(title).append(" (").append(type).append(")\n");
+            text.append(detail.getContent().trim());
+        }
+        if (text.length() > MAX_PACK_CHARS) {
+            return text.substring(0, MAX_PACK_CHARS) + "\n…(上下文包过长，已截断)";
+        }
+        return text.toString();
+    }
+
     private AiModel resolveModel(String modelCode) {
         if (StringUtils.hasText(modelCode)) {
-            return aiModelDAO.selectByCode(modelCode.trim());
+            AiModel specified = aiModelDAO.selectByCode(modelCode.trim());
+            if (specified != null) {
+                return specified;
+            }
         }
         List<AiModel> enabled = aiModelDAO.selectEnabled();
         if (enabled == null || enabled.isEmpty()) {
