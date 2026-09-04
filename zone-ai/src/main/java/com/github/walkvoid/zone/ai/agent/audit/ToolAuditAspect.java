@@ -1,6 +1,6 @@
 package com.github.walkvoid.zone.ai.agent.audit;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.ai.agent.AgentAuditProperties;
 import com.github.walkvoid.zone.ai.agent.AgentTurnContext;

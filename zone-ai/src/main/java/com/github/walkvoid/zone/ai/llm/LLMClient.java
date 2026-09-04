@@ -1,6 +1,6 @@
 package com.github.walkvoid.zone.ai.llm;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.github.walkvoid.wvframework.utils.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

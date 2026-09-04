@@ -1,6 +1,6 @@
 package com.github.walkvoid.zone.finance.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.type.TypeReference;
 import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.finance.service.StockDailyService;
 import com.github.walkvoid.zone.finance.db.dao.StockDailyDAO;

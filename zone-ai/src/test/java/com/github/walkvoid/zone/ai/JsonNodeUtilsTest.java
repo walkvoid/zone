@@ -1,6 +1,6 @@
 package com.github.walkvoid.zone.ai;
 
-import com.fasterxml.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.NullNode;
 import com.github.walkvoid.wvframework.utils.JsonNodeUtils;
 import com.github.walkvoid.wvframework.utils.JsonUtils;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,6 @@
 package com.github.walkvoid.zone.ai.tool.sql;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import com.github.walkvoid.wvframework.utils.JsonUtils;
 import org.junit.jupiter.api.Test;
 

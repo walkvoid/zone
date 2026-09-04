@@ -1,7 +1,7 @@
 package com.github.walkvoid.zone.ai.channel.weixin;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import com.github.walkvoid.wvframework.utils.JsonNodeUtils;
 import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.ai.channel.core.ChannelInboundMessage;
@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -130,12 +129,12 @@ public class WeiXinMessageBridge {
             return "";
         }
         StringBuilder sb = new StringBuilder();
-        node.fieldNames().forEachRemaining(name -> {
+        for (String name : node.propertyNames()) {
             if (!sb.isEmpty()) {
                 sb.append(',');
             }
             sb.append(name);
-        });
+        }
         return sb.toString();
     }
 
@@ -211,9 +210,7 @@ public class WeiXinMessageBridge {
         if (node == null || !node.isObject()) {
             return map;
         }
-        Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> e = fields.next();
+        for (Map.Entry<String, JsonNode> e : node.properties()) {
             map.put(e.getKey(), e.getValue());
         }
         return map;

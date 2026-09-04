@@ -1,6 +1,6 @@
 package com.github.walkvoid.zone.ai.channel.weixin;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.ai.channel.core.ChannelImage;
 import org.junit.jupiter.api.Test;

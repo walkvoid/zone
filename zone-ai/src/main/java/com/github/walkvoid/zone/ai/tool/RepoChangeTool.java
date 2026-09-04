@@ -1,8 +1,8 @@
 package com.github.walkvoid.zone.ai.tool;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.ai.tool.repo.RepoToolProperties;
 import com.github.walkvoid.zone.ai.tool.repo.RepoWriteMode;

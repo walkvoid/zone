@@ -1,8 +1,8 @@
 package com.github.walkvoid.zone.ai.tool;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import com.github.walkvoid.wvframework.utils.JsonNodeUtils;
 import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.ai.tool.log.BeeCloudProperties;
@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -54,8 +54,8 @@ public class AppLogSearchTool {
         this.properties = properties;
         this.tokenStore = tokenStore;
         this.restTemplate = restTemplateBuilder
-                .setConnectTimeout(Duration.ofSeconds(properties.requestTimeoutSeconds()))
-                .setReadTimeout(Duration.ofSeconds(Math.max(properties.requestTimeoutSeconds(), 30)))
+                .connectTimeout(Duration.ofSeconds(properties.requestTimeoutSeconds()))
+                .readTimeout(Duration.ofSeconds(Math.max(properties.requestTimeoutSeconds(), 30)))
                 .errorHandler(new DefaultResponseErrorHandler() {
                     @Override
                     public boolean hasError(ClientHttpResponse response) throws IOException {

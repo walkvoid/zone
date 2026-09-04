@@ -1,7 +1,7 @@
 package com.github.walkvoid.zone.ai.tool;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import com.github.walkvoid.wvframework.fileservice.FileService;
 import com.github.walkvoid.wvframework.fileservice.entity.FileInfo;
 import com.github.walkvoid.wvframework.utils.JsonUtils;

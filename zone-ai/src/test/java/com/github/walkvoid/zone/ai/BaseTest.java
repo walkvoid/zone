@@ -15,7 +15,7 @@ import com.github.walkvoid.zone.ai.tool.AppLogSearchTool;
 import com.github.walkvoid.zone.ai.tool.RepoReadTool;
 import com.github.walkvoid.zone.ai.tool.SqlQueryTool;
 import com.github.walkvoid.zone.ai.tool.sql.SqlQuerySupport;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.github.walkvoid.wvframework.utils.JsonNodeUtils;
 import java.util.List;
 import org.junit.jupiter.api.MethodOrderer;
@@ -29,7 +29,7 @@ import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,31 +45,31 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BaseTest {
 
-    @MockBean
+    @MockitoBean
     private AiBotConfigMapper aiBotConfigMapper;
 
-    @MockBean
+    @MockitoBean
     private AiModelMapper aiModelMapper;
 
-    @MockBean
+    @MockitoBean
     private McpServerConfigMapper mcpServerConfigMapper;
 
-    @MockBean
+    @MockitoBean
     private PromptTemplateMapper promptTemplateMapper;
 
-    @MockBean
+    @MockitoBean
     private PromptTemplateRunRecordMapper promptTemplateRunRecordMapper;
 
-    @MockBean
+    @MockitoBean
     private AiCodeChangeMapper aiCodeChangeMapper;
 
-    @MockBean
+    @MockitoBean
     private AiCodeChangePatchMapper aiCodeChangePatchMapper;
 
-    @MockBean
+    @MockitoBean
     private AiAgentTurnMapper aiAgentTurnMapper;
 
-    @MockBean
+    @MockitoBean
     private AiAgentStepMapper aiAgentStepMapper;
 
     @Autowired

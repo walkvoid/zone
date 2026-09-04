@@ -1,8 +1,8 @@
 package com.github.walkvoid.zone.ai.tool;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import com.github.walkvoid.wvframework.utils.JsonUtils;
 import com.github.walkvoid.zone.ai.tool.sql.SqlGuard;
 import com.github.walkvoid.zone.ai.tool.write.DbInsertToolProperties;
@@ -20,7 +20,6 @@ import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -144,9 +143,7 @@ public class DbInsertTool {
             }
 
             Map<String, Object> columns = new LinkedHashMap<>();
-            Iterator<Map.Entry<String, JsonNode>> fields = root.fields();
-            while (fields.hasNext()) {
-                Map.Entry<String, JsonNode> entry = fields.next();
+            for (Map.Entry<String, JsonNode> entry : root.properties()) {
                 String col = SqlGuard.requireIdent(entry.getKey(), "column").toLowerCase(Locale.ROOT);
                 if (isBlockedColumn(col)) {
                     return error("column is blocked: " + col);
