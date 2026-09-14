@@ -25,7 +25,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.embedding.EmbeddingModel;
-import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -140,7 +139,7 @@ public class BaseTest {
 
 
     @Autowired
-    private OpenAiChatModel chatModel;
+    private ChatClient.Builder chatClientBuilder;
 
     @Autowired
     private AppLogSearchTool logSearchTool;
@@ -150,7 +149,7 @@ public class BaseTest {
         String userPrompt = "搜一下traceId为abef69813c36423d97d8755d35de89ca.153.17867000988760251最近一小时qa环境的beecloud搜索日志,并且帮我查一下分析查询用了什么sql";
         //String userPrompt = "测试一下";
 
-        ChatClient chatClient = ChatClient.builder(chatModel).build();
+        ChatClient chatClient = chatClientBuilder.build();
         String resp = chatClient.prompt()
                 .user(userPrompt)
                 .tools(logSearchTool) // 注册工具，AI会读取@Tool注解
@@ -183,7 +182,7 @@ public class BaseTest {
                 "{\"by\":\"id\",\"value\":\"" + id + "\"}", 20));
 
         String userPrompt = "帮忙查一下融资Id1381447308451790883的状态，融资发起方是谁，向哪个资金方银行发起的";
-        ChatClient chatClient = ChatClient.builder(chatModel).build();
+        ChatClient chatClient = chatClientBuilder.build();
         String resp = chatClient.prompt()
                 .system("你是供应链金融排障助手。必须调用 SqlQueryTool。"
                         + "融资Id 先 runNamedQuery：ts_transaction（value=id）、ts_asset（by=id）、pay_trade（by=id 或 transaction_id）。"
@@ -231,7 +230,7 @@ public class BaseTest {
                 "application-lls.properties must be blocked");
 
         String userPrompt = "请帮忙分析一下司库推送开立凭证的代码，帮忙解答如果司库的合同文件是压缩文件，我们会怎么处理";
-        ChatClient chatClient = ChatClient.builder(chatModel).build();
+        ChatClient chatClient = chatClientBuilder.build();
         String resp = chatClient.prompt()
                 .system("你是代码助手。必须调用 RepoReadTool：先 listRepos 或 searchCode，再 readSourceFile。"
                         + "不要在未调用工具时编造路径。")

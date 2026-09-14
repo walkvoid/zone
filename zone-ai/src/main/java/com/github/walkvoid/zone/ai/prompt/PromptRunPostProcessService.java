@@ -9,7 +9,6 @@ import com.github.walkvoid.zone.ai.agent.audit.AgentAuditQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -36,10 +35,12 @@ public class PromptRunPostProcessService {
     private final AgentToolRegistry agentToolRegistry;
     private final AgentAuditQueue auditQueue;
 
-    public PromptRunPostProcessService(OpenAiChatModel chatModel,
+    public PromptRunPostProcessService(ChatClient.Builder chatClientBuilder,
                                        AgentToolRegistry agentToolRegistry,
                                        ObjectProvider<AgentAuditQueue> auditQueue) {
-        this.chatClient = ChatClient.builder(chatModel).build();
+        this.chatClient = chatClientBuilder
+                .defaultSystem(SYSTEM_PROMPT)
+                .build();
         this.agentToolRegistry = agentToolRegistry;
         this.auditQueue = auditQueue == null ? null : auditQueue.getIfAvailable();
     }
@@ -99,7 +100,6 @@ public class PromptRunPostProcessService {
         offerAudit(AgentAuditEvent.turnStart(turn, false));
         try {
             var spec = chatClient.prompt()
-                    .system(SYSTEM_PROMPT)
                     .user(userMessage)
                     .tools(tools);
             String content = spec.call().content();

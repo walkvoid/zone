@@ -13,6 +13,7 @@ import com.github.walkvoid.zone.ai.tool.RepoChangeTool;
 import com.github.walkvoid.zone.ai.tool.RepoReadTool;
 import com.github.walkvoid.zone.ai.tool.SqlQueryTool;
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.openai.OpenAiChatModel;
@@ -49,7 +50,7 @@ class AgentChannelMessageHandlerTest {
                 mock(DbInsertTool.class),
                 mock(FileUploadTool.class));
         AgentChannelMessageHandler handler = new AgentChannelMessageHandler(
-                chatModel,
+                ChatClient.builder(chatModel),
                 memory,
                 mock(AiBotConfigService.class),
                 tools,

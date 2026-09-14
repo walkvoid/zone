@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.content.Media;
-import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
@@ -56,18 +55,18 @@ public class AgentChannelMessageHandler implements ChannelMessageHandler {
         return t;
     });
 
-    public AgentChannelMessageHandler(OpenAiChatModel chatModel,
+    public AgentChannelMessageHandler(ChatClient.Builder chatClientBuilder,
                                       GroupChatMemoryService groupChatMemoryService,
                                       AiBotConfigService aiBotConfigService,
                                       AgentToolRegistry agentToolRegistry,
                                       ChannelProperties channelProperties,
                                       WeiXinMediaDownloader mediaDownloader) {
-        this(chatModel, groupChatMemoryService, aiBotConfigService, agentToolRegistry,
+        this(chatClientBuilder, groupChatMemoryService, aiBotConfigService, agentToolRegistry,
                 channelProperties, mediaDownloader, null);
     }
 
     @Autowired
-    public AgentChannelMessageHandler(OpenAiChatModel chatModel,
+    public AgentChannelMessageHandler(ChatClient.Builder chatClientBuilder,
                                       GroupChatMemoryService groupChatMemoryService,
                                       AiBotConfigService aiBotConfigService,
                                       AgentToolRegistry agentToolRegistry,
@@ -80,7 +79,7 @@ public class AgentChannelMessageHandler implements ChannelMessageHandler {
         this.channelProperties = channelProperties;
         this.mediaDownloader = mediaDownloader;
         this.auditQueue = auditQueue == null ? null : auditQueue.getIfAvailable();
-        this.chatClient = ChatClient.builder(chatModel)
+        this.chatClient = chatClientBuilder
                 .defaultAdvisors(groupChatMemoryService.advisor())
                 .build();
         log.info("Agent handler ready, prompt/tools loaded per ai_bot_config");
