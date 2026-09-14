@@ -1,16 +1,20 @@
 package com.github.walkvoid.zone.user;
 
-import com.github.walkvoid.zone.user.client.UserCredentialFeignClient;
-import com.github.walkvoid.zone.user.client.UserIdentityFeignClient;
+import com.github.walkvoid.zone.user.client.UserCredentialClient;
+import com.github.walkvoid.zone.user.client.UserIdentityClient;
+import com.github.walkvoid.zone.user.client.ZoneAuthServiceName;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.web.service.registry.ImportHttpServices;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients(clients = {UserCredentialFeignClient.class, UserIdentityFeignClient.class})
+@ImportHttpServices(group = ZoneAuthServiceName.SERVICE_NAME, types = {
+        UserCredentialClient.class,
+        UserIdentityClient.class
+})
 @MapperScan("com.github.walkvoid.zone.user.db.mapper")
 public class UserApplication {
 

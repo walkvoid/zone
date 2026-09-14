@@ -78,8 +78,8 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.walkvoid.wvframework</groupId>
-            <artifactId>wvframework-feign</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-restclient</artifactId>
         </dependency>
         <dependency>
             <groupId>com.github.walkvoid.wvframework</groupId>

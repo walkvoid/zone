@@ -2,7 +2,7 @@ package com.github.walkvoid.zone.system.controller;
 
 import com.github.walkvoid.wvframework.models.ApiResult;
 import com.github.walkvoid.zone.system.service.PermissionService;
-import com.github.walkvoid.zone.user.client.UserInfoFeignClient;
+import com.github.walkvoid.zone.user.client.UserInfoClient;
 import com.github.walkvoid.zone.user.db.entity.UserInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,7 +22,7 @@ import java.util.List;
 public class PermissionController {
 
     @Autowired
-    private UserInfoFeignClient userInfoService;
+    private UserInfoClient userInfoService;
     @Autowired
     private PermissionService permissionService;
 

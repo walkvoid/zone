@@ -1,56 +1,62 @@
 package com.github.walkvoid.zone.user.client;
 
-import com.github.walkvoid.zone.user.service.UserInfoService;
 import com.github.walkvoid.zone.user.db.entity.UserInfo;
-import org.springframework.cloud.openfeign.FeignClient;
+import com.github.walkvoid.zone.user.service.UserInfoService;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.service.annotation.DeleteExchange;
+import org.springframework.web.service.annotation.GetExchange;
+import org.springframework.web.service.annotation.HttpExchange;
+import org.springframework.web.service.annotation.PostExchange;
+import org.springframework.web.service.annotation.PutExchange;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@FeignClient(name = ZoneUserServiceName.SERVICE_NAME, contextId = "userInfoFeignClient", path = "/internal/user-info")
-public interface UserInfoFeignClient extends UserInfoService {
+@HttpExchange("/internal/user-info")
+public interface UserInfoClient extends UserInfoService {
 
     @Override
-    @GetMapping("/{id}")
+    @GetExchange("/{id}")
     UserInfo getById(@PathVariable("id") Long id);
 
     @Override
-    @GetMapping("/by-username/{username}")
+    @GetExchange("/by-username/{username}")
     UserInfo getByUsername(@PathVariable("username") String username);
 
     @Override
-    @PostMapping
+    @PostExchange
     int insert(@RequestBody UserInfo entity);
 
     @Override
-    @PutMapping
+    @PutExchange
     int updateById(@RequestBody UserInfo entity);
 
     @Override
-    @DeleteMapping("/{id}")
+    @DeleteExchange("/{id}")
     int deleteById(@PathVariable("id") Long id);
 
     @Override
-    @PostMapping("/delete-batch")
+    @PostExchange("/delete-batch")
     int deleteBatchIds(@RequestBody List<Long> ids);
 
     @Override
-    @PostMapping("/select-list")
+    @PostExchange("/select-list")
     List<UserInfo> selectList(@RequestBody UserInfo condition);
 
     @Override
-    @GetMapping("/exists/{username}")
+    @GetExchange("/exists/{username}")
     boolean checkUsernameExists(@PathVariable("username") String username);
 
     @Override
-    @PutMapping("/{id}/last-login")
+    @PutExchange("/{id}/last-login")
     int updateLastLoginInfo(@PathVariable("id") Long id,
                             @RequestParam("lastLoginTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime lastLoginTime,
                             @RequestParam("lastLoginIp") String lastLoginIp);
 
     @Override
-    @PutMapping("/batch-status")
+    @PutExchange("/batch-status")
     int updateBatchStatus(@RequestParam("ids") List<Long> ids, @RequestParam("status") Integer status);
 }

@@ -1,17 +1,22 @@
 package com.github.walkvoid.zone.system;
 
-import com.github.walkvoid.zone.user.client.RoleFeignClient;
-import com.github.walkvoid.zone.user.client.RoleMenuRelFeignClient;
-import com.github.walkvoid.zone.user.client.UserInfoFeignClient;
+import com.github.walkvoid.zone.user.client.RoleClient;
+import com.github.walkvoid.zone.user.client.RoleMenuRelClient;
+import com.github.walkvoid.zone.user.client.UserInfoClient;
+import com.github.walkvoid.zone.user.client.ZoneUserServiceName;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.web.service.registry.ImportHttpServices;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients(clients = {UserInfoFeignClient.class, RoleFeignClient.class, RoleMenuRelFeignClient.class})
+@ImportHttpServices(group = ZoneUserServiceName.SERVICE_NAME, types = {
+        UserInfoClient.class,
+        RoleClient.class,
+        RoleMenuRelClient.class
+})
 @MapperScan("com.github.walkvoid.zone.system.db.mapper")
 public class SystemApplication {
 

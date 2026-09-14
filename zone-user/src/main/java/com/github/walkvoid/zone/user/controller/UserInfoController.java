@@ -9,8 +9,8 @@ import com.github.walkvoid.zone.user.model.dto.PasswordParam;
 import com.github.walkvoid.zone.user.db.dao.UserInfoDAO;
 import com.github.walkvoid.zone.user.model.dto.UserInfoDTO;
 import com.github.walkvoid.zone.user.db.entity.UserInfo;
-import com.github.walkvoid.zone.user.client.UserCredentialFeignClient;
-import com.github.walkvoid.zone.user.client.UserIdentityFeignClient;
+import com.github.walkvoid.zone.user.client.UserCredentialClient;
+import com.github.walkvoid.zone.user.client.UserIdentityClient;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,9 +37,9 @@ public class UserInfoController {
     private UserInfoDAO userInfoDAO;
 
     @Autowired
-    private UserCredentialFeignClient userCredentialService;
+    private UserCredentialClient userCredentialService;
     @Autowired
-    private UserIdentityFeignClient userIdentityService;
+    private UserIdentityClient userIdentityService;
 
     @Operation(summary = "新增用户")
     @PreAuthorize("hasAuthority('System:User:Create')")

@@ -3,7 +3,7 @@ package com.github.walkvoid.zone.auth.controller;
 import com.github.walkvoid.wvframework.models.ApiResult;
 import com.github.walkvoid.wvframework.models.BooleanEnum;
 import com.github.walkvoid.wvframework.core.jwt.JwtSupport;
-import com.github.walkvoid.zone.auth.client.SmsSendRecordFeignClient;
+import com.github.walkvoid.zone.auth.client.SmsSendRecordClient;
 import com.github.walkvoid.zone.auth.service.UserCredentialService;
 import com.github.walkvoid.zone.auth.service.UserIdentityService;
 import com.github.walkvoid.zone.auth.service.AuthLoginLogService;
@@ -11,8 +11,8 @@ import com.github.walkvoid.zone.auth.service.AuthSessionService;
 import com.github.walkvoid.zone.auth.util.RequestUtils;
 import com.github.walkvoid.zone.auth.model.enums.IdentityTypeEnum;
 import com.github.walkvoid.zone.auth.model.enums.LoginTypeEnum;
-import com.github.walkvoid.zone.user.client.RoleFeignClient;
-import com.github.walkvoid.zone.user.client.UserInfoFeignClient;
+import com.github.walkvoid.zone.user.client.RoleClient;
+import com.github.walkvoid.zone.user.client.UserInfoClient;
 import com.github.walkvoid.zone.user.db.entity.UserInfo;
 import com.github.walkvoid.zone.user.model.enums.UserInfoStatusEnum;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,9 +39,9 @@ import java.util.Objects;
 public class AuthController {
 
     @Autowired
-    private UserInfoFeignClient userInfoService;
+    private UserInfoClient userInfoService;
     @Autowired
-    private RoleFeignClient roleService;
+    private RoleClient roleService;
 
     @Autowired
     private UserCredentialService userCredentialService;
@@ -54,7 +54,7 @@ public class AuthController {
     @Autowired
     private JwtSupport jwtSupport;
     @Autowired
-    private SmsSendRecordFeignClient smsSendRecordFeignClient;
+    private SmsSendRecordClient smsSendRecordClient;
 
     private static final String PHONE_PATTERN = "^1[3-9]\\d{9}$";
     private static final String SMS_BIZ_LOGIN = "LOGIN";
@@ -154,7 +154,7 @@ public class AuthController {
             return ApiResult.error(400, "手机号格式不正确");
         }
         String clientIp = RequestUtils.getClientIp(request);
-        ApiResult<Void> result = smsSendRecordFeignClient.send(phone.trim(), SMS_BIZ_LOGIN, clientIp);
+        ApiResult<Void> result = smsSendRecordClient.send(phone.trim(), SMS_BIZ_LOGIN, clientIp);
         if (result == null) {
             return ApiResult.error(500, "短信服务不可用");
         }
@@ -178,7 +178,7 @@ public class AuthController {
             return ApiResult.error(400, "验证码不能为空");
         }
 
-        ApiResult<Boolean> verifyResult = smsSendRecordFeignClient.verify(phone.trim(), SMS_BIZ_LOGIN, code.trim());
+        ApiResult<Boolean> verifyResult = smsSendRecordClient.verify(phone.trim(), SMS_BIZ_LOGIN, code.trim());
         if (verifyResult == null || !isSuccess(verifyResult) || !Boolean.TRUE.equals(verifyResult.getData())) {
             String msg = verifyResult != null && StringUtils.hasText(verifyResult.getMsg())
                     ? verifyResult.getMsg() : "验证码错误";

@@ -4,8 +4,8 @@ import com.github.walkvoid.wvframework.core.security.PermissionCache;
 import com.github.walkvoid.zone.system.db.dao.MenuDAO;
 import com.github.walkvoid.zone.system.db.entity.Menu;
 import com.github.walkvoid.zone.system.service.PermissionService;
-import com.github.walkvoid.zone.user.client.RoleFeignClient;
-import com.github.walkvoid.zone.user.client.RoleMenuRelFeignClient;
+import com.github.walkvoid.zone.user.client.RoleClient;
+import com.github.walkvoid.zone.user.client.RoleMenuRelClient;
 import com.github.walkvoid.zone.user.db.entity.RoleMenuRel;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +22,9 @@ import java.util.stream.Collectors;
 public class PermissionServiceImpl implements PermissionService {
 
     @Autowired
-    private RoleFeignClient roleService;
+    private RoleClient roleService;
     @Autowired
-    private RoleMenuRelFeignClient roleMenuRelService;
+    private RoleMenuRelClient roleMenuRelService;
     @Autowired
     private MenuDAO menuDAO;
     @Autowired

@@ -9,7 +9,7 @@ import com.github.walkvoid.zone.system.service.MenuCrudService;
 import com.github.walkvoid.zone.system.db.dao.MenuDAO;
 import com.github.walkvoid.zone.system.model.dto.MenuDTO;
 import com.github.walkvoid.zone.system.db.entity.Menu;
-import com.github.walkvoid.zone.user.client.RoleMenuRelFeignClient;
+import com.github.walkvoid.zone.user.client.RoleMenuRelClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -31,7 +31,7 @@ public class MenuCrudServiceImpl implements MenuCrudService {
     private MenuDAO menuDAO;
 
     @Autowired
-    private RoleMenuRelFeignClient roleMenuRelService;
+    private RoleMenuRelClient roleMenuRelService;
 
     @Override
     public List<MenuDTO> getMenuList() {
