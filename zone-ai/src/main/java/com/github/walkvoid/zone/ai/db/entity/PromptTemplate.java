@@ -2,10 +2,12 @@ package com.github.walkvoid.zone.ai.db.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.github.walkvoid.zone.ai.model.enums.PromptTemplateTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 /**
  * Prompt模板实体
@@ -30,7 +32,10 @@ public class PromptTemplate implements Serializable {
     private String templateContent;
 
     /** 变量列表 */
-    private String variables;
+    private Map<String, Object> variables;
+
+    /** 变量列表 */
+    private PromptTemplateTypeEnum type;
 
     /** 分类 */
     private String category;

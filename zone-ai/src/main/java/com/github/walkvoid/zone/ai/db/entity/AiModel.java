@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 /**
  * AI模型实体
@@ -36,6 +37,8 @@ public class AiModel implements Serializable {
     /** API 密钥 */
     private String apiKey;
 
+    private  Double temperature;
+
     /** 累计调用次数 */
     private Long callCount;
 
@@ -50,6 +53,8 @@ public class AiModel implements Serializable {
 
     /** 扩展配置 JSON */
     private String configJson;
+
+    private Map<String, Object> metadata;
 
     private Long createId;
     private LocalDateTime createTime;
