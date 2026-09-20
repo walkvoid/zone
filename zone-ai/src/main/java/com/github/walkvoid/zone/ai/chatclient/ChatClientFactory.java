@@ -8,8 +8,11 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.model.openai.autoconfigure.OpenAiChatProperties;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -27,9 +30,25 @@ public class ChatClientFactory {
 
     private final ConcurrentHashMap<String, ChatModel> cache = new ConcurrentHashMap<>();
 
-    public ChatClientFactory(OpenAiChatProperties openAiChatProperties,ChatClient.Builder builder) {
+    private final List<ChatModelProcessor> processors;
+
+    public ChatClientFactory(OpenAiChatProperties openAiChatProperties, ChatClient.Builder builder) {
+        this(openAiChatProperties, builder, List.of());
+    }
+
+    @Autowired
+    public ChatClientFactory(OpenAiChatProperties openAiChatProperties,
+                             ChatClient.Builder builder,
+                             ObjectProvider<ChatModelProcessor> processors) {
+        this(openAiChatProperties, builder, processors.orderedStream().toList());
+    }
+
+    ChatClientFactory(OpenAiChatProperties openAiChatProperties,
+                      ChatClient.Builder builder,
+                      List<ChatModelProcessor> processors) {
         this.openAiChatProperties = openAiChatProperties;
         this.builder = builder;
+        this.processors = processors == null ? List.of() : List.copyOf(processors);
     }
 
     public SmartChatClient get(ChatClientConfigurer configurer){
@@ -39,6 +58,7 @@ public class ChatClientFactory {
 
 
         configurer.applyDefaults(openAiChatProperties);
+        configurer.useProcessors(this.processors);
 
         ChatClient.Builder builder = this.builder;
         //builder.defaultSystem()

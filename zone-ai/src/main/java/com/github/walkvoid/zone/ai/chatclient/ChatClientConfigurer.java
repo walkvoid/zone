@@ -11,12 +11,14 @@ import com.github.walkvoid.zone.ai.tool.FileUploadTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.model.openai.autoconfigure.OpenAiChatProperties;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 public final class ChatClientConfigurer {
@@ -32,6 +34,7 @@ public final class ChatClientConfigurer {
     private  String defaultSystem;
     private  String defaultUser;
     private  Object[] defaultsTools;
+    private List<ChatModelProcessor> processors = List.of();
 
     private final Function<String[], Object[]> toolFinder;
 
@@ -119,6 +122,13 @@ public final class ChatClientConfigurer {
         return this;
     }
 
+    public ChatClientConfigurer useProcessors(List<ChatModelProcessor> processors) {
+        if (processors != null) {
+            this.processors = processors.stream().filter(Objects::nonNull).toList();
+        }
+        return this;
+    }
+
     private FileUploadTool fileUploadTool;
 
     public ChatClientConfigurer applyDefaults(OpenAiChatProperties openAiChatProperties){
@@ -126,15 +136,15 @@ public final class ChatClientConfigurer {
     }
 
     public ChatClient create() {
-        OpenAiChatModel openAiChatModel = OpenAiChatModel.builder()
+        ChatModel chatModel = SmartChatModel.wrap(OpenAiChatModel.builder()
                 .options(OpenAiChatOptions.builder()
                         .baseUrl(this.baseUrl)
                         .apiKey(this.apiKey)
                         .model(this.model)
                         .temperature(this.temperature)
                         .build())
-                .build();
-        ChatClient.Builder builder = ChatClient.builder(openAiChatModel)
+                .build(), this.processors);
+        ChatClient.Builder builder = ChatClient.builder(chatModel)
                 .defaultSystem(this.defaultSystem);
         if (this.defaultsTools != null && this.defaultsTools.length > 0) {
             builder.defaultTools(this.defaultsTools);
