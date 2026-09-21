@@ -1,10 +1,18 @@
 package com.github.walkvoid.zone.ai.chatclient;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jspecify.annotations.Nullable;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+import org.springframework.web.servlet.HandlerExecutionChain;
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
 import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
@@ -18,13 +26,10 @@ import java.util.Objects;
  */
 public final class SmartChatModel implements ChatModel {
 
-    private final List<ChatModelProcessor> processors;
-
     private final ChatModel delegate;
 
     public SmartChatModel(ChatModel delegate, List<ChatModelProcessor> processors) {
         this.delegate = Objects.requireNonNull(delegate, "delegate must not be null");
-        this.processors = copyAndSort(processors);
     }
 
     public static ChatModel wrap(ChatModel delegate, List<ChatModelProcessor> processors) {
@@ -51,13 +56,6 @@ public final class SmartChatModel implements ChatModel {
         return delegate.getOptions();
     }
 
-    List<ChatModelProcessor> processors() {
-        return processors;
-    }
-
-    ChatModel delegate() {
-        return delegate;
-    }
 
     private static List<ChatModelProcessor> copyAndSort(List<ChatModelProcessor> processors) {
         if (processors == null || processors.isEmpty()) {
@@ -73,30 +71,33 @@ public final class SmartChatModel implements ChatModel {
         return List.copyOf(copy);
     }
 
-    private final class ProcessorChain implements ChatModelProcessor.Chain {
+    private final class InterceptorChain {
 
-        private final int index;
+        private static final Log log = LogFactory.getLog(InterceptorChain.class);
 
-        private ProcessorChain(int index) {
-            this.index = index;
+        private final List<ChatModelInterceptor> interceptorList = new ArrayList<>();
+
+        private int interceptorIndex = -1;
+
+        boolean applyPreHandle(ChatResponse call, Prompt prompt){
+            for (int i = 0; i < this.interceptorList.size(); i++) {
+                ChatModelInterceptor interceptor = this.interceptorList.get(i);
+                if (!interceptor.callBefore(call, prompt)) {
+                    return false;
+                }
+                this.interceptorIndex = i;
+            }
+            return true;
         }
 
-        @Override
-        public ChatResponse next(Prompt prompt) {
-            Objects.requireNonNull(prompt, "prompt must not be null");
-            if (index < processors.size()) {
-                return processors.get(index).process(prompt, new ProcessorChain(index + 1));
+        /**
+         * Apply postHandle methods of registered interceptors.
+         */
+        void applyPostHandle(ChatResponse call, Prompt prompt) {
+            for (int i = this.interceptorList.size() - 1; i >= 0; i--) {
+                ChatModelInterceptor interceptor = this.interceptorList.get(i);
+                interceptor.callAfter(call, prompt);
             }
-            return delegate.call(prompt);
-        }
-
-        @Override
-        public Flux<ChatResponse> nextStream(Prompt prompt) {
-            Objects.requireNonNull(prompt, "prompt must not be null");
-            if (index < processors.size()) {
-                return processors.get(index).processStream(prompt, new ProcessorChain(index + 1));
-            }
-            return delegate.stream(prompt);
         }
     }
 }

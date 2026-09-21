@@ -4,7 +4,7 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import reactor.core.publisher.Flux;
 
-public class LogChatModelProcessor implements ChatModelProcessor{
+public class LogChatModelProcessor implements ChatModelProcessor {
 
 
     @Override

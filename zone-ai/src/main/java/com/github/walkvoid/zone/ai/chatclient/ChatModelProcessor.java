@@ -13,8 +13,11 @@ import reactor.core.publisher.Flux;
  * <p>
  * 同步与流式是两条链：只覆盖 {@link #process} 时，{@code stream()} 仍会直达下一环。
  */
-@FunctionalInterface
+
 public interface ChatModelProcessor extends Ordered {
+
+
+
 
     ChatResponse process(Prompt prompt, Chain chain);
 
