@@ -4,19 +4,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.walkvoid.wvframework.models.ApiResult;
 import com.github.walkvoid.wvframework.models.PageRequest;
 import com.github.walkvoid.wvframework.utils.JsonUtils;
-import com.github.walkvoid.zone.ai.db.dao.AiModelDAO;
-import com.github.walkvoid.zone.ai.db.dao.PromptTemplateDAO;
-import com.github.walkvoid.zone.ai.db.dao.PromptTemplateRunRecordDAO;
-import com.github.walkvoid.zone.ai.service.PromptTemplateApi;
-import com.github.walkvoid.zone.ai.model.dto.PromptTemplateDTO;
 import com.github.walkvoid.zone.ai.db.entity.AiModel;
-import com.github.walkvoid.zone.ai.db.entity.PromptTemplate;
 import com.github.walkvoid.zone.ai.db.entity.PromptTemplateRunRecord;
+import com.github.walkvoid.zone.ai.model.dto.PromptTemplateDTO;
 import com.github.walkvoid.zone.ai.prompt.PromptRunMaterialService;
 import com.github.walkvoid.zone.ai.prompt.PromptRunPostProcessService;
+import com.github.walkvoid.zone.ai.service.AiModelService;
+import com.github.walkvoid.zone.ai.service.PromptTemplateRunRecordService;
+import com.github.walkvoid.zone.ai.service.PromptTemplateService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -40,16 +37,13 @@ import java.util.Map;
 public class PromptTemplateController {
 
     @Autowired
-    private PromptTemplateDAO dao;
+    private PromptTemplateService promptTemplateService;
 
     @Autowired
-    private PromptTemplateApi promptTemplateApi;
+    private PromptTemplateRunRecordService runRecordService;
 
     @Autowired
-    private PromptTemplateRunRecordDAO runRecordDAO;
-
-    @Autowired
-    private AiModelDAO aiModelDAO;
+    private AiModelService aiModelService;
 
     @Autowired
     private PromptRunMaterialService materialService;
@@ -67,65 +61,59 @@ public class PromptTemplateController {
             @RequestParam(value = "size", defaultValue = "10") int size,
             @ModelAttribute PromptTemplateDTO parameter) {
         PageRequest<PromptTemplateDTO> pageRequest = PageRequest.of(current, size, parameter);
-        return ApiResult.ok(dao.page(pageRequest));
+        return ApiResult.ok(promptTemplateService.page(pageRequest));
     }
 
     @Operation(summary = "查询启用的模板")
     @GetMapping("/enabled")
     public ApiResult<List<PromptTemplateDTO>> enabled() {
-        List<PromptTemplateDTO> list = dao.selectEnabled().stream()
-                .map(this::toDTO)
-                .toList();
-        return ApiResult.ok(list);
+        return ApiResult.ok(promptTemplateService.listEnabled());
     }
 
     @Operation(summary = "按ID查询")
     @GetMapping("/{id:\\d+}")
     public ApiResult<PromptTemplateDTO> getById(@PathVariable("id") Long id) {
-        PromptTemplate m = dao.selectById(id);
-        return ApiResult.ok(m != null ? toDTO(m) : null);
+        return ApiResult.ok(promptTemplateService.getById(id));
     }
 
     @Operation(summary = "按编码查询")
     @GetMapping("/code/{templateCode}")
     public ApiResult<PromptTemplateDTO> getByCode(@PathVariable("templateCode") String templateCode) {
-        PromptTemplate m = dao.selectByCode(templateCode);
-        return ApiResult.ok(m != null ? toDTO(m) : null);
+        return ApiResult.ok(promptTemplateService.getByCode(templateCode));
     }
 
     @Operation(summary = "创建模板")
     @PostMapping
     public ApiResult<String> create(@RequestBody PromptTemplateDTO dto) {
-        if (dto.getTemplateCode() == null || dto.getTemplateCode().isBlank()) {
-            return ApiResult.error(400, "模板编码不能为空");
+        try {
+            if (!promptTemplateService.insert(dto)) {
+                return ApiResult.error(500, "创建失败");
+            }
+            return ApiResult.ok("OK");
+        } catch (IllegalArgumentException e) {
+            return ApiResult.error(400, e.getMessage());
         }
-        if (dao.checkCodeExists(dto.getTemplateCode()) > 0) {
-            return ApiResult.error(400, "模板编码已存在");
-        }
-        PromptTemplate entity = toEntity(dto);
-        entity.setStatus(entity.getStatus() != null ? entity.getStatus() : 1);
-        entity.setCreateTime(LocalDateTime.now());
-        entity.setUpdateTime(LocalDateTime.now());
-        dao.insert(entity);
-        return ApiResult.ok("OK");
     }
 
     @Operation(summary = "更新模板")
     @PutMapping
     public ApiResult<String> update(@RequestBody PromptTemplateDTO dto) {
-        if (dto.getId() == null) {
-            return ApiResult.error(400, "ID不能为空");
+        try {
+            if (!promptTemplateService.update(dto)) {
+                return ApiResult.error(500, "更新失败");
+            }
+            return ApiResult.ok("OK");
+        } catch (IllegalArgumentException e) {
+            return ApiResult.error(400, e.getMessage());
         }
-        PromptTemplate entity = toEntity(dto);
-        entity.setUpdateTime(LocalDateTime.now());
-        dao.updateById(entity);
-        return ApiResult.ok("OK");
     }
 
     @Operation(summary = "删除模板")
     @DeleteMapping("/{id}")
     public ApiResult<String> delete(@PathVariable("id") Long id) {
-        dao.deleteById(id);
+        if (!promptTemplateService.delete(id)) {
+            return ApiResult.error(500, "删除失败");
+        }
         return ApiResult.ok("OK");
     }
 
@@ -143,7 +131,7 @@ public class PromptTemplateController {
             return ApiResult.error(400, "模板编码不能为空");
         }
 
-        PromptTemplate template = dao.selectByCode(templateCode);
+        PromptTemplateDTO template = promptTemplateService.getByCode(templateCode);
         if (template == null) {
             return ApiResult.error(400, "模板不存在: " + templateCode);
         }
@@ -177,9 +165,9 @@ public class PromptTemplateController {
         String renderedPrompt = renderPrompt(template.getTemplateContent(), variables);
 
         String modelName = null;
-        List<AiModel> models = aiModelDAO.selectEnabled();
-        if (models != null && !models.isEmpty()) {
-            modelName = models.get(0).getModelCode();
+        AiModel model = aiModelService.getEnabled();
+        if (model != null) {
+            modelName = model.getModelCode();
         }
 
         PromptTemplateRunRecord record = new PromptTemplateRunRecord();
@@ -219,7 +207,7 @@ public class PromptTemplateController {
         record.setRunEndTime(LocalDateTime.now());
         record.setDurationMs(Duration.between(record.getRunStartTime(), record.getRunEndTime()).toMillis());
         record.setCreateTime(LocalDateTime.now());
-        runRecordDAO.insert(record);
+        runRecordService.insert(record);
 
         boolean cleaned = false;
         if (cleanupVectors && material != null && material.vectorMode() && !fileIds.isEmpty()) {
@@ -377,20 +365,5 @@ public class PromptTemplateController {
                     entry.getValue() == null ? null : String.valueOf(entry.getValue()));
         }
         return result;
-    }
-
-    private PromptTemplate toEntity(PromptTemplateDTO dto) {
-        if (dto == null) {
-            return new PromptTemplate();
-        }
-        PromptTemplate entity = new PromptTemplate();
-        BeanUtils.copyProperties(dto, entity);
-        return entity;
-    }
-
-    private PromptTemplateDTO toDTO(PromptTemplate entity) {
-        PromptTemplateDTO dto = new PromptTemplateDTO();
-        BeanUtils.copyProperties(entity, dto);
-        return dto;
     }
 }

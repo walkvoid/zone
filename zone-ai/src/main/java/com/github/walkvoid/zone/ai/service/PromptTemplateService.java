@@ -1,6 +1,8 @@
 package com.github.walkvoid.zone.ai.service;
 
-import com.github.walkvoid.zone.ai.db.entity.PromptTemplate;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
+import com.github.walkvoid.wvframework.models.PageRequest;
+import com.github.walkvoid.zone.ai.model.dto.PromptTemplateDTO;
 import org.springframework.ai.template.st.StTemplateRenderer;
 
 import java.util.List;
@@ -16,38 +18,42 @@ public interface PromptTemplateService {
             .startDelimiterToken('<').endDelimiterToken('>').build();
 
     /**
+     * 分页查询
+     */
+    PageDTO<PromptTemplateDTO> page(PageRequest<PromptTemplateDTO> pageRequest);
+
+    /**
      * 根据ID查询
      */
-    PromptTemplate getById(Long id);
+    PromptTemplateDTO getById(Long id);
 
     /**
      * 根据编码查询
      */
-    PromptTemplate getByCode(String templateCode);
+    PromptTemplateDTO getByCode(String templateCode);
 
     /**
      * 查询全部模板
      */
-    List<PromptTemplate> listAll();
+    List<PromptTemplateDTO> listAll();
+
+    /**
+     * 查询启用的模板
+     */
+    List<PromptTemplateDTO> listEnabled();
 
     /**
      * 新增模板
      */
-    int insert(PromptTemplate entity);
+    boolean insert(PromptTemplateDTO dto);
 
     /**
      * 更新模板
      */
-    int update(PromptTemplate entity);
+    boolean update(PromptTemplateDTO dto);
 
     /**
      * 删除模板
      */
-    int delete(Long id);
-
-    static String apply(PromptTemplate entity){
-        return customRenderer.apply(entity.getTemplateContent(), entity.getVariables());
-    }
-
-
+    boolean delete(Long id);
 }

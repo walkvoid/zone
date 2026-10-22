@@ -62,8 +62,7 @@ public class PromptTemplateDAO {
         QueryWrapper<PromptTemplate> qw = new QueryWrapper<PromptTemplate>().orderByDesc("update_time");
         if (param != null) {
             if (param.getTemplateName() != null && !param.getTemplateName().isBlank()) {
-                qw.and(w -> w.like("template_name", param.getTemplateName().trim())
-                        .or()
+                qw.and(w -> w.like("template_name", param.getTemplateName().trim()).or()
                         .like("template_code", param.getTemplateName().trim()));
             }
             if (param.getTemplateCode() != null && !param.getTemplateCode().isBlank()
