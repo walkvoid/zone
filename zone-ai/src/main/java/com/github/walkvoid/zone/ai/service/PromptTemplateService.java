@@ -2,10 +2,12 @@ package com.github.walkvoid.zone.ai.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.github.walkvoid.wvframework.models.PageRequest;
+import com.github.walkvoid.zone.ai.db.entity.PromptTemplate;
 import com.github.walkvoid.zone.ai.model.dto.PromptTemplateDTO;
 import org.springframework.ai.template.st.StTemplateRenderer;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Prompt模板 Service
@@ -56,4 +58,13 @@ public interface PromptTemplateService {
      * 删除模板
      */
     boolean delete(Long id);
+
+    /**
+     * 渲染模板并调用当前启用的模型
+     */
+    String executePrompt(String templateCode, Map<String, String> variables);
+
+    static String apply(PromptTemplate entity) {
+        return customRenderer.apply(entity.getTemplateContent(), entity.getVariables());
+    }
 }

@@ -196,7 +196,7 @@ public class PromptTemplateController {
         }
 
         try {
-            String result = promptTemplateApi.executePrompt(templateCode, variables);
+            String result = promptTemplateService.executePrompt(templateCode, variables);
             record.setRunResult(result);
             record.setStatus(1);
         } catch (Exception e) {

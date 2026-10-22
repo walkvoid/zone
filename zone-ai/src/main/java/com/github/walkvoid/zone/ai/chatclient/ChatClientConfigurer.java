@@ -6,7 +6,7 @@ import com.github.walkvoid.wvframework.utils.StringUtils;
 import com.github.walkvoid.zone.ai.db.entity.AiModel;
 import com.github.walkvoid.zone.ai.db.entity.PromptTemplate;
 import com.github.walkvoid.zone.ai.model.enums.PromptTemplateTypeEnum;
-import com.github.walkvoid.zone.ai.service.promptTemplateService;
+import com.github.walkvoid.zone.ai.service.PromptTemplateService;
 import com.github.walkvoid.zone.ai.tool.FileUploadTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,10 +85,10 @@ public final class ChatClientConfigurer {
     public ChatClientConfigurer usePromptTemplate(PromptTemplate promptTemplate) {
         if (promptTemplate != null && StringUtils.isNotBlank(promptTemplate.getTemplateContent())){
             if (PromptTemplateTypeEnum.DEFAULT_SYSTEM.equals(promptTemplate.getType())){
-                appendSystem(promptTemplateService.apply(promptTemplate));
+                appendSystem(PromptTemplateService.apply(promptTemplate));
             }
             if (PromptTemplateTypeEnum.DEFAULT_USER.equals(promptTemplate.getType())){
-                appendUser(promptTemplateService.apply(promptTemplate));
+                appendUser(PromptTemplateService.apply(promptTemplate));
             }
         }
         return this;
